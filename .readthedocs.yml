@@ -1,0 +1,18 @@
+# This file was generated from bswck/skeleton@c9a43b3.
+# Instead of changing this particular file, you might want to alter the template:
+# https://github.com/bswck/skeleton/tree/c9a43b3/project/%23%25%20if%20docs%20%25%23.readthedocs.yml%23%25%20endif%20%25%23.jinja
+#
+# Read the Docs configuration file
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+version: 2
+mkdocs:
+  configuration: "mkdocs.yml"
+build:
+  os: "ubuntu-latest"
+  tools:
+    python: "3.8"
+  jobs:
+    post_install:
+    - "pip install poetry"
+    - "poetry config virtualenvs.create false"
+    - "poetry install --with=docs"

@@ -1,0 +1,40 @@
+# This file was generated from bswck/skeleton@c9a43b3.
+# Instead of changing this particular file, you might want to alter the template:
+# https://github.com/bswck/skeleton/tree/c9a43b3/project/.github/workflows/%23%25%20if%20tests%20%25%23test.yml%23%25%20endif%20%25%23.jinja
+
+name: "Tests"
+
+on: ["push"]
+
+jobs:
+  test:
+    runs-on: "${{matrix.os}}-latest"
+    environment: "Test"
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu", "macos", "windows"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+    steps:
+    - uses: "actions/checkout@v4"
+    - name: "Install Poetry"
+      run: "pipx install poetry"
+    - name: "Set up Python ${{matrix.python-version}}"
+      uses: "actions/setup-python@v5"
+      with:
+        python-version: "${{matrix.python-version}}"
+        cache: "poetry"
+    - name: "Install the project"
+      run: "poetry install"
+    - name: "Run tests"
+      run: "poetry run coverage run -m pytest -v ."
+    - name: "Report coverage"
+      run: >
+        poetry run coverage report
+        && poetry run coverage html --show-contexts
+        --title "lazy-imports coverage for ${{github.sha}} (measured on Python ${{matrix.python-version}})"
+    - name: "Store coverage html"
+      uses: "actions/upload-artifact@v3"
+      with:
+        name: "coverage-html"
+        path: "htmlcov"

@@ -1,0 +1,75 @@
+# This file was generated from bswck/skeleton@c9a43b3.
+# Instead of changing this particular file, you might want to alter the template:
+# https://github.com/bswck/skeleton/tree/c9a43b3/project/%23%25%20if%20docs%20%25%23mkdocs.yml%23%25%20endif%20%25%23.jinja
+
+site_name: "lazy-imports"
+site_description: "Lazy imports in Python."
+site_url: "https://lazy-imports.readthedocs.io/en/latest/"
+repo_url: "https://github.com/bswck/lazy-imports"
+repo_name: "bswck/lazy-imports"
+watch:
+- "lazy_imports"
+
+nav:
+- "Overview": "index.md"
+- "API Reference": "api.md"
+- "Contributing": "contributing.md"
+- "Changelog": "changelog.md"
+
+theme:
+  name: "material"
+  features:
+  - "content.code.annotate"
+  - "navigation.top"
+  - "navigation.tracking"
+  palette:
+  - media: "(prefers-color-scheme)"
+    toggle:
+      icon: "material/brightness-auto"
+      name: "Switch to light mode"
+  - media: "(prefers-color-scheme: light)"
+    scheme: "default"
+    primary: "teal"
+    accent: "purple"
+    toggle:
+      icon: "material/weather-sunny"
+      name: "Switch to dark mode"
+  - media: "(prefers-color-scheme: dark)"
+    scheme: "slate"
+    primary: "black"
+    accent: "lime"
+    toggle:
+      icon: "material/weather-night"
+      name: "Switch to system preference"
+
+extra_css:
+- "css/mkdocstrings.css"
+
+markdown_extensions:
+- "pymdownx.highlight":
+    use_pygments: true
+- "pymdownx.superfences":
+    custom_fences:
+      - name: "mermaid"
+        class: "mermaid"
+        format: !!python/name:pymdownx.superfences.fence_code_format
+- "toc":
+    permalink: true
+- "admonition"
+- "pymdownx.emoji"
+- "pymdownx.magiclink"
+- "footnotes"
+
+plugins:
+- "autorefs"
+- "search"
+- "markdown-exec"
+- "mkdocstrings":
+    handlers:
+      python:
+        options:
+          members_order: "source"
+          show_signature_annotations: true
+        paths: ["lazy_imports/"]
+        import:
+        - "https://docs.python.org/3/objects.inv"

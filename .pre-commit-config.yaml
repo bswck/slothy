@@ -1,0 +1,24 @@
+# This file was generated from bswck/skeleton@c9a43b3.
+# Instead of changing this particular file, you might want to alter the template:
+# https://github.com/bswck/skeleton/tree/c9a43b3/project/%23%25%20if%20use_precommit%20%25%23.pre-commit-config.yaml%23%25%20endif%20%25%23.jinja
+
+repos:
+- repo: "https://github.com/astral-sh/ruff-pre-commit"
+  rev: "v0.1.11"
+  hooks:
+  - id: "ruff"
+    name: "Run the Ruff linter"
+    types_or: ["python", "pyi"]
+    args: ["--fix"]
+  - id: "ruff-format"
+    name: "Run the Ruff formatter"
+    types_or: ["python", "pyi"]
+- repo: "https://github.com/python-poetry/poetry"
+  rev: "1.7.0"
+  hooks:
+  - id: "poetry-lock"
+    stages: ["push"]
+    name: "Run Poetry lock hook"
+  - id: "poetry-check"
+    stages: ["push"]
+    name: "Run Poetry check hook"
