@@ -1,5 +1,5 @@
 <!--
-Thank you for contributing to lazy-imports! 🎉
+Thank you for contributing to **lazy-imports**! 🎉
 
 Provide a general summary of your proposed changes in the Title field above.
 -->
@@ -22,7 +22,7 @@ This pull request is:
 - [ ] A new feature implementation
 	- Please include the issue number, and create an issue if none exists, which must
 	  include a complete example of how the feature would look.
-	- Please include: `Fixes: #<issue number>` in the commit message extended description.
+	- Please include: `Fixes #<issue number>` in the commit message extended description.
 	- Please include tests.
 
 **Have a great day!**

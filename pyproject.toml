@@ -1,11 +1,11 @@
-# This file was generated from bswck/skeleton@c9a43b3.
+# This file was generated from bswck/skeleton@0.0.2rc-62-g52ffbf3.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/c9a43b3/project/pyproject.toml.jinja
+# https://github.com/bswck/skeleton/tree/0.0.2rc-62-g52ffbf3/project/pyproject.toml.jinja
 
 [tool.poetry]
 name = "lazy-imports"
 version = "0.0.0"
-description = "Lazy imports in Python."
+description = "Convenient lazy imports for Python."
 authors = ["bswck <bswck.dev@gmail.com>"]
 license = "MIT"
 readme = "README.md"
@@ -24,19 +24,22 @@ python = ">=3.8,<3.13"
 [tool.poetry.group.dev.dependencies]
 
 [tool.poetry.group.dev-skeleton.dependencies]
-# This dependency group was generated from bswck/skeleton@c9a43b3.
+# This dependency group was generated from bswck/skeleton@0.0.2rc-62-g52ffbf3.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/c9a43b3/pyproject.toml
+# https://github.com/bswck/skeleton/tree/0.0.2rc-62-g52ffbf3/pyproject.toml
 mypy = "^1.7.0"
-ruff = "^0.1.11"
+ruff = "^0.1.12"
 towncrier = "^23.11.0"
 pytest = "^7.4.3"
-coverage = "^7.3.2"
+coverage = "^7.4.0"
 poethepoet = "^0.24.3"
 pre-commit = "^3.5.0"
 smokeshow = "^0.4.0"
-
 keyring = "^24.3.0"
+
+[tool.pytest.ini_options]
+addopts = "--doctest-modules"
+
 [tool.poetry.group.docs]
 optional = true
 
@@ -48,7 +51,7 @@ mkdocstrings = { version = ">=0.19.0", extras = ["python"] }
 [tool.poe.tasks]
 test = "pytest -v"
 lint = "ruff check ."
-skeleton = "scripts/skeleton.c9a43b3.bash"
+skeleton = "scripts/skeleton.0.0.2rc-62-g52ffbf3.bash"
 check = [
     { ref="test" },
     { ref="lint" },
@@ -57,27 +60,27 @@ release.script = "scripts.release:main"
 
 [tool.poe.tasks.added]
 shell = "towncrier create $TICKET.added.md --edit"
-args = [{name = "TICKET", positional = true}]
+args = [{name = "TICKET", default = "+", positional = true}]
 
 [tool.poe.tasks.changed]
 shell = "towncrier create $TICKET.changed.md --edit"
-args = [{name = "TICKET", positional = true}]
+args = [{name = "TICKET", default = "+", positional = true}]
 
 [tool.poe.tasks.fixed]
 shell = "towncrier create $TICKET.fixed.md --edit"
-args = [{name = "TICKET", positional = true}]
+args = [{name = "TICKET", default = "+", positional = true}]
 
 [tool.poe.tasks.deprecated]
 shell = "towncrier create $TICKET.deprecated.md --edit"
-args = [{name = "TICKET", positional = true}]
+args = [{name = "TICKET", default = "+", positional = true}]
 
 [tool.poe.tasks.removed]
 shell = "towncrier create $TICKET.removed.md --edit"
-args = [{name = "TICKET", positional = true}]
+args = [{name = "TICKET", default = "+", positional = true}]
 
 [tool.poe.tasks.security]
 shell = "towncrier create $TICKET.security.md --edit"
-args = [{name = "TICKET", positional = true}]
+args = [{name = "TICKET", default = "+", positional = true}]
 
 [tool.ruff]
 exclude = ["tests/", "scripts/"]
@@ -158,9 +161,10 @@ directory = "fixed"
 name = "Fixed"
 showcontent = true
 
+[tool.coverage.run]
+source = ["lazy_imports/"]
+
 [tool.coverage.report]
-omit = ["tests/*"]
-# fail_under = 96
 exclude_also = [
     # Be sure to include lines that are not meant to be covered
     # by tests or encountered by the users at runtime.

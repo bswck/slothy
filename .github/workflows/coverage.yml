@@ -1,6 +1,11 @@
-# This file was generated from bswck/skeleton@c9a43b3.
+# This file was generated from bswck/skeleton@0.0.2rc-62-g52ffbf3.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/c9a43b3/project/.github/workflows/%23%25%20if%20tests%20and%20public%20%25%23coverage.yml%23%25%20endif%20%25%23.jinja
+# https://github.com/bswck/skeleton/tree/0.0.2rc-62-g52ffbf3/project/.github/workflows/%23%25%20if%20tests%20and%20public%20%25%23coverage.yml%23%25%20endif%20%25%23.jinja
+
+# IMPORTANT!
+# Pinned versions of actions and Poetry are managed in a different repository.
+# Do not submit PRs to this file unless for this repo specifically.
+# To change this workflow globally, submit a PR to https://github.com/bswck/skeleton.
 
 name: "Upload Coverage"
 
@@ -22,16 +27,15 @@ jobs:
       with:
         python-version: "3.8"
     - run: "pip install smokeshow"
-    - uses: "dawidd6/action-download-artifact@v2"
+    - uses: "dawidd6/action-download-artifact@v3"
       with:
         workflow: "test.yml"
         commit: "${{github.event.workflow_run.head_sha}}"
     - run: "smokeshow upload coverage-html"
       env:
-          SMOKESHOW_GITHUB_STATUS_DESCRIPTION: "Coverage {coverage-percentage}"
-          # 5 is set here while V2 is in development and coverage is far from complete
-          SMOKESHOW_GITHUB_COVERAGE_THRESHOLD: 91
-          SMOKESHOW_GITHUB_CONTEXT: "coverage"
-          SMOKESHOW_GITHUB_TOKEN: "${{secrets.GITHUB_TOKEN}}"
-          SMOKESHOW_GITHUB_PR_HEAD_SHA: "${{github.event.workflow_run.head_sha}}"
-          SMOKESHOW_AUTH_KEY: "${{secrets.SMOKESHOW_AUTH_KEY}}"
+        SMOKESHOW_GITHUB_STATUS_DESCRIPTION: "Coverage {coverage-percentage}"
+        SMOKESHOW_GITHUB_COVERAGE_THRESHOLD: 91
+        SMOKESHOW_GITHUB_CONTEXT: "coverage"
+        SMOKESHOW_GITHUB_TOKEN: "${{secrets.GITHUB_TOKEN}}"
+        SMOKESHOW_GITHUB_PR_HEAD_SHA: "${{github.event.workflow_run.head_sha}}"
+        SMOKESHOW_AUTH_KEY: "${{secrets.SMOKESHOW_AUTH_KEY}}"

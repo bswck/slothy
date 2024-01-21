@@ -1,6 +1,11 @@
-# This file was generated from bswck/skeleton@c9a43b3.
+# This file was generated from bswck/skeleton@0.0.2rc-62-g52ffbf3.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/c9a43b3/project/.github/workflows/%23%25%20if%20publish_on_pypi%20%25%23release.yml%23%25%20endif%20%25%23.jinja
+# https://github.com/bswck/skeleton/tree/0.0.2rc-62-g52ffbf3/project/.github/workflows/%23%25%20if%20pypi%20%25%23release.yml%23%25%20endif%20%25%23.jinja
+
+# IMPORTANT!
+# Pinned versions of actions and Poetry are managed in a different repository.
+# Do not submit PRs to this file unless for this repo specifically.
+# To change this workflow globally, submit a PR to https://github.com/bswck/skeleton.
 
 name: "PyPI"
 
@@ -18,11 +23,9 @@ jobs:
       POETRY_VIRTUALENVS_CREATE: "false"
     steps:
     - uses: "actions/checkout@v4"
-    - name: "Install poetry"
-      run: |
-        pipx install poetry
+    - name: "Install Poetry"
+      run: "pipx install poetry==1.7.1"
     - name: "Build with poetry"
-      run: |
-        poetry build
+      run: "poetry build"
     - name: "Publish package distributions to PyPI"
       uses: "pypa/gh-action-pypi-publish@release/v1"

@@ -1,6 +1,11 @@
-# This file was generated from bswck/skeleton@c9a43b3.
+# This file was generated from bswck/skeleton@0.0.2rc-62-g52ffbf3.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/c9a43b3/project/.github/workflows/lint.yml.jinja
+# https://github.com/bswck/skeleton/tree/0.0.2rc-62-g52ffbf3/project/.github/workflows/lint.yml.jinja
+
+# IMPORTANT!
+# Pinned versions of actions and Poetry are managed in a different repository.
+# Do not submit PRs to this file unless for this repo specifically.
+# To change this workflow globally, submit a PR to https://github.com/bswck/skeleton.
 
 name: "Lint"
 
@@ -12,11 +17,10 @@ jobs:
     steps:
     - uses: "actions/checkout@v4"
     - name: "Set up Python 3.8"
-      uses: "actions/setup-python@v4"
+      uses: "actions/setup-python@v5"
       with:
         python-version: "3.8"
     - name: "Install Ruff"
-      run: |
-        pip install ruff
+      run: "pip install ruff"
     - name: "Analyze the code with Ruff"
       run: "ruff ."

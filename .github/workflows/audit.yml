@@ -1,18 +1,18 @@
 # This file was generated from bswck/skeleton@0.0.2rc-62-g52ffbf3.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/0.0.2rc-62-g52ffbf3/project/.github/workflows/mypy.yml.jinja
+# https://github.com/bswck/skeleton/tree/0.0.2rc-62-g52ffbf3/project/.github/workflows/audit.yml.jinja
 
 # IMPORTANT!
 # Pinned versions of actions and Poetry are managed in a different repository.
 # Do not submit PRs to this file unless for this repo specifically.
 # To change this workflow globally, submit a PR to https://github.com/bswck/skeleton.
 
-name: "Mypy"
+name: "Audit"
 
 on: ["push"]
 
 jobs:
-  typecheck:
+  pip-audit:
     runs-on: "ubuntu-latest"
     steps:
     - uses: "actions/checkout@v4"
@@ -24,7 +24,8 @@ jobs:
         cache: "poetry"
     - name: "Install the project"
       run: "poetry install"
-    - name: "Type-check with mypy"
-      run: >
-        poetry run mypy . --strict
-        || (echo yes | poetry run mypy --install-types && poetry run mypy . --strict)
+    - name: "Set up Python location for pip-audit"
+      shell: "bash"
+      run: 'echo "PIPAPI_PYTHON_LOCATION=$(poetry env info -e)" >> $GITHUB_ENV'
+    - name: "Audit"
+      uses: "pypa/gh-action-pip-audit@v1.0.8"

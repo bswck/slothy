@@ -1,6 +1,11 @@
-# This file was generated from bswck/skeleton@c9a43b3.
+# This file was generated from bswck/skeleton@0.0.2rc-62-g52ffbf3.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/c9a43b3/project/.github/workflows/%23%25%20if%20tests%20%25%23test.yml%23%25%20endif%20%25%23.jinja
+# https://github.com/bswck/skeleton/tree/0.0.2rc-62-g52ffbf3/project/.github/workflows/%23%25%20if%20tests%20%25%23test.yml%23%25%20endif%20%25%23.jinja
+
+# IMPORTANT!
+# Pinned versions of actions and Poetry are managed in a different repository.
+# Do not submit PRs to this file unless for this repo specifically.
+# To change this workflow globally, submit a PR to https://github.com/bswck/skeleton.
 
 name: "Tests"
 
@@ -14,11 +19,12 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu", "macos", "windows"]
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "pypy3.8", "pypy3.9", "pypy3.10"]
+    timeout-minutes: 10
     steps:
     - uses: "actions/checkout@v4"
     - name: "Install Poetry"
-      run: "pipx install poetry"
+      run: "pipx install poetry==1.7.1"
     - name: "Set up Python ${{matrix.python-version}}"
       uses: "actions/setup-python@v5"
       with:
@@ -27,14 +33,18 @@ jobs:
     - name: "Install the project"
       run: "poetry install"
     - name: "Run tests"
+      env:
+        PY_COLORS: 1  # Thanks @zanieb!
       run: "poetry run coverage run -m pytest -v ."
     - name: "Report coverage"
       run: >
         poetry run coverage report
-        && poetry run coverage html --show-contexts
-        --title "lazy-imports coverage for ${{github.sha}} (measured on Python ${{matrix.python-version}})"
+        && poetry run coverage html
+        --title "lazy-imports coverage for ${{github.sha}}
+        (measured on Python ${{matrix.python-version}})"
     - name: "Store coverage html"
-      uses: "actions/upload-artifact@v3"
+      uses: "actions/upload-artifact@v4"
+      if: "${{matrix.python-version == '3.8' && matrix.os == 'ubuntu' && success()}}"
       with:
         name: "coverage-html"
         path: "htmlcov"

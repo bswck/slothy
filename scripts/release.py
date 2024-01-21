@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # (C) 2023–present Bartosz Sławecki (bswck)
 #
-# This file was generated from bswck/skeleton@c9a43b3.
+# This file was generated from bswck/skeleton@0.0.2rc-62-g52ffbf3.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/c9a43b3/project/scripts/release.py.jinja
+# https://github.com/bswck/skeleton/tree/0.0.2rc-62-g52ffbf3/project/scripts/release.py.jinja
 #
 """
 Automate the release process by updating local files, creating and pushing a new tag.
@@ -62,9 +62,7 @@ def _setup_logging() -> None:
 
 def _command(prompt: str, /) -> str:
     data = subprocess.check_output(prompt, shell=True, text=True)
-    if data[-1:] == "\n":
-        data = data[:-1]
-    return data
+    return data[:-(data[-1:] == "\n") or None]
 
 
 def _run(*prompt: str) -> None:

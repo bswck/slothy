@@ -1,6 +1,27 @@
+# This file was generated from bswck/skeleton@0.0.2rc-62-g52ffbf3.
+# Instead of changing this particular file, you might want to alter the template:
+# https://github.com/bswck/skeleton/tree/0.0.2rc-62-g52ffbf3/project/.github/dependabot.yml.jinja
+
 version: 2
 updates:
 - package-ecosystem: "gitsubmodule"
+  directory: "/"
+  schedule:
+    interval: "daily"
+- package-ecosystem: "github-actions"
+  directory: "/"
+  schedule:
+    interval: "daily"
+  ignore:
+  # Actions managed by https://github.com/bswck/skeleton
+  - dependency-name: "actions/checkout"
+  - dependency-name: "actions/setup-python"
+  - dependency-name: "pypa/gh-action-pypi-publish"
+  - dependency-name: "dawidd6/action-download-artifact"
+  - dependency-name: "pypa/gh-action-pip-audit"
+  - dependency-name: "actions/upload-artifact"
+  - dependency-name: "readthedocs/actions/preview"
+- package-ecosystem: "pip"
   directory: "/"
   schedule:
     interval: "daily"
