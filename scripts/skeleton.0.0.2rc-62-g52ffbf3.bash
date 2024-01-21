@@ -72,7 +72,7 @@ determine_project_path() {
 
 create_gh_env() {
     # Ensure that the GitHub environment exists
-    silent echo "$(jq -n '{"deployment_branch_policy": {"protected_branches": false,"custom_branch_policies": true}}' | gh api -H "Accept: application/vnd.github+json" -X PUT "/repos/bswck/lazy-imports/environments/$1" --input -)" || error 0 "Failed to ensure GitHub environment $BLUE$1$NC exists."
+    silent echo "$(jq -n '{"deployment_branch_policy": {"protected_branches": false,"custom_branch_policies": true}}' | gh api -H "Accept: application/vnd.github+json" -X PUT "/repos/bswck/lazy-importing/environments/$1" --input -)" || error 0 "Failed to ensure GitHub environment $BLUE$1$NC exists."
 }
 
 provision_gh_envs() {

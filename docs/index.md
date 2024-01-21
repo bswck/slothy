@@ -1,23 +1,23 @@
 
-# lazy-imports [![skeleton](https://img.shields.io/badge/0.0.2rc-62-g52ffbf3-skeleton?label=%F0%9F%92%80%20bswck/skeleton&labelColor=black&color=grey&link=https%3A//github.com/bswck/skeleton)](https://github.com/bswck/skeleton/tree/0.0.2rc-62-g52ffbf3) [![Supported Python versions](https://img.shields.io/pypi/pyversions/lazy-imports.svg?logo=python&label=Python)](https://pypi.org/project/lazy-imports/) [![Package version](https://img.shields.io/pypi/v/lazy-imports?label=PyPI)](https://pypi.org/project/lazy-imports/)
+# lazy-importing [![skeleton](https://img.shields.io/badge/0.0.2rc-62-g52ffbf3-skeleton?label=%F0%9F%92%80%20bswck/skeleton&labelColor=black&color=grey&link=https%3A//github.com/bswck/skeleton)](https://github.com/bswck/skeleton/tree/0.0.2rc-62-g52ffbf3) [![Supported Python versions](https://img.shields.io/pypi/pyversions/lazy-importing.svg?logo=python&label=Python)](https://pypi.org/project/lazy-importing/) [![Package version](https://img.shields.io/pypi/v/lazy-importing?label=PyPI)](https://pypi.org/project/lazy-importing/)
 
-[![Tests](https://github.com/bswck/lazy-imports/actions/workflows/test.yml/badge.svg)](https://github.com/bswck/lazy-imports/actions/workflows/test.yml)
-[![Coverage](https://coverage-badge.samuelcolvin.workers.dev/bswck/lazy-imports.svg)](https://coverage-badge.samuelcolvin.workers.dev/redirect/bswck/lazy-imports)
-[![Documentation Status](https://readthedocs.org/projects/lazy-imports/badge/?version=latest)](https://lazy-imports.readthedocs.io/en/latest/?badge=latest)
+[![Tests](https://github.com/bswck/lazy-importing/actions/workflows/test.yml/badge.svg)](https://github.com/bswck/lazy-importing/actions/workflows/test.yml)
+[![Coverage](https://coverage-badge.samuelcolvin.workers.dev/bswck/lazy-importing.svg)](https://coverage-badge.samuelcolvin.workers.dev/redirect/bswck/lazy-importing)
+[![Documentation Status](https://readthedocs.org/projects/lazy-importing/badge/?version=latest)](https://lazy-importing.readthedocs.io/en/latest/?badge=latest)
 
-Convenient lazy imports for Python.
+Convenient lazy importing in Python.
 
 # Installation
 You might simply install it with pip:
 
 ```shell
-pip install lazy-imports
+pip install lazy-importing
 ```
 
 If you use [Poetry](https://python-poetry.org/), then you might want to run:
 
 ```shell
-poetry add lazy-imports
+poetry add lazy-importing
 ```
 
 ## For contributors
@@ -31,7 +31,7 @@ https://github.com/bswck/skeleton/tree/0.0.2rc-62-g52ffbf3/fragments/readme.md
 -->
 !!! Note
     If you use Windows, it is highly recommended to complete the installation in the way presented below through [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install).
-1.  Fork the [lazy-imports repository](https://github.com/bswck/lazy-imports) on GitHub.
+1.  Fork the [lazy-importing repository](https://github.com/bswck/lazy-importing) on GitHub.
 
 1.  [Install Poetry](https://python-poetry.org/docs/#installation).<br/>
     Poetry is an amazing tool for managing dependencies & virtual environments, building packages and publishing them.
@@ -52,8 +52,8 @@ https://github.com/bswck/skeleton/tree/0.0.2rc-62-g52ffbf3/fragments/readme.md
 1.  Clone your fork locally and install dependencies.
 
     ```shell
-    git clone https://github.com/your-username/lazy-imports path/to/lazy-imports
-    cd path/to/lazy-imports
+    git clone https://github.com/your-username/lazy-importing path/to/lazy-importing
+    cd path/to/lazy-importing
     poetry env use $(cat .python-version)
     poetry install
     ```
@@ -65,9 +65,9 @@ https://github.com/bswck/skeleton/tree/0.0.2rc-62-g52ffbf3/fragments/readme.md
     pre-commit install
     ```
 
-For more information on how to contribute, check out [CONTRIBUTING.md](https://github.com/bswck/lazy-imports/blob/HEAD/CONTRIBUTING.md).<br/>
+For more information on how to contribute, check out [CONTRIBUTING.md](https://github.com/bswck/lazy-importing/blob/HEAD/CONTRIBUTING.md).<br/>
 Always happy to accept contributions! ❤️
 
 # Legal info
 © Copyright by Bartosz Sławecki ([@bswck](https://github.com/bswck)).
-<br />This software is licensed under the terms of [MIT License](https://github.com/bswck/lazy-imports/blob/HEAD/LICENSE).
+<br />This software is licensed under the terms of [MIT License](https://github.com/bswck/lazy-importing/blob/HEAD/LICENSE).

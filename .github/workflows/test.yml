@@ -40,7 +40,7 @@ jobs:
       run: >
         poetry run coverage report
         && poetry run coverage html
-        --title "lazy-imports coverage for ${{github.sha}}
+        --title "lazy-importing coverage for ${{github.sha}}
         (measured on Python ${{matrix.python-version}})"
     - name: "Store coverage html"
       uses: "actions/upload-artifact@v4"

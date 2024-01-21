@@ -2,13 +2,13 @@
 # Instead of changing this particular file, you might want to alter the template:
 # https://github.com/bswck/skeleton/tree/0.0.2rc-62-g52ffbf3/project/%23%25%20if%20docs%20%25%23mkdocs.yml%23%25%20endif%20%25%23.jinja
 
-site_name: "lazy-imports"
-site_description: "Convenient lazy imports for Python."
-site_url: "https://lazy-imports.readthedocs.io/en/latest/"
-repo_url: "https://github.com/bswck/lazy-imports"
-repo: "bswck/lazy-imports"
+site_name: "lazy-importing"
+site_description: "Convenient lazy importing in Python."
+site_url: "https://lazy-importing.readthedocs.io/en/latest/"
+repo_url: "https://github.com/bswck/lazy-importing"
+repo: "bswck/lazy-importing"
 watch:
-- "lazy_imports"
+- "lazy_importing"
 
 nav:
 - "Overview": "index.md"
@@ -67,6 +67,6 @@ plugins:
           docstring_style: "numpy"
           members_order: "source"
           show_signature_annotations: true
-        paths: ["lazy_imports/"]
+        paths: ["lazy_importing/"]
         import:
         - "https://docs.python.org/3/objects.inv"

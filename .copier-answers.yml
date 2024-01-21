@@ -3,19 +3,19 @@ _src_path: gh:bswck/skeleton
 author: bswck
 cli: false
 copyright: Bartosz Sławecki
-description: Convenient lazy imports for Python.
+description: Convenient lazy importing in Python.
 docs: true
 email: bswck.dev@gmail.com
 github: bswck
 license: MIT
-package: lazy_imports
+package: lazy_importing
 precommit: true
 pypi: true
-pypi_description: Convenient lazy imports for Python.
-pypi_project_name: lazy-imports
+pypi_description: Convenient lazy importing in Python.
+pypi_project_name: lazy-importing
 pypy: true
 python: '3.8'
-repo: lazy-imports
-rtd: lazy-imports
+repo: lazy-importing
+rtd: lazy-importing
 tests: true
 visibility: public
