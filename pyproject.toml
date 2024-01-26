@@ -1,6 +1,6 @@
-# This file was generated from bswck/skeleton@0.0.2rc-62-g52ffbf3.
+# This file was generated from bswck/skeleton@0.0.2rc-116-gaf71a4b.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/0.0.2rc-62-g52ffbf3/project/pyproject.toml.jinja
+# https://github.com/bswck/skeleton/tree/0.0.2rc-116-gaf71a4b/project/pyproject.toml.jinja
 
 [tool.poetry]
 name = "lazy-importing"
@@ -24,14 +24,16 @@ python = ">=3.8,<3.13"
 [tool.poetry.group.dev.dependencies]
 
 [tool.poetry.group.dev-skeleton.dependencies]
-# This dependency group was generated from bswck/skeleton@0.0.2rc-62-g52ffbf3.
+# This dependency group was generated from bswck/skeleton@0.0.2rc-116-gaf71a4b.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/0.0.2rc-62-g52ffbf3/pyproject.toml
+# https://github.com/bswck/skeleton/tree/0.0.2rc-116-gaf71a4b/pyproject.toml
 mypy = "^1.7.0"
 ruff = "^0.1.12"
 towncrier = "^23.11.0"
-pytest = "^7.4.3"
 coverage = "^7.4.0"
+pytest = "^7.4.3"
+pytest-doctestplus = "^1.1.0"
+covdefaults = "^2.3.0"
 poethepoet = "^0.24.3"
 pre-commit = "^3.5.0"
 smokeshow = "^0.4.0"
@@ -51,7 +53,7 @@ mkdocstrings = { version = ">=0.19.0", extras = ["python"] }
 [tool.poe.tasks]
 test = "pytest -v"
 lint = "ruff check ."
-skeleton = "scripts/skeleton.0.0.2rc-62-g52ffbf3.bash"
+skeleton = "scripts/skeleton.0.0.2rc-116-gaf71a4b.bash"
 check = [
     { ref="test" },
     { ref="lint" },
@@ -123,7 +125,7 @@ strict = true
 profile = "black"
 
 [tool.towncrier]
-directory = "changes"
+directory = "news"
 package = "lazy_importing"
 filename = "CHANGELOG.md"
 start_string = "<!-- insertion marker -->\n"
@@ -162,17 +164,12 @@ name = "Fixed"
 showcontent = true
 
 [tool.coverage.run]
+plugins = ["covdefaults"]
 source = ["lazy_importing/"]
+relative_files = true
 
 [tool.coverage.report]
-exclude_also = [
-    # Be sure to include lines that are not meant to be covered
-    # by tests or encountered by the users at runtime.
-    "raise NotImplementedError",          # Do not cover abstract methods.
-    "if ((t|typing)\\.?)?TYPE_CHECKING:", # Do not cover type checking imports.
-    "@((t|typing)\\.?)?overload",         # Do not cover overload definitions.
-    "\\(((t|typing)\\.?)?Protocol\\):$",  # Do not cover entire protocol definitions.
-]
+fail_under = 90
 
 [build-system]
 requires = ["poetry-core"]

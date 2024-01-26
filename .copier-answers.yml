@@ -1,4 +1,4 @@
-_commit: 0.0.2rc-62-g52ffbf3
+_commit: 0.0.2rc-116-gaf71a4b
 _src_path: gh:bswck/skeleton
 author: bswck
 cli: false
@@ -19,3 +19,4 @@ repo: lazy-importing
 rtd: lazy-importing
 tests: true
 visibility: public
+wip: true

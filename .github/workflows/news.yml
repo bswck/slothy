@@ -1,0 +1,35 @@
+# This file was generated from bswck/skeleton@0.0.2rc-116-gaf71a4b.
+# Instead of changing this particular file, you might want to alter the template:
+# https://github.com/bswck/skeleton/tree/0.0.2rc-116-gaf71a4b/project/.github/workflows/news.yml.jinja
+
+# IMPORTANT!
+# Pinned versions of actions and Poetry are managed in a different repository.
+# Do not submit PRs to this file unless for this repo specifically.
+# To change this workflow globally, submit a PR to https://github.com/bswck/skeleton.
+
+name: "Check news entry"
+
+on:
+  pull_request:
+    types:
+    - "labeled"
+    - "unlabeled"
+    - "opened"
+    - "reopened"
+    - "synchronize"
+
+jobs:
+  check-news-entry:
+    runs-on: "ubuntu-latest"
+
+    steps:
+    - uses: "actions/checkout@v4"
+      with:
+        # `towncrier check` runs `git diff --name-only origin/main...`, which
+        # needs a non-shallow clone.
+        fetch-depth: 0
+
+    - name: "Check news entry"
+      if: "!contains(github.event.pull_request.labels.*.name, 'skip news')"
+      run: |
+        pipx run towncrier check --compare-with origin/${{ github.base_ref }}

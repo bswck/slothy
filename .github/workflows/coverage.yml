@@ -1,6 +1,6 @@
-# This file was generated from bswck/skeleton@0.0.2rc-62-g52ffbf3.
+# This file was generated from bswck/skeleton@0.0.2rc-116-gaf71a4b.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/0.0.2rc-62-g52ffbf3/project/.github/workflows/%23%25%20if%20tests%20and%20public%20%25%23coverage.yml%23%25%20endif%20%25%23.jinja
+# https://github.com/bswck/skeleton/tree/0.0.2rc-116-gaf71a4b/project/.github/workflows/%23%25%20if%20tests%20and%20public%20%25%23coverage.yml%23%25%20endif%20%25%23.jinja
 
 # IMPORTANT!
 # Pinned versions of actions and Poetry are managed in a different repository.
@@ -19,22 +19,88 @@ permissions:
   statuses: "write"
 
 jobs:
-  smokeshow:
+  combine:
+    if: "${{github.event.workflow_run.conclusion == 'success'}}"
+    runs-on: "ubuntu-latest"
+    steps:
+    - uses: "actions/checkout@v4"
+    - name: "Install Poetry"
+      run: "pipx install poetry==1.7.1"
+    - name: "Set up Python"
+      uses: "actions/setup-python@v5"
+      with:
+        cache: "poetry"
+    - name: "Install the project"
+      run: "poetry install --only=dev,dev-skeleton"
+    - run: "gh run download ${{github.event.workflow_run.id}} --dir .covfiles/"
+      env:
+        GH_TOKEN: "${{github.token}}"
+    - run: "poetry run coverage combine --append .covfiles/*"
+    - name: "Upload coverage data file"
+      uses: "actions/upload-artifact@v4"
+      with:
+        name: "coverage"
+        path: ".coverage"
+    - run: "poetry run coverage xml --fail-under=0"
+    - name: "Upload coverage XML report"
+      uses: "actions/upload-artifact@v4"
+      with:
+        name: "coverage-xml"
+        path: "coverage.xml"
+    - run: >
+        poetry run coverage html
+        --fail-under=0
+        --directory=.covhtml/
+        --show-contexts
+        --title "lazy-importing coverage for ${{github.sha}}"
+    - name: "Upload coverage HTML report"
+      uses: "actions/upload-artifact@v4"
+      with:
+        name: "coverage-html"
+        path: ".covhtml/"
+
+  codecov:
+    needs: "combine"
+    if: "${{github.event.workflow_run.pull_requests[0]}}"
     runs-on: "ubuntu-latest"
     environment: "Upload Coverage"
     steps:
+    - uses: "actions/checkout@v4"
+    - uses: "actions/download-artifact@v4"
+      with:
+        name: "coverage-xml"
+        merge-multiple: true
+    - name: "Upload coverage reports to Codecov"
+      uses: "codecov/codecov-action@v3"
+      with:
+        files: "coverage.xml"
+      env:
+        CODECOV_TOKEN: "${{secrets.CODECOV_TOKEN}}"
+
+  smokeshow:
+    needs: "combine"
+    if: "${{github.event.workflow_run.head_branch == 'main'}}"
+    runs-on: "ubuntu-latest"
+    environment: "Upload Coverage"
+    steps:
+    - uses: "actions/checkout@v4"
+    - name: "Install Poetry"
+      run: "pipx install poetry==1.7.1"
     - uses: "actions/setup-python@v5"
       with:
-        python-version: "3.8"
-    - run: "pip install smokeshow"
-    - uses: "dawidd6/action-download-artifact@v3"
+        cache: "poetry"
+    - name: "Install the project"
+      run: "poetry install --only=dev,dev-skeleton"
+    - name: "Download coverage reports"
+      uses: "actions/download-artifact@v4"
       with:
-        workflow: "test.yml"
-        commit: "${{github.event.workflow_run.head_sha}}"
-    - run: "smokeshow upload coverage-html"
+        name: "coverage-html"
+        path: ".covhtml/"
+        merge-multiple: true
+    - run: "poetry run smokeshow upload .covhtml/"
       env:
         SMOKESHOW_GITHUB_STATUS_DESCRIPTION: "Coverage {coverage-percentage}"
-        SMOKESHOW_GITHUB_COVERAGE_THRESHOLD: 91
+        SMOKESHOW_GITHUB_COVERAGE_THRESHOLD: 90
         SMOKESHOW_GITHUB_CONTEXT: "coverage"
         SMOKESHOW_GITHUB_TOKEN: "${{secrets.GITHUB_TOKEN}}"
         SMOKESHOW_GITHUB_PR_HEAD_SHA: "${{github.event.workflow_run.head_sha}}"

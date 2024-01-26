@@ -1,5 +1,5 @@
-# This file was generated from bswck/skeleton@0.0.2rc-62-g52ffbf3.
+# This file was generated from bswck/skeleton@0.0.2rc-116-gaf71a4b.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/0.0.2rc-62-g52ffbf3/project/.github/%23%25%20if%20author%20%3D%3D%20%22bswck%22%20%25%23FUNDING.yml%23%25%20endif%20%25%23.jinja
+# https://github.com/bswck/skeleton/tree/0.0.2rc-116-gaf71a4b/project/.github/%23%25%20if%20author%20%3D%3D%20%22bswck%22%20%25%23FUNDING.yml%23%25%20endif%20%25%23.jinja
 
 github: "bswck"

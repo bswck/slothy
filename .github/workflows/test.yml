@@ -1,6 +1,6 @@
-# This file was generated from bswck/skeleton@0.0.2rc-62-g52ffbf3.
+# This file was generated from bswck/skeleton@0.0.2rc-116-gaf71a4b.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/0.0.2rc-62-g52ffbf3/project/.github/workflows/%23%25%20if%20tests%20%25%23test.yml%23%25%20endif%20%25%23.jinja
+# https://github.com/bswck/skeleton/tree/0.0.2rc-116-gaf71a4b/project/.github/workflows/%23%25%20if%20tests%20%25%23test.yml%23%25%20endif%20%25%23.jinja
 
 # IMPORTANT!
 # Pinned versions of actions and Poetry are managed in a different repository.
@@ -20,6 +20,8 @@ jobs:
       matrix:
         os: ["ubuntu", "macos", "windows"]
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "pypy3.8", "pypy3.9", "pypy3.10"]
+    env:
+      context: "${{matrix.python-version}}-${{matrix.os}}"
     timeout-minutes: 10
     steps:
     - uses: "actions/checkout@v4"
@@ -35,16 +37,16 @@ jobs:
     - name: "Run tests"
       env:
         PY_COLORS: 1  # Thanks @zanieb!
-      run: "poetry run coverage run -m pytest -v ."
-    - name: "Report coverage"
       run: >
-        poetry run coverage report
-        && poetry run coverage html
-        --title "lazy-importing coverage for ${{github.sha}}
-        (measured on Python ${{matrix.python-version}})"
-    - name: "Store coverage html"
+        poetry run coverage run
+        --context=${{env.context}}
+        -m pytest --doctest-only -v .
+    - name: "Show coverage report"
+      run: "poetry run coverage report --show-missing"
+    - run: "mv .coverage .coverage.${{env.context}}"
+    - name: "Upload coverage data file artifact"
       uses: "actions/upload-artifact@v4"
-      if: "${{matrix.python-version == '3.8' && matrix.os == 'ubuntu' && success()}}"
       with:
-        name: "coverage-html"
-        path: "htmlcov"
+        name: "coverage-${{env.context}}"
+        path: ".coverage.${{env.context}}"
+        overwrite: true
