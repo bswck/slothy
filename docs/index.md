@@ -1,15 +1,15 @@
 
-# lazy-importing [![skeleton](https://img.shields.io/badge/0.0.2rc–116–gaf71a4b-skeleton?label=%F0%9F%92%80%20bswck/skeleton&labelColor=black&color=grey&link=https%3A//github.com/bswck/skeleton)](https://github.com/bswck/skeleton/tree/0.0.2rc-116-gaf71a4b) [![Supported Python versions](https://img.shields.io/pypi/pyversions/lazy-importing.svg?logo=python&label=Python)](https://pypi.org/project/lazy-importing/) [![Package version](https://img.shields.io/pypi/v/lazy-importing?label=PyPI)](https://pypi.org/project/lazy-importing/)
+# <div align="center">lazy-importing<br>[![skeleton](https://img.shields.io/badge/0.0.2rc–219–g781ce0c-skeleton?label=%F0%9F%92%80%20bswck/skeleton&labelColor=black&color=grey&link=https%3A//github.com/bswck/skeleton)](https://github.com/bswck/skeleton/tree/0.0.2rc-219-g781ce0c) [![Supported Python versions](https://img.shields.io/pypi/pyversions/lazy-importing.svg?logo=python&label=Python)](https://pypi.org/project/lazy-importing/) [![Package version](https://img.shields.io/pypi/v/lazy-importing?label=PyPI)](https://pypi.org/project/lazy-importing/)</div>
 
 [![Tests](https://github.com/bswck/lazy-importing/actions/workflows/test.yml/badge.svg)](https://github.com/bswck/lazy-importing/actions/workflows/test.yml)
 [![Coverage](https://coverage-badge.samuelcolvin.workers.dev/bswck/lazy-importing.svg)](https://coverage-badge.samuelcolvin.workers.dev/redirect/bswck/lazy-importing)
 [![Documentation Status](https://readthedocs.org/projects/lazy-importing/badge/?version=latest)](https://lazy-importing.readthedocs.io/en/latest/?badge=latest)
 
-
 !!! warning
     **Work in Progress**. 🚧
 
-    Hit the `👁 Watch` button to know when this project is ready to be tried out!
+    [Hit the `👁 Watch` button on GitHub](https://github.com/bswck/lazy-importing) to know when this project is ready to be tried out!
+
 
 Convenient lazy importing in Python.
 
@@ -26,14 +26,14 @@ If you use [Poetry](https://python-poetry.org/), then you might want to run:
 poetry add lazy-importing
 ```
 
-## For contributors
+## For Contributors
 [![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 <!--
-This section was generated from bswck/skeleton@0.0.2rc-116-gaf71a4b.
+This section was generated from bswck/skeleton@0.0.2rc-219-g781ce0c.
 Instead of changing this particular file, you might want to alter the template:
-https://github.com/bswck/skeleton/tree/0.0.2rc-116-gaf71a4b/fragments/readme.md
+https://github.com/bswck/skeleton/tree/0.0.2rc-219-g781ce0c/fragments/readme.md
 -->
 !!! Note
     If you use Windows, it is highly recommended to complete the installation in the way presented below through [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install).
@@ -74,6 +74,6 @@ https://github.com/bswck/skeleton/tree/0.0.2rc-116-gaf71a4b/fragments/readme.md
 For more information on how to contribute, check out [CONTRIBUTING.md](https://github.com/bswck/lazy-importing/blob/HEAD/CONTRIBUTING.md).<br/>
 Always happy to accept contributions! ❤️
 
-# Legal info
+# Legal Info
 © Copyright by Bartosz Sławecki ([@bswck](https://github.com/bswck)).
 <br />This software is licensed under the terms of [MIT License](https://github.com/bswck/lazy-importing/blob/HEAD/LICENSE).

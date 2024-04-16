@@ -1,6 +1,6 @@
-# This file was generated from bswck/skeleton@0.0.2rc-116-gaf71a4b.
+# This file was generated from bswck/skeleton@0.0.2rc-219-g781ce0c.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/0.0.2rc-116-gaf71a4b/project/%23%25%20if%20precommit%20%25%23.pre-commit-config.yaml%23%25%20endif%20%25%23.jinja
+# https://github.com/bswck/skeleton/tree/0.0.2rc-219-g781ce0c/project/%23%25%20if%20precommit%20%25%23.pre-commit-config.yaml%23%25%20endif%20%25%23.jinja
 
 default_install_hook_types:
 - "pre-commit"
@@ -8,7 +8,7 @@ default_install_hook_types:
 
 repos:
 - repo: "https://github.com/astral-sh/ruff-pre-commit"
-  rev: "v0.1.14"
+  rev: "v0.3.4"
   hooks:
   - id: "ruff"
     name: "Run the Ruff linter"
@@ -25,7 +25,7 @@ repos:
     name: "Check for merge conflicts"
     stages: ["push"]
 - repo: "https://github.com/python-poetry/poetry"
-  rev: "1.7.1"
+  rev: "1.8.2"
   hooks:
   - id: "poetry-lock"
     stages: ["push"]

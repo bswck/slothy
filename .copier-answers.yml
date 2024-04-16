@@ -1,4 +1,4 @@
-_commit: 0.0.2rc-116-gaf71a4b
+_commit: 0.0.2rc-219-g781ce0c
 _src_path: gh:bswck/skeleton
 author: bswck
 cli: false
@@ -12,11 +12,13 @@ package: lazy_importing
 precommit: true
 pypi: true
 pypi_description: Convenient lazy importing in Python.
-pypi_project_name: lazy-importing
+pypi_project: lazy-importing
 pypy: true
 python: '3.8'
+python_until: '3.13'
 repo: lazy-importing
 rtd: lazy-importing
 tests: true
+tidelift: false
 visibility: public
 wip: true

@@ -1,6 +1,6 @@
-# This file was generated from bswck/skeleton@0.0.2rc-116-gaf71a4b.
+# This file was generated from bswck/skeleton@0.0.2rc-219-g781ce0c.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/0.0.2rc-116-gaf71a4b/project/.github/workflows/%23%25%20if%20tests%20%25%23test.yml%23%25%20endif%20%25%23.jinja
+# https://github.com/bswck/skeleton/tree/0.0.2rc-219-g781ce0c/project/.github/workflows/%23%25%20if%20tests%20%25%23test.yml%23%25%20endif%20%25%23.jinja
 
 # IMPORTANT!
 # Pinned versions of actions and Poetry are managed in a different repository.
@@ -13,24 +13,39 @@ on: ["push"]
 
 jobs:
   test:
-    runs-on: "${{matrix.os}}-latest"
+    runs-on: "${{matrix.platform}}-latest"
     environment: "Test"
     strategy:
       fail-fast: false
+      # https://blog.jaraco.com/efficient-use-of-ci-resources/
       matrix:
-        os: ["ubuntu", "macos", "windows"]
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "pypy3.8", "pypy3.9", "pypy3.10"]
+        python:
+        - "3.8"
+        - "3.12"
+        platform:
+        - "ubuntu"
+        - "macos"
+        - "windows"
+        include:
+        - python: "3.9"
+          platform: "ubuntu"
+        - python: "3.10"
+          platform: "ubuntu"
+        - python: "3.11"
+          platform: "ubuntu"
+        - python: "pypy3.10"
+          platform: "ubuntu"
     env:
-      context: "${{matrix.python-version}}-${{matrix.os}}"
+      context: "${{matrix.python}}-${{matrix.platform}}"
     timeout-minutes: 10
     steps:
     - uses: "actions/checkout@v4"
     - name: "Install Poetry"
-      run: "pipx install poetry==1.7.1"
-    - name: "Set up Python ${{matrix.python-version}}"
+      run: "pipx install poetry==1.8.2"
+    - name: "Set up Python ${{matrix.python}}"
       uses: "actions/setup-python@v5"
       with:
-        python-version: "${{matrix.python-version}}"
+        python-version: "${{matrix.python}}"
         cache: "poetry"
     - name: "Install the project"
       run: "poetry install"
@@ -42,7 +57,7 @@ jobs:
         --context=${{env.context}}
         -m pytest --doctest-only -v .
     - name: "Show coverage report"
-      run: "poetry run coverage report --show-missing"
+      run: "poetry run coverage report --show-missing --fail-under=0"
     - run: "mv .coverage .coverage.${{env.context}}"
     - name: "Upload coverage data file artifact"
       uses: "actions/upload-artifact@v4"

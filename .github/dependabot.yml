@@ -1,6 +1,6 @@
-# This file was generated from bswck/skeleton@0.0.2rc-116-gaf71a4b.
+# This file was generated from bswck/skeleton@0.0.2rc-219-g781ce0c.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/0.0.2rc-116-gaf71a4b/project/.github/dependabot.yml.jinja
+# https://github.com/bswck/skeleton/tree/0.0.2rc-219-g781ce0c/project/.github/dependabot.yml.jinja
 
 version: 2
 updates:
@@ -8,6 +8,9 @@ updates:
   directory: "/"
   schedule:
     interval: "daily"
+  groups:
+    submodules:
+      dependency-type: "production"
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
@@ -22,7 +25,30 @@ updates:
   - dependency-name: "actions/download-artifact"
   - dependency-name: "actions/upload-artifact"
   - dependency-name: "readthedocs/actions/preview"
+  groups:
+    actions:
+      dependency-type: "development"
 - package-ecosystem: "pip"
   directory: "/"
   schedule:
     interval: "daily"
+  groups:
+    main:
+      dependency-type: "production"
+  ignore:
+  # Dependencies managed by https://github.com/bswck/skeleton
+  - dependency-name: "mypy"
+  - dependency-name: "ruff"
+  - dependency-name: "towncrier"
+  - dependency-name: "coverage"
+  - dependency-name: "pytest"
+  - dependency-name: "pytest-doctestplus"
+  - dependency-name: "pytest-sugar"
+  - dependency-name: "covdefaults"
+  - dependency-name: "poethepoet"
+  - dependency-name: "pre-commit"
+  - dependency-name: "smokeshow"
+  - dependency-name: "keyring"
+  - dependency-name: "markdown-exec"
+  - dependency-name: "mkdocs-material"
+  - dependency-name: "mkdocstrings"

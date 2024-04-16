@@ -1,12 +1,11 @@
-# This file was generated from bswck/skeleton@0.0.2rc-116-gaf71a4b.
+# This file was generated from bswck/skeleton@0.0.2rc-219-g781ce0c.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/0.0.2rc-116-gaf71a4b/project/%23%25%20if%20docs%20%25%23mkdocs.yml%23%25%20endif%20%25%23.jinja
+# https://github.com/bswck/skeleton/tree/0.0.2rc-219-g781ce0c/project/%23%25%20if%20docs%20%25%23mkdocs.yml%23%25%20endif%20%25%23.jinja
 
 site_name: "lazy-importing"
 site_description: "Convenient lazy importing in Python."
 site_url: "https://lazy-importing.readthedocs.io/en/latest/"
 repo_url: "https://github.com/bswck/lazy-importing"
-repo: "bswck/lazy-importing"
 watch:
 - "lazy_importing"
 
@@ -14,6 +13,7 @@ nav:
 - "Overview": "index.md"
 - "API Reference": "api.md"
 - "Contributing": "contributing.md"
+- "Code of Conduct": "code_of_conduct.md"
 - "Changelog": "changelog.md"
 
 theme:
@@ -23,24 +23,24 @@ theme:
   - "navigation.top"
   - "navigation.tracking"
   palette:
-  - media: "(prefers-color-scheme)"
-    toggle:
-      icon: "material/brightness-auto"
-      name: "Switch to light mode"
   - media: "(prefers-color-scheme: light)"
     scheme: "default"
     primary: "teal"
     accent: "purple"
     toggle:
-      icon: "material/weather-sunny"
+      icon: "material/weather-night"
       name: "Switch to dark mode"
   - media: "(prefers-color-scheme: dark)"
     scheme: "slate"
     primary: "black"
     accent: "lime"
     toggle:
-      icon: "material/weather-night"
+      icon: "material/brightness-auto"
       name: "Switch to system preference"
+  - media: "(prefers-color-scheme)"
+    toggle:
+      icon: "material/weather-sunny"
+      name: "Switch to light mode"
 
 extra_css:
 - "css/mkdocstrings.css"

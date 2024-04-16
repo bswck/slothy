@@ -1,6 +1,6 @@
-# This file was generated from bswck/skeleton@0.0.2rc-116-gaf71a4b.
+# This file was generated from bswck/skeleton@0.0.2rc-219-g781ce0c.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/0.0.2rc-116-gaf71a4b/project/.github/workflows/audit.yml.jinja
+# https://github.com/bswck/skeleton/tree/0.0.2rc-219-g781ce0c/project/.github/workflows/audit.yml.jinja
 
 # IMPORTANT!
 # Pinned versions of actions and Poetry are managed in a different repository.
@@ -17,7 +17,7 @@ jobs:
     steps:
     - uses: "actions/checkout@v4"
     - name: "Install Poetry"
-      run: "pipx install poetry==1.7.1"
+      run: "pipx install poetry==1.8.2"
     - name: "Set up Python 3.8"
       uses: "actions/setup-python@v5"
       with:
