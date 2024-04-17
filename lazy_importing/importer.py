@@ -50,16 +50,6 @@ class LazilyLoadedObject:
         return getattr(self.module, self.identifier)
 
 
-def _is_dunder(name: str) -> bool:
-    return (
-        len(name) > 4  # noqa: PLR2004
-        # and name.isidentifier() -- used internally, so we don't need to check
-        and name.startswith("__")
-        and name[2] != "_"
-        and name.endswith("__")
-    )
-
-
 class LazyModuleWrapper(types.ModuleType):
     """A subclass of the module type which triggers loading upon attribute access."""
 
@@ -68,16 +58,17 @@ class LazyModuleWrapper(types.ModuleType):
 
     def __getattribute__(self, attr: str) -> Any:
         """Trigger the load of the module and return the attribute."""
-        if _is_dunder(attr):
-            return super().__getattribute__(attr)
-        context = self.__context__
-        if context.get(lazy_loading):
-            return LazilyLoadedObject(self, attr, context)
-        self.__class__ = self.__lazy_module_class__  # type: ignore[assignment]
         try:
-            return self.__getattribute__(attr)
-        finally:
-            self.__class__ = LazyModuleWrapper
+            return object.__getattribute__(self, attr)
+        except AttributeError:
+            context = self.__context__
+            if context.get(lazy_loading):
+                return LazilyLoadedObject(self, attr, context)
+            self.__class__ = self.__lazy_module_class__  # type: ignore[assignment]
+            try:
+                return self.__getattribute__(attr)
+            finally:
+                self.__class__ = LazyModuleWrapper
 
     def __delattr__(self, attr: str) -> None:
         """Trigger the load and then perform the deletion."""
