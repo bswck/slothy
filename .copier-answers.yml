@@ -5,7 +5,7 @@ cli: false
 copyright: Bartosz Sławecki
 description: Convenient lazy importing in Python.
 docs: true
-email: bswck.dev@gmail.com
+email: bartoszpiotrslawecki@gmail.com
 github: bswck
 license: MIT
 package: lazy_importing
@@ -15,7 +15,7 @@ pypi_description: Convenient lazy importing in Python.
 pypi_project: lazy-importing
 pypy: true
 python: '3.8'
-python_until: '3.13'
+python_until: ''
 repo: lazy-importing
 rtd: lazy-importing
 tests: true

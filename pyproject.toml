@@ -6,7 +6,7 @@
 name = "lazy-importing"
 version = "0.0.0"
 description = "Convenient lazy importing in Python."
-authors = ["bswck <bswck.dev@gmail.com>"]
+authors = ["bswck <bartoszpiotrslawecki@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 packages = [{ include = "lazy_importing/" }]
@@ -19,7 +19,7 @@ Distribution = "https://pypi.org/project/lazy-importing/"
 Coverage = "https://coverage-badge.samuelcolvin.workers.dev/redirect/bswck/lazy-importing"
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.13"
+python = ">=3.8"
 
 [tool.poetry.group.dev.dependencies]
 
