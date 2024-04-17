@@ -52,8 +52,7 @@ class LazyImporting:
     ) -> None:
         """Initialize a new LazyImporting instance."""
         self._context = copy_context()
-        self._frame = frame = getframe(stack_offset)
-        self._namespace = namespace or frame.f_locals
+        self._namespace = namespace or getframe(stack_offset).f_locals
         self._lazy_importer = self._context.run(LazyImporter, self._context, meta_path)
 
     def _cleanup_identifiers(self) -> None:
