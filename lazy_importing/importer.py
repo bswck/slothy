@@ -124,11 +124,11 @@ class LazyImporter(MetaPathFinder):
     def acquire_meta_path(self) -> None:
         """Delegate processing all import finder requests into the lazy importer."""
         self._lock.acquire()
-        sys.meta_path[:] = [self]
+        sys.meta_path = [self]
 
     def release_meta_path(self) -> None:
         """Remove lazy importer from meta path."""
-        sys.meta_path[:] = self._old_meta_path
+        sys.meta_path = self._old_meta_path
         self._lock.release()
 
     def find_spec(
@@ -138,12 +138,12 @@ class LazyImporter(MetaPathFinder):
         target: types.ModuleType | None = None,
     ) -> ModuleSpec | None:
         """Find the actual spec and preserve it for loading it lazily later."""
-        self.release_meta_path()
+        sys.meta_path = self._old_meta_path
         spec: ModuleSpec | None = None
         try:
             spec = _find_spec(fullname, path, target)
         finally:
-            self.acquire_meta_path()
+            sys.meta_path = [self]
         if spec is None or (loader := spec.loader) is None:
             return None
         lazy_loader = LazyLoaderWrapper(loader, self._context)
