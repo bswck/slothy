@@ -13,10 +13,10 @@ if TYPE_CHECKING:
     R = TypeVar("R")
 
 
-__all__ = ("accesses_lazy_objects",)
+__all__ = ("supports_lazy_access",)
 
 
-def accesses_lazy_objects(f: Callable[P, R]) -> Callable[P, R]:
+def supports_lazy_access(f: Callable[P, R]) -> Callable[P, R]:
     """
     Decorate a function for CPython 3.8 and 3.9 compatibility with lazy importing.
 
