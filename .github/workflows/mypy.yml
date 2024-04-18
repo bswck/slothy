@@ -1,11 +1,11 @@
-# This file was generated from bswck/skeleton@0.0.2rc-219-g781ce0c.
+# This file was generated from skeleton-ci/skeleton-python@0.0.2rc-219-g781ce0c.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/0.0.2rc-219-g781ce0c/project/.github/workflows/mypy.yml.jinja
+# https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-219-g781ce0c/project/.github/workflows/mypy.yml.jinja
 
 # IMPORTANT!
 # Pinned versions of actions and Poetry are managed in a different repository.
 # Do not submit PRs to this file unless for this repo specifically.
-# To change this workflow globally, submit a PR to https://github.com/bswck/skeleton.
+# To change this workflow globally, submit a PR to https://github.com/skeleton-ci/skeleton-python.
 
 name: "Mypy"
 

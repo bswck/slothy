@@ -1,6 +1,6 @@
-# This file was generated from bswck/skeleton@0.0.2rc-219-g781ce0c.
+# This file was generated from skeleton-ci/skeleton-python@0.0.2rc-219-g781ce0c.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/0.0.2rc-219-g781ce0c/project/.github/dependabot.yml.jinja
+# https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-219-g781ce0c/project/.github/dependabot.yml.jinja
 
 version: 2
 updates:
@@ -16,7 +16,7 @@ updates:
   schedule:
     interval: "daily"
   ignore:
-  # Actions managed by https://github.com/bswck/skeleton
+  # Actions managed by https://github.com/skeleton-ci/skeleton-python
   - dependency-name: "actions/checkout"
   - dependency-name: "actions/setup-python"
   - dependency-name: "codecov/codecov-action"
@@ -36,7 +36,7 @@ updates:
     main:
       dependency-type: "production"
   ignore:
-  # Dependencies managed by https://github.com/bswck/skeleton
+  # Dependencies managed by https://github.com/skeleton-ci/skeleton-python
   - dependency-name: "mypy"
   - dependency-name: "ruff"
   - dependency-name: "towncrier"

@@ -1,6 +1,6 @@
-# This file was generated from bswck/skeleton@0.0.2rc-219-g781ce0c.
+# This file was generated from skeleton-ci/skeleton-python@0.0.2rc-219-g781ce0c.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/0.0.2rc-219-g781ce0c/project/pyproject.toml.jinja
+# https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-219-g781ce0c/project/pyproject.toml.jinja
 
 [tool.poetry]
 name = "lazy-importing"
@@ -24,9 +24,9 @@ python = ">=3.8"
 [tool.poetry.group.dev.dependencies]
 
 [tool.poetry.group.dev-skeleton.dependencies]
-# This dependency group was generated from bswck/skeleton@0.0.2rc-219-g781ce0c.
+# This dependency group was generated from skeleton-ci/skeleton-python@0.0.2rc-219-g781ce0c.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/bswck/skeleton/tree/0.0.2rc-219-g781ce0c/project/pyproject.toml.jinja
+# https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-219-g781ce0c/project/pyproject.toml.jinja
 mypy = ">=1.9.0"
 ruff = ">=0.3.4"
 towncrier = ">=23.11.0"
