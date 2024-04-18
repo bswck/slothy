@@ -7,6 +7,80 @@
 
 Super-easy lazy importing in Python.
 
+!!! important
+    Only CPython is supported.
+
+Intended to be used as a drop-in replacement for `if typing.TYPE_CHECKING` blocks
+as well as a convenient guard against expensive imports.
+
+# Usage
+
+```py
+from lazy_importing import LAZY_IMPORTING
+
+with LAZY_IMPORTING:
+    import pandas as pd
+
+# pandas not imported
+
+def main() -> None:
+    # pandas not imported
+    print(type(pd))  # <class 'module'>
+    # pandas imported before type() called
+
+
+if __name__ == "__main__":
+    main()
+```
+
+# Caveats
+
+## Python <3.10 Boilerplate
+On Python 3.8-3.9, every function accessing a lazily-imported object
+must be decorated with `supports_lazy_access`:
+
+```py
+from lazy_importing import LAZY_IMPORTING, supports_lazy_access
+
+with LAZY_IMPORTING:
+    import pandas as pd
+
+# pandas not imported
+
+@supports_lazy_access
+def main() -> None:
+    # pandas not imported
+    print(type(pd))  # <class 'module'>
+    # pandas imported before type() called
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## Deleted References
+
+Importing symbols `with LAZY_IMPORTING` will make them intentionally unavailable in your
+namespace after the `with LAZY_IMPORTING` block finishes.
+
+Consequently,
+
+```py
+from lazy_importing import LAZY_IMPORTING, supports_lazy_access
+
+with LAZY_IMPORTING:
+    import pandas as pd
+
+try:
+    pd
+except NameError:
+    print("pd undefined")
+```
+
+outputs `pd undefined`.
+This is caused by the fact that there must be at least 1 frame between "declared import"
+and usage. More in-depth technical explanation will be provided soon.
+
 # Installation
 You might simply install it with pip:
 
