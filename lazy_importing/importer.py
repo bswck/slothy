@@ -23,7 +23,12 @@ if TYPE_CHECKING:
 
     MetaPath: TypeAlias = "list[_MetaPathFinder]"
 
-__all__ = ("LazyImporter",)
+__all__ = (
+    "LazyImporter",
+    "LazilyLoadedObject",
+    "LazyModuleWrapper",
+    "LazyLoaderWrapper",
+)
 
 
 old_meta_path: ContextVar[MetaPath | None] = ContextVar("old_meta_path", default=None)
