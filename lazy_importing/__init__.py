@@ -5,12 +5,16 @@
 
 Convenient lazy importing in Python.
 """
+# ruff: noqa: F403, PLE0604
 
 from __future__ import annotations
 
 from lazy_importing import cm, compat, importer
+from lazy_importing.cm import *
+from lazy_importing.compat import *
+from lazy_importing.importer import *
 
-__all__ = (  # noqa: PLE0604
+__all__ = (
     *cm.__all__,
     *compat.__all__,
     *importer.__all__,
