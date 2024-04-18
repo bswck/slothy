@@ -23,7 +23,7 @@ __all__ = ("LazyImporting",)
 _MISSING_EXC_INFO = (None, None, None)
 
 
-class LazyObjectProvider(dict):  # type: ignore[type-arg]
+class LazyObjectLoader(dict):  # type: ignore[type-arg]
     __slots__ = ("__context__",)
     __context__: Context
 
@@ -67,9 +67,9 @@ class LazyImporting:
                 # Don't provide this object since it was deleted.
                 del objects[identifier]
 
-    def _inject_provider(self) -> None:
+    def _inject_loader(self) -> None:
         builtins = self._namespace["__builtins__"]
-        provider = LazyObjectProvider(vars(builtins))
+        provider = LazyObjectLoader(vars(builtins))
         provider.__context__ = self._context
         self._namespace["__builtins__"] = provider
 
@@ -85,4 +85,4 @@ class LazyImporting:
         self._context.run(lazy_loading.set, False)
         self._cleanup_identifiers()
         if exc_info == _MISSING_EXC_INFO:
-            self._inject_provider()
+            self._inject_loader()
