@@ -40,6 +40,7 @@ class LazilyLoadedObject:
     context: Context = field(hash=False, repr=False)
 
     def __post_init__(self) -> None:
+        """Attach self to the registry of objects watched by the context manager."""
         try:
             objects = self.context.run(lazy_objects.get)
         except LookupError:
@@ -47,6 +48,7 @@ class LazilyLoadedObject:
         objects.update({self.identifier: self})
 
     def load(self) -> Any:
+        """Load this item."""
         return getattr(self.module, self.identifier)
 
 
@@ -76,11 +78,35 @@ class LazyModuleWrapper(types.ModuleType):
 
 
 class LazyLoaderWrapper(LazyLoader):
+    """
+    Subclass of [`importlib.util.LazyLoader`](importlib.util.LazyLoader).
+
+    Allows the [`LAZY_IMPORTING`](lazy_importing.LAZY_IMPORTING)
+    context manager to resolve the objects to load lazily.
+    """
+
     def __init__(self, loader: Loader, context: Context) -> None:
+        """
+        Create a lazy loader.
+
+        Parameters
+        ----------
+        loader
+            The loader to wrap.
+
+        context
+            The context in which the loader should operate.
+
+        """
         super().__init__(loader)
         self.context = context
 
     def exec_module(self, module: types.ModuleType) -> None:
+        """
+        Execute the module.
+
+        This method is overridden to set the context of the module.
+        """
         super().exec_module(module)
         lazy_module_class = object.__getattribute__(module, "__class__")
         module.__class__ = LazyModuleWrapper
