@@ -8,9 +8,14 @@ Convenient lazy importing in Python.
 
 from __future__ import annotations
 
-from lazy_importing import cm
+from lazy_importing import cm, compat, importer
 
-__all__ = cm.__all__
+__all__ = (  # noqa: PLE0604
+    *cm.__all__,
+    *compat.__all__,
+    *importer.__all__,
+)
+
 
 LAZY_IMPORTING: cm.LazyImporting
 
