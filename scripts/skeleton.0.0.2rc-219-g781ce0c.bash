@@ -81,12 +81,12 @@ make_context() {
 	)
 	export PYPY
 	PYPY=$(cat <<- 'EOF'
-		True
+		False
 	EOF
 	)
 	export PYTHONS
 	PYTHONS=$(cat <<- 'EOF'
-		[('3', 8), ('3', 9), ('3', 10), ('3', 11), ('3', 12), ('pypy3', 10)]
+		[('3', 8), ('3', 9), ('3', 10), ('3', 11), ('3', 12)]
 	EOF
 	)
 	export OUTERMOST_PYTHONS
@@ -96,7 +96,7 @@ make_context() {
 	)
 	export INTERMEDIATE_PYTHONS
 	INTERMEDIATE_PYTHONS=$(cat <<- 'EOF'
-		[('3', 9), ('3', 10), ('3', 11), ('pypy3', 10)]
+		[('3', 9), ('3', 10), ('3', 11)]
 	EOF
 	)
 	export REPO_URL
@@ -171,7 +171,7 @@ make_context() {
 	)
 	export GH_REPO_ARGS
 	GH_REPO_ARGS=$(cat <<- 'EOF'
-		"bswck/lazy-importing" --public --source=./ --remote=upstream --description="Convenient lazy importing in Python."
+		"bswck/lazy-importing" --public --source=./ --remote=upstream --description="Super-easy lazy importing in Python."
 	EOF
 	)
 	export GH_ENSURE_ENV

@@ -3,7 +3,7 @@ _src_path: gh:skeleton-ci/skeleton-python
 author: bswck
 cli: false
 copyright: Bartosz Sławecki
-description: Convenient lazy importing in Python.
+description: 'Super-easy lazy importing in Python.'
 docs: true
 email: bartoszpiotrslawecki@gmail.com
 github: bswck
@@ -11,9 +11,9 @@ license: MIT
 package: lazy_importing
 precommit: true
 pypi: true
-pypi_description: Convenient lazy importing in Python.
+pypi_description: Super-easy lazy importing in Python.
 pypi_project: lazy-importing
-pypy: true
+pypy: false
 python: '3.8'
 python_until: ''
 repo: lazy-importing
@@ -21,4 +21,4 @@ rtd: lazy-importing
 tests: true
 tidelift: false
 visibility: public
-wip: true
+wip: false

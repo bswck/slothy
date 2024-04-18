@@ -3,7 +3,7 @@
 """
 `lazy_importing`.
 
-Convenient lazy importing in Python.
+Super-easy lazy importing in Python.
 """
 # ruff: noqa: F403, PLE0604
 

@@ -5,7 +5,7 @@
 [tool.poetry]
 name = "lazy-importing"
 version = "0.0.0"
-description = "Convenient lazy importing in Python."
+description = "Super-easy lazy importing in Python."
 authors = ["bswck <bartoszpiotrslawecki@gmail.com>"]
 license = "MIT"
 readme = "README.md"

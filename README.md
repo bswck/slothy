@@ -4,12 +4,7 @@
 [![Coverage](https://coverage-badge.samuelcolvin.workers.dev/bswck/lazy-importing.svg)](https://coverage-badge.samuelcolvin.workers.dev/redirect/bswck/lazy-importing)
 [![Documentation Status](https://readthedocs.org/projects/lazy-importing/badge/?version=latest)](https://lazy-importing.readthedocs.io/en/latest/?badge=latest)
 
-> [!Warning]
-> **Work in Progress**. 🚧
->
-> Hit the `👁 Watch` button to know when this project is ready to be tried out!
-
-Convenient lazy importing in Python.
+Super-easy lazy importing in Python.
 
 # Installation
 You might simply install it with pip:
