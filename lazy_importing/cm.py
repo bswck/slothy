@@ -47,12 +47,14 @@ class LazyImporting:
         self,
         *,
         meta_path: MetaPath | None = None,
-        namespace: dict[str, object] | None = None,
+        local_ns: dict[str, object] | None = None,
+        global_ns: dict[str, object] | None = None,
         stack_offset: int = 1,
     ) -> None:
         """Initialize a new LazyImporting instance."""
         self._context = copy_context()
-        self._namespace = namespace or getframe(stack_offset).f_locals
+        self._local_ns = local_ns or getframe(stack_offset).f_locals
+        self._global_ns = global_ns or getframe(stack_offset).f_globals
         self._lazy_importer = self._context.run(LazyImporter, self._context, meta_path)
 
     def _cleanup_identifiers(self) -> None:
@@ -62,16 +64,20 @@ class LazyImporting:
             return
         for identifier in objects.copy():
             try:
-                del self._namespace[identifier]
+                del self._local_ns[identifier]
             except KeyError:  # noqa: PERF203
                 # Don't provide this object since it was deleted.
                 del objects[identifier]
 
     def _inject_loader(self) -> None:
-        builtins = self._namespace["__builtins__"]
-        provider = LazyObjectLoader(vars(builtins))
+        builtins = self._local_ns.get("__builtins__")
+        if builtins is None:
+            builtins = self._global_ns.get("__builtins__")
+        if not isinstance(builtins, dict):
+            builtins = vars(builtins)
+        provider = LazyObjectLoader(builtins)
         provider.__context__ = self._context
-        self._namespace["__builtins__"] = provider
+        self._local_ns["__builtins__"] = provider
 
     def __enter__(self) -> Self:
         """Enable lazy importing mode."""
