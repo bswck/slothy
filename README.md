@@ -6,6 +6,10 @@
 
 Super-easy lazy importing in Python.
 
+> [!Note]
+> The first release of `lazy-importing` is scheduled for **Apr 26, 2024.**
+> It's not available on PyPI yet.
+
 > [!Important]
 > Only CPython is supported.
 
