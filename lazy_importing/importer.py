@@ -180,5 +180,6 @@ class LazyImporter(MetaPathFinder):
         lazy_loader = LazyLoaderWrapper(loader, self._context)
         lazy_spec = ModuleSpec(fullname, None)
         vars(lazy_spec).update(vars(spec))
+        lazy_spec.__lazy_spec__ = True  # type: ignore[attr-defined]  # for testing
         lazy_spec.loader = lazy_loader
         return lazy_spec
