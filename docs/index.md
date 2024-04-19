@@ -19,14 +19,15 @@ as well as a convenient guard against expensive imports.
 from lazy_importing import LAZY_IMPORTING
 
 with LAZY_IMPORTING:
-    import pandas as pd
+    from pandas import DataFrame
 
-# pandas not imported
+# pandas.DataFrame not imported
 
 def main() -> None:
-    # pandas not imported
-    print(type(pd))  # <class 'module'>
-    # pandas imported before type() called
+    # pandas.DataFrame not imported
+    print(DataFrame)  # <class 'pandas.core.frame.DataFrame'>
+    # pandas.DataFrame imported just before print() called; from now on,
+    # available everywhere in the module.
 
 
 if __name__ == "__main__":
@@ -43,15 +44,16 @@ must be decorated with `supports_lazy_access`:
 from lazy_importing import LAZY_IMPORTING, supports_lazy_access
 
 with LAZY_IMPORTING:
-    import pandas as pd
+    from pandas import DataFrame
 
-# pandas not imported
+# pandas.DataFrame not imported
 
 @supports_lazy_access
 def main() -> None:
-    # pandas not imported
-    print(type(pd))  # <class 'module'>
-    # pandas imported before type() called
+    # pandas.DataFrame not imported
+    print(DataFrame)  # <class 'pandas.core.frame.DataFrame'>
+    # pandas.DataFrame imported just before print() called; from now on,
+    # available everywhere in the module.
 
 
 if __name__ == "__main__":
@@ -69,15 +71,15 @@ Consequently,
 from lazy_importing import LAZY_IMPORTING
 
 with LAZY_IMPORTING:
-    import pandas as pd
+    from pandas import DataFrame
 
 try:
-    pd
+    DataFrame
 except NameError:
-    print("pd undefined")
+    print("DataFrame undefined")
 ```
 
-outputs `pd undefined`.
+outputs `DataFrame undefined`.
 This is caused by the fact that there must be at least 1 frame between "declared import"
 and usage. More in-depth technical explanation will be provided soon.
 
