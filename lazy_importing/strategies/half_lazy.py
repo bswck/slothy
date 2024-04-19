@@ -63,7 +63,7 @@ class HalfLazyModule(types.ModuleType):
                 return HalfLazyObject(self, attr)
             self.__class__ = self.__lazy_module_class__  # type: ignore[assignment]
             try:
-                return self.__getattribute__(attr)
+                return context.run(self.__getattribute__, attr)
             finally:
                 self.__class__ = HalfLazyModule
 
