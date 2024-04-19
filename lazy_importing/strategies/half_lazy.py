@@ -1,40 +1,42 @@
-"""`lazy_importing.importer`: An importer that carries out lazy importing globally."""
+"""
+Pure Python half-lazy importing.
+
+Eagerly find & lazily load modules.
+https://peps.python.org/pep-0690/#half-lazy-imports
+"""
 
 from __future__ import annotations
 
 import sys
 import types
-from contextvars import Context, ContextVar
+from dataclasses import dataclass
 from importlib._bootstrap import _find_spec  # type: ignore[import-not-found]
 from importlib.abc import MetaPathFinder
 from importlib.machinery import ModuleSpec
 from importlib.util import LazyLoader
-from threading import RLock
-from typing import TYPE_CHECKING, NamedTuple, cast
+from typing import TYPE_CHECKING, cast
+
+from lazy_importing.abc import LazyImportingStrategy, LazyObject, lazy_loading
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+    from contextvars import Context
     from importlib.abc import Loader
-    from sys import _MetaPathFinder
     from typing import Any
 
-    from typing_extensions import TypeAlias
+    from typing_extensions import Self
 
-    MetaPath: TypeAlias = "list[_MetaPathFinder]"
 
 __all__ = (
-    "LazyImporter",
-    "LazilyLoadedObject",
-    "LazyModuleWrapper",
-    "LazyLoaderWrapper",
+    "HalfLazyImportingStrategy",
+    "HalfLazyObject",
+    "HalfLazyModule",
+    "HalfLazyLoader",
 )
 
 
-old_meta_path: ContextVar[MetaPath | None] = ContextVar("old_meta_path", default=None)
-lazy_loading: ContextVar[bool] = ContextVar("lazy_loading", default=False)
-
-
-class LazilyLoadedObject(NamedTuple):
+@dataclass(frozen=True)
+class HalfLazyObject(LazyObject):
     """Tracks lazy loading."""
 
     module: types.ModuleType
@@ -45,7 +47,7 @@ class LazilyLoadedObject(NamedTuple):
         return getattr(self.module, self.attribute_name)
 
 
-class LazyModuleWrapper(types.ModuleType):
+class HalfLazyModule(types.ModuleType):
     """A subclass of the module type which triggers loading upon attribute access."""
 
     __context__: Context
@@ -58,19 +60,19 @@ class LazyModuleWrapper(types.ModuleType):
         except AttributeError:
             context = self.__context__
             if context.get(lazy_loading):
-                return LazilyLoadedObject(self, attr)
+                return HalfLazyObject(self, attr)
             self.__class__ = self.__lazy_module_class__  # type: ignore[assignment]
             try:
                 return self.__getattribute__(attr)
             finally:
-                self.__class__ = LazyModuleWrapper
+                self.__class__ = HalfLazyModule
 
     def __delattr__(self, attr: str) -> None:
         """Trigger the load and then perform the deletion."""
         self.__lazy_module_class__.__delattr__(self, attr)
 
 
-class LazyLoaderWrapper(LazyLoader):
+class HalfLazyLoader(LazyLoader):
     """
     Subclass of [`importlib.util.LazyLoader`](importlib.util.LazyLoader).
 
@@ -92,7 +94,7 @@ class LazyLoaderWrapper(LazyLoader):
 
         """
         super().__init__(loader)
-        self.context = context
+        self._context = context
 
     def exec_module(self, module: types.ModuleType) -> None:
         """
@@ -102,53 +104,18 @@ class LazyLoaderWrapper(LazyLoader):
         """
         super().exec_module(module)
         lazy_module_class = object.__getattribute__(module, "__class__")
-        module.__class__ = LazyModuleWrapper
-        module = cast(LazyModuleWrapper, module)
-        module.__context__ = self.context
+        module.__class__ = HalfLazyModule
+        module = cast(HalfLazyModule, module)
+        module.__context__ = self._context
         module.__lazy_module_class__ = lazy_module_class
 
 
-class LazyImporter(MetaPathFinder):
-    """Importer that carries out lazy importing globally."""
+class HalfLazyImportingStrategy(LazyImportingStrategy, MetaPathFinder):
+    """A meta path finder that enables half-lazy importing."""
 
-    _context: Context
-    _lock = RLock()
-
-    def __init__(
-        self,
-        context: Context,
-        meta_path: MetaPath | None = None,
-    ) -> None:
-        """
-        Create a lazy importer.
-
-        Parameters
-        ----------
-        context
-            The context in which the importer should operate.
-
-        meta_path : optional
-            The meta path to use for lazy importing. Defaults to the meta path
-            known to the least recently created
-            [`LazyImporting`](lazy_importing.cm.LazyImporting) context manager
-            that initiated consecutive imports.
-
-        """
-        self._context = context
-        self._old_meta_path = (
-            meta_path or context.get(old_meta_path) or sys.meta_path.copy()
-        )
-        old_meta_path.set(self._old_meta_path)
-
-    def acquire_meta_path(self) -> None:
-        """Delegate processing all import finder requests into the lazy importer."""
-        self._lock.acquire()
-        sys.meta_path = [self]
-
-    def release_meta_path(self) -> None:
-        """Remove lazy importer from meta path."""
-        sys.meta_path = self._old_meta_path
-        self._lock.release()
+    def create_finder(self) -> Self:
+        """Return self."""
+        return self
 
     def find_spec(
         self,
@@ -157,7 +124,7 @@ class LazyImporter(MetaPathFinder):
         target: types.ModuleType | None = None,
     ) -> ModuleSpec | None:
         """Find the actual spec and preserve it for loading it lazily later."""
-        sys.meta_path = self._old_meta_path
+        sys.meta_path = self.old_meta_path
         spec: ModuleSpec | None = None
         try:
             spec = _find_spec(fullname, path, target)
@@ -165,7 +132,7 @@ class LazyImporter(MetaPathFinder):
             sys.meta_path = [self]
         if spec is None or (loader := spec.loader) is None:
             return None
-        lazy_loader = LazyLoaderWrapper(loader, self._context)
+        lazy_loader = HalfLazyLoader(loader, self.context)
         lazy_spec = ModuleSpec(fullname, None)
         vars(lazy_spec).update(vars(spec))
         lazy_spec.__lazy_spec__ = True  # type: ignore[attr-defined]  # for testing
