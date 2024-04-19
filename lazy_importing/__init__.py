@@ -9,6 +9,8 @@ Super-easy lazy importing in Python.
 
 from __future__ import annotations
 
+from functools import wraps
+from sys import version_info
 from typing import TYPE_CHECKING
 
 from lazy_importing import ctx, strategies
@@ -59,8 +61,12 @@ def supports_lazy_access(f: Callable[P, R]) -> Callable[P, R]:
     the [lazy object loader](lazy_importing.cm.LazyObjectLoader)
     is requested a missing identifier during the function being called.
     """
+    if version_info < (3, 10):
 
-    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-        return f(*args, **kwargs)
+        @wraps(f)
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+            return f(*args, **kwargs)
 
-    return wrapper
+        return wrapper
+
+    return f
