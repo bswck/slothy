@@ -66,7 +66,7 @@ namespace after the `with LAZY_IMPORTING` block finishes.
 Consequently,
 
 ```py
-from lazy_importing import LAZY_IMPORTING, supports_lazy_access
+from lazy_importing import LAZY_IMPORTING
 
 with LAZY_IMPORTING:
     import pandas as pd
