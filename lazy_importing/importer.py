@@ -5,13 +5,12 @@ from __future__ import annotations
 import sys
 import types
 from contextvars import Context, ContextVar
-from dataclasses import dataclass, field
 from importlib._bootstrap import _find_spec  # type: ignore[import-not-found]
 from importlib.abc import MetaPathFinder
 from importlib.machinery import ModuleSpec
 from importlib.util import LazyLoader
 from threading import RLock
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, NamedTuple, cast
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -33,28 +32,17 @@ __all__ = (
 
 old_meta_path: ContextVar[MetaPath | None] = ContextVar("old_meta_path", default=None)
 lazy_loading: ContextVar[bool] = ContextVar("lazy_loading", default=False)
-lazy_objects: ContextVar[dict[str, LazilyLoadedObject]] = ContextVar("lazy_objects")
 
 
-@dataclass(frozen=True)
-class LazilyLoadedObject:
+class LazilyLoadedObject(NamedTuple):
     """Tracks lazy loading."""
 
-    module: types.ModuleType = field(hash=False, repr=False)
-    identifier: str
-    context: Context = field(hash=False, repr=False)
-
-    def __post_init__(self) -> None:
-        """Attach self to the registry of objects watched by the context manager."""
-        try:
-            objects = self.context.run(lazy_objects.get)
-        except LookupError:
-            self.context.run(lazy_objects.set, objects := {})
-        objects.update({self.identifier: self})
+    module: types.ModuleType
+    attribute_name: str
 
     def load(self) -> Any:
         """Load this item."""
-        return getattr(self.module, self.identifier)
+        return getattr(self.module, self.attribute_name)
 
 
 class LazyModuleWrapper(types.ModuleType):
@@ -70,7 +58,7 @@ class LazyModuleWrapper(types.ModuleType):
         except AttributeError:
             context = self.__context__
             if context.get(lazy_loading):
-                return LazilyLoadedObject(self, attr, context)
+                return LazilyLoadedObject(self, attr)
             self.__class__ = self.__lazy_module_class__  # type: ignore[assignment]
             try:
                 return self.__getattribute__(attr)

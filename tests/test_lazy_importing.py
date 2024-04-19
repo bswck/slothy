@@ -15,7 +15,8 @@ from lazy_importing import (
     LazyModuleWrapper,
     supports_lazy_access
 )
-from lazy_importing.importer import lazy_loading, lazy_objects
+from lazy_importing.cm import LazyObjectLoader
+from lazy_importing.importer import lazy_loading
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -80,21 +81,24 @@ def test_lazy_import_module_item(lazy_module_name: str) -> None:
         lazy_module = _import_lazy_module(lazy_module_name)
         lazy_object = lazy_module.lazy_object
         assert isinstance(lazy_object, LazilyLoadedObject)
-        identifier = lazy_object.identifier
-        lazy_objects_reg = context.get(lazy_objects) or {}
-        assert identifier in lazy_objects_reg
-        assert identifier == "lazy_object"
-        local_ns[identifier] = lazy_object  # again, pytest.
+        ident_1 = "lazy_object_ref_1"
+        ident_2 = "lazy_object_ref_2"
+        refs = dict.fromkeys((ident_1, ident_2), lazy_object)
+        local_ns.update(refs)
 
     assert not context.get(lazy_loading)
-    assert context.get(lazy_objects) is lazy_objects_reg
-    assert identifier in lazy_objects_reg
+    assert ident_1 not in local_ns and ident_2 not in local_ns
 
     builtins = local_ns["__builtins__"]
+    assert isinstance(builtins, LazyObjectLoader)
+    assert builtins.__lazy_objects__.get(ident_1) is lazy_object
+    assert builtins.__lazy_objects__.get(ident_2) is lazy_object
 
     @supports_lazy_access
     def _access_object() -> None:
-        loaded_lazy_object = builtins["lazy_object"]
+        loaded_lazy_object = builtins[ident_1]
+        assert ident_1 in local_ns
+        assert ident_2 in local_ns  # auto binding
         _purge_module(lazy_module_name)
         lazy_module = _import_lazy_module(lazy_module_name)
         assert type(lazy_module) is types.ModuleType
