@@ -80,6 +80,10 @@ outputs `pd undefined`.
 This is caused by the fact that there must be at least 1 frame between "declared import"
 and usage. More in-depth technical explanation will be provided soon.
 
+# Credits
+Kudos to [@AlexWaygood](https://github.com/AlexWaygood) who made this project possible
+by sharing his knowledge of CPython implementation details regarding name lookup behavior.
+
 # Installation
 You might simply install it with pip:
 
