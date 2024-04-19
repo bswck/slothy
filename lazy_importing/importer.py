@@ -143,7 +143,7 @@ class LazyImporter(MetaPathFinder):
             The meta path to use for lazy importing. Defaults to the meta path
             known to the least recently created
             [`LazyImporting`](lazy_importing.cm.LazyImporting) context manager
-            that initiated the call chain of consecutive imports.
+            that initiated consecutive imports.
 
         """
         self._context = context
