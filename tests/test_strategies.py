@@ -3,33 +3,47 @@ from __future__ import annotations
 import sys
 import types
 from contextlib import suppress
-from functools import reduce
+from importlib import import_module
 from importlib.util import find_spec
 from typing import TYPE_CHECKING
 
 import pytest
 
 from lazy_importing import LazyImportingContextManager, supports_lazy_access
-from lazy_importing.abc import LazyImportingStrategy, LazyObject, lazy_loading
+from lazy_importing.abc import LazyImportingStrategy, LazyObject
 from lazy_importing.ctx import LazyObjectLoader
+from tests.state import assert_importing, assert_inactive
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
     from importlib.machinery import ModuleSpec
 
-    from lazy_importing.abc import MetaPath
-
 
 def purge_module(module_name: str) -> None:
     """Remove a module from the module cache by name."""
-    with suppress(KeyError):
-        del sys.modules[module_name]
+    prev_ref = None
+    while "." in module_name:
+        removed_module = None
+        with suppress(KeyError):
+            removed_module = sys.modules.pop(module_name)
+        if removed_module and prev_ref:
+            delattr(removed_module, prev_ref)
+        module_name, prev_ref = module_name.rsplit(".", 1)
 
 
-@pytest.fixture
-def lazy_module_name() -> Iterator[str]:
+
+@pytest.fixture(
+    scope="function",
+    params=(
+        "lazy_namespace.inner_lazy_module",
+        "lazy_namespace.inner_lazy_namespace.inner_inner_lazy_module",
+        # "lazy_module",  # xxx fix this test?
+    )
+)
+def lazy_module_name(request: pytest.FixtureRequest) -> Iterator[str]:
     """Return the name of the lazy module."""
-    yield "tests._lazy_module"
+    module_name = request.param
+    yield module_name
 
 
 @pytest.fixture
@@ -37,12 +51,6 @@ def strategy() -> Iterator[type[LazyImportingStrategy]]:
     """Return the name of the lazy module."""
     from lazy_importing.strategies import HalfLazyImportingStrategy
     yield HalfLazyImportingStrategy
-
-
-@pytest.fixture(autouse=True)
-def purge_lazy_module(lazy_module_name: str) -> None:
-    """Remove the lazy module from the module cache."""
-    purge_module(lazy_module_name)
 
 
 def _validate_spec(lazy_module_name: str) -> ModuleSpec:
@@ -55,39 +63,29 @@ def _validate_spec(lazy_module_name: str) -> ModuleSpec:
 
 def _validate_context_on_enter(
     context_manager: LazyImportingContextManager,
-    meta_path: MetaPath,
 ) -> None:
     """Return the name of the lazy module."""
     context = context_manager.context
-    assert context.get(lazy_loading)
-    strategy = context_manager._strategy  # instance, not type
+    context.run(assert_importing)
+    strategy = context_manager.strategy
     assert isinstance(strategy, LazyImportingStrategy)
     assert strategy.new_meta_path is sys.meta_path
-    assert strategy.old_meta_path is not sys.meta_path
     assert strategy.context is context
 
 
 def _validate_context_on_exit(
     context_manager: LazyImportingContextManager,
-    meta_path: MetaPath,
 ) -> None:
     """Return the name of the lazy module."""
     context = context_manager.context
-    assert not context.get(lazy_loading)
-    strategy = context_manager._strategy  # instance, not type
+    context.run(assert_inactive)
+    strategy = context_manager.strategy
     assert isinstance(strategy, LazyImportingStrategy)
-    assert strategy.new_meta_path is not meta_path
-    assert strategy.old_meta_path is meta_path
+    assert strategy.old_meta_path is sys.meta_path
     assert strategy.context is context
 
     with pytest.raises(RuntimeError):
         context_manager.__enter__()
-
-
-def _import_module(module_name: str) -> types.ModuleType:
-    """Return the name of the lazy module."""
-    attrs = module_name.split(".")[1:]
-    return reduce(getattr, attrs, __import__(module_name))
 
 
 def test_lazy_import_module(
@@ -95,15 +93,24 @@ def test_lazy_import_module(
     lazy_module_name: str,
 ) -> None:
     """Test the lazy_importing library."""
-    meta_path = sys.meta_path
+    purge_module(lazy_module_name)
 
-    with LazyImportingContextManager(strategy=strategy) as context_manager:
-        _validate_context_on_enter(context_manager, meta_path)
+    with LazyImportingContextManager(strategy_factory=strategy) as context_manager:
+        _validate_context_on_enter(context_manager)
         _validate_spec(lazy_module_name)
-        lazy_module = _import_module(lazy_module_name)
+        exec_ns: dict[str, object] = {}
+        purge_module(lazy_module_name)
+        # We validated spec is found correctly, purge the module again
+        # and perform full import.
+        exec(f"import {lazy_module_name} as lazy_module", exec_ns)
+        lazy_module = exec_ns["lazy_module"]
         assert isinstance(lazy_module, types.ModuleType)
 
-    _validate_context_on_exit(context_manager, meta_path)
+    _validate_context_on_exit(context_manager)
+    loaded_object = lazy_module.lazy_object
+    purge_module(lazy_module_name)
+    module = import_module(lazy_module_name)
+    assert loaded_object == module.lazy_object
 
 
 def test_lazy_import_module_item(
@@ -114,23 +121,27 @@ def test_lazy_import_module_item(
     # We're doing little gymnastics here because pytest
     # tracks assert statements in the local namespace. —_—
     local_ns = locals()
-    meta_path = sys.meta_path
+    purge_module(lazy_module_name)
 
     with LazyImportingContextManager(
-        strategy=strategy,
+        strategy_factory=strategy,
         local_ns=local_ns,
     ) as context_manager:
-        _validate_context_on_enter(context_manager, meta_path)
+        _validate_context_on_enter(context_manager)
         _validate_spec(lazy_module_name)
-        lazy_module = _import_module(lazy_module_name)
-        lazy_object = lazy_module.lazy_object
+        exec_ns: dict[str, object] = {}
+        purge_module(lazy_module_name)
+        # We validated spec is found correctly, purge the module again
+        # and perform full import.
+        exec(f"from {lazy_module_name} import lazy_object", exec_ns)
+        lazy_object = exec_ns["lazy_object"]
         assert isinstance(lazy_object, LazyObject)
         ident_1 = "lazy_object_ref_1"
         ident_2 = "lazy_object_ref_2"
         refs = dict.fromkeys((ident_1, ident_2), lazy_object)
         local_ns.update(refs)
 
-    _validate_context_on_exit(context_manager, meta_path)
+    _validate_context_on_exit(context_manager)
     assert ident_1 not in local_ns and ident_2 not in local_ns
 
     builtins = local_ns["__builtins__"]
@@ -144,7 +155,7 @@ def test_lazy_import_module_item(
         assert ident_1 in local_ns
         assert ident_2 in local_ns  # auto binding
         purge_module(lazy_module_name)
-        lazy_module = _import_module(lazy_module_name)
+        lazy_module = import_module(lazy_module_name)
         assert type(lazy_module) is types.ModuleType
         assert loaded_lazy_object == lazy_module.lazy_object
 

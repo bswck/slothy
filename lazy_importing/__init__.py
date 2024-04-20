@@ -46,7 +46,7 @@ def __getattr__(name: str) -> object:
         from lazy_importing.strategies.half_lazy import HalfLazyImportingStrategy
 
         return ctx.LazyImportingContextManager(
-            strategy=HalfLazyImportingStrategy,
+            strategy_factory=HalfLazyImportingStrategy,
             stack_offset=2,
         )
     raise AttributeError

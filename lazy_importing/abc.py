@@ -24,7 +24,8 @@ if TYPE_CHECKING:
     MetaPath: TypeAlias = "list[_MetaPathFinder]"
 
 
-lazy_loading: ContextVar[bool] = ContextVar("lazy_loading", default=False)
+importing: ContextVar[bool] = ContextVar("is_importing", default=False)
+lazy_loading: ContextVar[bool] = ContextVar("is_loading", default=False)
 old_meta_path: ContextVar[MetaPath] = ContextVar("old_meta_path")
 
 

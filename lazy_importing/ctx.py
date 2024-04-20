@@ -12,9 +12,10 @@ from contextvars import copy_context
 from sys import _getframe as getframe
 from typing import TYPE_CHECKING
 
-from lazy_importing.abc import LazyObject, lazy_loading
+from lazy_importing.abc import LazyObject, importing
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from typing import Any, ClassVar
 
     from typing_extensions import Self
@@ -53,16 +54,16 @@ class LazyImportingContextManager:
     """A context manager that enables lazy importing."""
 
     _lazy_objects: LazyObjectMapping
-    _loader_factory: type[LazyObjectLoader]
+    _object_loader_class: type[LazyObjectLoader]
 
     def __init__(  # noqa: PLR0913
         self,
         *,
-        strategy: type[LazyImportingStrategy],
+        strategy_factory: Callable[..., LazyImportingStrategy],
         meta_path: MetaPath | None = None,
         local_ns: dict[str, object] | None = None,
         global_ns: dict[str, object] | None = None,
-        loader_factory: type[LazyObjectLoader] | None = None,
+        object_loader_class: type[LazyObjectLoader] | None = None,
         stack_offset: int = 1,
     ) -> None:
         """
@@ -70,7 +71,7 @@ class LazyImportingContextManager:
 
         Parameters
         ----------
-        strategy
+        strategy_factory
             The strategy to use.
         meta_path
             The meta path to use.
@@ -78,22 +79,22 @@ class LazyImportingContextManager:
             The local namespace to use.
         global_ns
             The global namespace to use.
-        loader_factory
+        object_loader_class
             The loader factory to use.
         stack_offset
             The stack offset to use.
 
         """
-        if loader_factory is None:
-            loader_factory = LazyObjectLoader
-        self._loader_factory = loader_factory
+        if object_loader_class is None:
+            object_loader_class = LazyObjectLoader
+        self._object_loader_class = object_loader_class
         self._lazy_objects = {}
         self.context = copy_context()
         frame = getframe(stack_offset)
         self._local_ns = local_ns or frame.f_locals
         self._global_ns = global_ns or frame.f_globals
         self._initial_locals = set(self._local_ns)
-        self._strategy = strategy(self.context, meta_path)
+        self.strategy = strategy_factory(self.context, meta_path)
         self._exited = False
 
     def __enter__(self) -> Self:
@@ -101,8 +102,8 @@ class LazyImportingContextManager:
         if self._exited:
             msg = "Cannot enter the same lazy importing context twice."
             raise RuntimeError(msg)
-        self.context.run(lazy_loading.set, True)
-        self._strategy.enable()
+        self.context.run(importing.set, True)
+        self.strategy.enable()
         return self
 
     def _cleanup_identifiers(self) -> None:
@@ -114,13 +115,13 @@ class LazyImportingContextManager:
                 self._lazy_objects[identifier] = lazy_object
 
     def _inject_loader(self) -> None:
-        loader_attribute = self._loader_factory.attribute
+        loader_attribute = self._object_loader_class.attribute
         builtins = self._local_ns.get(loader_attribute)
         if builtins is None:
             builtins = self._global_ns[loader_attribute]
         if not isinstance(builtins, dict):
             builtins = vars(builtins)
-        lazy_object_loader = self._loader_factory(builtins)
+        lazy_object_loader = self._object_loader_class(builtins)
         lazy_object_loader.local_ns = self._local_ns
         lazy_object_loader.lazy_objects = self._lazy_objects
         self._local_ns[loader_attribute] = lazy_object_loader
@@ -128,8 +129,8 @@ class LazyImportingContextManager:
     def __exit__(self, *exc_info: object) -> None:
         """Disable lazy importing mode."""
         self._exited = True
-        self._strategy.disable()
-        self.context.run(lazy_loading.set, False)
+        self.strategy.disable()
+        self.context.run(importing.set, False)
         self._cleanup_identifiers()
         if exc_info == _MISSING_EXC_INFO:
             self._inject_loader()

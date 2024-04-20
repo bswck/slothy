@@ -5,6 +5,7 @@ Eagerly find & lazily load modules.
 https://peps.python.org/pep-0690/#half-lazy-imports
 """
 
+# ruff: noqa: FBT003
 from __future__ import annotations
 
 import sys
@@ -16,7 +17,12 @@ from importlib.machinery import ModuleSpec
 from importlib.util import LazyLoader
 from typing import TYPE_CHECKING, cast
 
-from lazy_importing.abc import LazyImportingStrategy, LazyObject, lazy_loading
+from lazy_importing.abc import (
+    LazyImportingStrategy,
+    LazyObject,
+    importing,
+    lazy_loading,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -47,6 +53,18 @@ class HalfLazyObject(LazyObject):
         return getattr(self.module, self.attribute_name)
 
 
+def _lazy_getattr(self: HalfLazyModule, attr: str) -> Any:
+    if importing.get():
+        return HalfLazyObject(self, attr)
+    lazy_loading.set(True)
+    self.__class__ = self.__lazy_module_class__  # type: ignore[assignment]
+    try:
+        return self.__getattribute__(attr)
+    finally:
+        lazy_loading.set(False)
+        self.__class__ = types.ModuleType  # type: ignore[assignment]
+
+
 class HalfLazyModule(types.ModuleType):
     """A subclass of the module type which triggers loading upon attribute access."""
 
@@ -56,20 +74,18 @@ class HalfLazyModule(types.ModuleType):
     def __getattribute__(self, attr: str) -> Any:
         """Trigger the load of the module and return the attribute."""
         try:
-            return object.__getattribute__(self, attr)
+            obj = object.__getattribute__(self, attr)
         except AttributeError:
-            context = self.__context__
-            if context.get(lazy_loading):
-                return HalfLazyObject(self, attr)
-            self.__class__ = self.__lazy_module_class__  # type: ignore[assignment]
-            try:
-                return context.run(self.__getattribute__, attr)
-            finally:
-                self.__class__ = HalfLazyModule
+            context = object.__getattribute__(self, "__context__")
+            obj = context.run(_lazy_getattr, self, attr)
+        return obj
 
     def __delattr__(self, attr: str) -> None:
         """Trigger the load and then perform the deletion."""
-        self.__lazy_module_class__.__delattr__(self, attr)
+        context = object.__getattribute__(self, "__context__")
+        if not context.get(importing):
+            _delattr = context.run(_lazy_getattr, self, "__delattr__")
+            _delattr(attr)
 
 
 class HalfLazyLoader(LazyLoader):
