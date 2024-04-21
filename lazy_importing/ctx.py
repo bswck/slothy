@@ -38,16 +38,15 @@ class LazyObjectLoader(dict):  # type: ignore[type-arg]
     lazy_objects: LazyObjectMapping
 
     def __getitem__(self, key: Any) -> Any:
-        try:
+        with suppress(KeyError):
             return super().__getitem__(key)
+        try:
+            lazy_object = self.lazy_objects[key]
         except KeyError:
-            try:
-                lazy_object = self.lazy_objects[key]
-            except KeyError:
-                raise NameError(key) from None
-            final_object = lazy_object.load()
-            lazy_object.bind(final_object, self.local_ns, self.lazy_objects)
-            return final_object
+            raise NameError(key) from None
+        final_object = lazy_object.load()
+        lazy_object.bind(final_object, self.local_ns, self.lazy_objects)
+        return final_object
 
 
 class LazyImportingContextManager:
