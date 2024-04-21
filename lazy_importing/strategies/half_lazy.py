@@ -90,9 +90,9 @@ class HalfLazyModule(types.ModuleType):
 
 class HalfLazyLoader(LazyLoader):
     """
-    Subclass of [`importlib.util.LazyLoader`](importlib.util.LazyLoader).
+    Subclass of [`importlib.util.LazyLoader`][importlib.util.LazyLoader].
 
-    Allows the [`LAZY_IMPORTING`](lazy_importing.LAZY_IMPORTING)
+    Allows the [`LAZY_IMPORTING`][lazy_importing.LAZY_IMPORTING]
     context manager to resolve the objects to load lazily.
     """
 

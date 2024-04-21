@@ -2,7 +2,7 @@
 Abstract base classes & type aliases for implementing lazy importing strategies.
 
 Provides a modest framework that facilitates communication with the core
-[`LazyImporting`](lazy_importing.ctx.LazyImportingContextManager) context manager.
+[lazy importing context manager][lazy_importing.ctx.LazyImportingContextManager].
 """
 
 from __future__ import annotations
