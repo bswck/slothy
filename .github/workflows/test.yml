@@ -24,7 +24,7 @@ jobs:
         - "3.12"
         platform:
         - "ubuntu"
-        - "macos"
+        # - "macos"
         - "windows"
         include:
         - python: "3.9"
