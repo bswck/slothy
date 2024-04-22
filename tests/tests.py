@@ -62,13 +62,13 @@ with LAZY_IMPORTING:
 
     with subtests.test("opt-out"):
         loaded_optout_module = LAZY_IMPORTING.load_lazy_object(optout_module)
-        assert isinstance(sys.modules["optout_module"], ModuleType)
+        assert sys.modules["optout_module"] is loaded_optout_module
         LAZY_IMPORTING.bind_lazy_object(
             optout_module,
             loaded_optout_module,
             "optout_module",
         )
-        assert optout_module is sys.modules["optout_module"]
+        assert optout_module is loaded_optout_module
 
 with subtests.test("state-after-exit"):
     assert_inactive()
