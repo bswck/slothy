@@ -1,6 +1,7 @@
 from __future__ import annotations
 import sys
 from collections import defaultdict
+from importlib.machinery import ModuleSpec
 from types import ModuleType
 from typing import TYPE_CHECKING
 
@@ -8,6 +9,7 @@ import pytest
 from lazy_importing import (
     LAZY_IMPORTING,
     ALL_AUDITING_EVENTS,
+    AuditingEvents,
     LazyObject,
     supports_lazy_access,
 )
@@ -43,13 +45,43 @@ def audit_hook(ev: str, args: tuple[Any, ...]) -> None:
 importer = LAZY_IMPORTING.importer
 
 with LAZY_IMPORTING:
+
+    with subtests.test("audits-after-enter"):
+        assert audits_done[AuditingEvents.BEFORE_ENABLE] == [(importer,)]
+        assert audits_done[AuditingEvents.AFTER_ENABLE] == [(importer,)]
+
     with subtests.test("state-after-enter"):
         # Checks if lazy_importing.get() is True.
         assert_lazy_importing()
 
     # All the imports below only "emulate" real importing.
     # We return lazy objects that keep track of what will really be imported.
+
     import package
+
+    with subtests.test("after-import-audits"):
+        assert audits_done[AuditingEvents.BEFORE_FIND_SPEC] == [(
+            importer, "package", None, None,
+        )]
+        after_find_spec_args = audits_done[AuditingEvents.AFTER_FIND_SPEC][-1]
+        assert after_find_spec_args[0] is importer
+        assert isinstance(after_find_spec_args[1], ModuleSpec)
+        package_spec = after_find_spec_args[1]
+        assert audits_done[AuditingEvents.CREATE_MODULE] == [(
+            importer, package_spec, package,
+        )]
+        assert audits_done[AuditingEvents.EXEC_MODULE] == [(importer, package)]
+        setattr_arg_tuples = audits_done[AuditingEvents.LAZY_OBJECT_SETATTR]
+        names_set = set()
+        for setattr_args in setattr_arg_tuples:
+            assert isinstance(setattr_args[0], LazyObject)
+            names_set.add(setattr_args[1])
+        expected_names_set = {"__name__", "__spec__", "__package__"}
+        # https://docs.python.org/3/reference/import.html#loader__
+        if sys.version_info < (3, 14):
+            expected_names_set.add("__loader__")
+        assert names_set == expected_names_set
+
     import module
     import optout_module
     from module import member
@@ -76,6 +108,10 @@ with LAZY_IMPORTING:
             "optout_module",
         )
         assert optout_module is loaded_optout_module
+
+with subtests.test("audits-after-exit"):
+    assert audits_done[AuditingEvents.BEFORE_DISABLE] == [(importer,)]
+    assert audits_done[AuditingEvents.AFTER_DISABLE] == [(importer,)]
 
 with subtests.test("state-after-exit"):
     assert_inactive()
