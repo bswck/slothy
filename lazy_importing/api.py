@@ -176,7 +176,7 @@ class LazyObjectLoader(dict):  # type: ignore[type-arg]
 class LazyImportingContext:
     """A context manager that enables lazy importing."""
 
-    _lazy_objects: LazyObjectMapping
+    lazy_objects: LazyObjectMapping
     _object_loader_class: type[LazyObjectLoader]
 
     def __init__(  # noqa: PLR0913
@@ -213,14 +213,15 @@ class LazyImportingContext:
         self._exited = False
         if local_ns is None:
             local_ns = getframe(stack_offset).f_locals
+        self._local_ns = local_ns
         if global_ns is None:
             global_ns = getframe(stack_offset).f_globals
-        self._local_ns = local_ns
         self._global_ns = global_ns
-        self._lazy_objects = {}
         self._object_loader_class = object_loader_class or LazyObjectLoader
+        self._importer_factory = importer_factory or LazyImporter
+        self.lazy_objects = {}
         self.context = copy_context()
-        self.importer = (importer_factory or LazyImporter)(self.context, meta_path)
+        self.importer = self._importer_factory(self.context, meta_path)
 
     def __enter__(self) -> Self:
         """Enable lazy importing mode."""
@@ -237,7 +238,7 @@ class LazyImportingContext:
                 continue
             with suppress(KeyError):
                 del self._local_ns[identifier]
-                self._lazy_objects[identifier] = lazy_object
+                self.lazy_objects[identifier] = lazy_object
             _cleanup_lazy_object(lazy_object=lazy_object)
 
     def _inject_loader(self) -> None:
@@ -249,7 +250,7 @@ class LazyImportingContext:
         lazy_object_loader = self._object_loader_class(builtins)
         lazy_object_loader.global_ns = self._global_ns
         lazy_object_loader.local_ns = self._local_ns
-        lazy_object_loader.lazy_objects = self._lazy_objects
+        lazy_object_loader.lazy_objects = self.lazy_objects
         self._local_ns[OBJECT_LOADER_ATTRIBUTE] = lazy_object_loader
 
     def __exit__(self, *exc_info: object) -> None:
