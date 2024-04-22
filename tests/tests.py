@@ -84,7 +84,7 @@ with subtests.test("lazy-objects-unavailable-same-frame"):
         package
 
 # We now define this to test if lazy_importing overwrites it
-module_alias_dont_overwrite = None
+module_alias_dont_overwrite = None  # type: ignore[assignment, unused-ignore]
 
 with subtests.test("single-use-cm"):
     with pytest.raises(RuntimeError, match="Cannot enter .+ twice"):
