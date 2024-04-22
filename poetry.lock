@@ -38,6 +38,25 @@ six = ">=1.6.1,<2.0"
 wheel = ">=0.23.0,<1.0"
 
 [[package]]
+name = "attrs"
+version = "23.2.0"
+description = "Classes Without Boilerplate"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "attrs-23.2.0-py3-none-any.whl", hash = "sha256:99b87a485a5820b23b879f04c2305b44b951b502fd64be915879d77a7e8fc6f1"},
+    {file = "attrs-23.2.0.tar.gz", hash = "sha256:935dc3b529c262f6cf76e50877d35a4bd3c1de194fd41f47a2b7ae8f19971f30"},
+]
+
+[package.extras]
+cov = ["attrs[tests]", "coverage[toml] (>=5.3)"]
+dev = ["attrs[tests]", "pre-commit"]
+docs = ["furo", "myst-parser", "sphinx", "sphinx-notfound-page", "sphinxcontrib-towncrier", "towncrier", "zope-interface"]
+tests = ["attrs[tests-no-zope]", "zope-interface"]
+tests-mypy = ["mypy (>=1.6)", "pytest-mypy-plugins"]
+tests-no-zope = ["attrs[tests-mypy]", "cloudpickle", "hypothesis", "pympler", "pytest (>=4.3.0)", "pytest-xdist[psutil]"]
+
+[[package]]
 name = "babel"
 version = "2.14.0"
 description = "Internationalization utilities"
@@ -1299,6 +1318,21 @@ setuptools = ">=30.3.0"
 test = ["numpy", "pytest-remotedata (>=0.3.2)", "sphinx"]
 
 [[package]]
+name = "pytest-subtests"
+version = "0.12.1"
+description = "unittest subTest() support and subtests fixture"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pytest-subtests-0.12.1.tar.gz", hash = "sha256:d6605dcb88647e0b7c1889d027f8ef1c17d7a2c60927ebfdc09c7b0d8120476d"},
+    {file = "pytest_subtests-0.12.1-py3-none-any.whl", hash = "sha256:100d9f7eb966fc98efba7026c802812ae327e8b5b37181fb260a2ea93226495c"},
+]
+
+[package.dependencies]
+attrs = ">=19.2.0"
+pytest = ">=7.0"
+
+[[package]]
 name = "pytest-sugar"
 version = "1.0.0"
 description = "pytest-sugar is a plugin for pytest that changes the default look and feel of pytest (e.g. progressbar, show tests that fail instantly)."
@@ -1858,4 +1892,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8"
-content-hash = "03e4a184374b1ae07b74b90d0319b28e20b9890a9ac9f6edc94367742f2b24c2"
+content-hash = "a099b4e5b1cc73019bffd5b8f5d0beefe898086dbddb11c5a9f308291c38d091"

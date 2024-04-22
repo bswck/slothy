@@ -1,6 +1,6 @@
-__import__("sys").path.append("tests/_layouts/")
+__import__("sys").path.append("tests/import_target_layouts/")
 
+collect_ignore = ["tests.py"]
 collect_ignore_glob = [
-    "_layouts/*",
-    "snippets/*",
+    "import_target_layouts/*",
 ]

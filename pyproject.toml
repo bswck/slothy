@@ -22,6 +22,7 @@ Coverage = "https://coverage-badge.samuelcolvin.workers.dev/redirect/bswck/lazy-
 python = ">=3.8"
 
 [tool.poetry.group.dev.dependencies]
+pytest-subtests = ">=0.12.1"
 
 [tool.poetry.group.dev-skeleton.dependencies]
 # This dependency group was generated from skeleton-ci/skeleton-python@0.0.2rc-219-g781ce0c.
@@ -135,10 +136,10 @@ required-imports = ["from __future__ import annotations"]
 [tool.mypy]
 strict = true
 explicit_package_bases = true
-mypy_path = ".,tests/_layouts/"
+mypy_path = ".,tests/import_target_layouts/"
 
 [tool.pyright]
-extraPaths = ["tests/_layouts/"]
+extraPaths = ["tests/import_target_layouts/"]
 
 [tool.towncrier]
 directory = "news"
