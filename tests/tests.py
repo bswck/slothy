@@ -36,7 +36,7 @@ locals_before_enter = {
 }
 
 with LAZY_IMPORTING:
-    with subtests.test("state after enter"):
+    with subtests.test("state-after-enter"):
         # Checks if lazy_importing.get() is True.
         assert_lazy_importing()
 
@@ -86,7 +86,7 @@ with subtests.test("lazy-objects-unavailable-same-frame"):
 # We now define this to test if lazy_importing overwrites it
 module_alias_dont_overwrite = None
 
-with subtests.test("single-use-context-manager"):
+with subtests.test("single-use-cm"):
     with pytest.raises(RuntimeError, match="Cannot enter .+ twice"):
         with LAZY_IMPORTING:
             pass
