@@ -43,6 +43,7 @@ keyring = ">=25.0.0"
 
 [tool.pytest.ini_options]
 addopts = "--doctest-modules"
+python_files = ["run_tests.py"]
 
 [tool.poetry.group.docs]
 optional = true
