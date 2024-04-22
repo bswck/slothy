@@ -13,12 +13,12 @@ from functools import wraps
 from sys import version_info
 from typing import TYPE_CHECKING
 
-from lazy_importing import ctx, strategies
-from lazy_importing.ctx import *
-from lazy_importing.strategies import *
+from lazy_importing import api
+from lazy_importing.api import *
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from typing import Any
 
     from typing_extensions import ParamSpec, TypeVar
 
@@ -27,29 +27,22 @@ if TYPE_CHECKING:
 
 
 __all__ = (
-    "ctx",
-    "strategies",
-    *ctx.__all__,
-    *strategies.__all__,
+    "api",
+    *api.__all__,
 )
 
-
-LAZY_IMPORTING: ctx.LazyImportingContextManager
+LAZY_IMPORTING: api.LazyImportingContext
 
 
 def __dir__() -> tuple[str, ...]:
-    return (*__all__, "LAZY_IMPORTING")
+    return ("LAZY_IMPORTING", *__all__)
 
 
-def __getattr__(name: str) -> object:
+def __getattr__(name: str) -> Any:
     if name == "LAZY_IMPORTING":
-        from lazy_importing.strategies.half_lazy import HalfLazyImportingStrategy
-
-        return ctx.LazyImportingContextManager(
-            strategy_factory=HalfLazyImportingStrategy,
-            stack_offset=2,
-        )
-    raise AttributeError
+        return api.LazyImportingContext(stack_offset=2)
+    msg = f"module {__name__!r} has no attribute {name!r}"
+    raise AttributeError(msg)
 
 
 def supports_lazy_access(f: Callable[P, R]) -> Callable[P, R]:
@@ -65,6 +58,7 @@ def supports_lazy_access(f: Callable[P, R]) -> Callable[P, R]:
 
         @wraps(f)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+            __tracebackhide__ = True
             return f(*args, **kwargs)
 
         return wrapper
