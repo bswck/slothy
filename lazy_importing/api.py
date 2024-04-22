@@ -28,13 +28,18 @@ if TYPE_CHECKING:
 
 
 __all__ = (
+    # Classes
     "LazyImportingContext",
-    "lazy_importing",
-    "lazy_loading",
-    "old_meta_path",
     "LazyObject",
     "LazyObjectLoader",
     "LazyImporter",
+    # Functions
+    "bind_lazy_object",
+    "load_lazy_object",
+    # Local state
+    "lazy_importing",
+    "lazy_loading",
+    "old_meta_path",
 )
 
 
@@ -80,14 +85,20 @@ def _cleanup_lazy_object(lazy_object: LazyObject) -> None:
         del sys.modules[lazy_object.__name__]
 
 
-def bind_lazy_object(
+def bind_lazy_object(  # noqa: PLR0913
     lazy_object: LazyObject,
     loaded_object: Any,
-    global_ns: dict[str, Any],  # noqa: ARG001
-    local_ns: dict[str, Any],
+    *,
     lazy_objects: dict[str, LazyObject],
+    global_ns: dict[str, Any] | None = None,
+    local_ns: dict[str, Any] | None = None,
+    stack_offset: int = 1,
 ) -> None:
     """Automatically replace all references to lazy objects with the loaded object."""
+    if local_ns is None:
+        local_ns = getframe(stack_offset).f_locals
+    if global_ns is None:
+        global_ns = getframe(stack_offset).f_globals
     for ref, other in lazy_objects.items():
         if other is not lazy_object:
             continue
@@ -104,20 +115,35 @@ def load_lazy_object(
     lazy_object: LazyObject,
     global_ns: dict[str, Any] | None = None,
     local_ns: dict[str, Any] | None = None,
+    *,
+    stack_offset: int = 1,
 ) -> Any:
     """Perform an actual import of a lazy object."""
-    package = None
-    if local_ns:
-        package = local_ns.get("__package__")
-    if global_ns:
-        package = package or global_ns.get("__package__")
+    optout = lazy_importing.get()
+    if optout:
+        # If we're inside LAZY_IMPORTING block, clean the lazy object before loading.
+        _cleanup_lazy_object(lazy_object)
+    if local_ns is None:
+        local_ns = getframe(stack_offset).f_locals
+    if global_ns is None:
+        global_ns = getframe(stack_offset).f_globals
+    package = local_ns.get("__package__") or global_ns.get("__package__")
     target_name = lazy_object.__name__
     module_name, attribute_name = _get_import_targets(target_name)
+    meta_path = sys.meta_path
+    if optout:
+        sys.meta_path = old_meta_path.get()
+    missing = object()
+    ret = missing
     if attribute_name:
         base_module = import_module(module_name, package=package)
         with suppress(AttributeError):
-            return getattr(base_module, attribute_name)
-    return import_module(target_name, package=package)
+            ret = getattr(base_module, attribute_name)
+    if ret is missing:
+        ret = import_module(target_name, package=package)
+    if optout:
+        sys.meta_path = meta_path
+    return ret
 
 
 class LazyObject:
@@ -222,6 +248,33 @@ class LazyImportingContext:
         self.lazy_objects = {}
         self.context = copy_context()
         self.importer = self._importer_factory(self.context, meta_path)
+
+    def load_lazy_object(self, lazy_object: LazyObject) -> Any:
+        """Perform an actual import of a lazy object."""
+        return self.context.run(
+            load_lazy_object,
+            lazy_object,
+            global_ns=self._global_ns,
+            local_ns=self._local_ns,
+        )
+
+    def bind_lazy_object(
+        self,
+        lazy_object: LazyObject,
+        loaded_object: Any,
+        *references: str,
+    ) -> Any:
+        """Perform an actual import of a lazy object."""
+        lazy_objects = self.lazy_objects.copy()
+        lazy_objects.update(dict.fromkeys(references, lazy_object))
+        return self.context.run(
+            bind_lazy_object,
+            lazy_object,
+            loaded_object,
+            lazy_objects=lazy_objects,
+            global_ns=self._global_ns,
+            local_ns=self._local_ns,
+        )
 
     def __enter__(self) -> Self:
         """Enable lazy importing mode."""
