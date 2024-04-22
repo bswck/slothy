@@ -18,6 +18,10 @@ assert_inactive()
 with pytest.raises(NameError):
     member
 
+with pytest.raises(RuntimeError, match="Cannot enter .+ twice"):
+    with LAZY_IMPORTING:
+        pass
+
 @supports_lazy_access
 def get_member() -> str:
     return member
