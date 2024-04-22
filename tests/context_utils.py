@@ -12,7 +12,7 @@ def assert_lazy_loading(module_name: str | None = None) -> None:
     ) if loading_state else "expected loading state, got importing" + where
 
 
-def assert_importing(module_name: str | None = None) -> None:
+def assert_lazy_importing(module_name: str | None = None) -> None:
     importing_state, loading_state = lazy_importing.get(), lazy_loading.get()
     where = f" in module {module_name}" if module_name else ""
     assert not loading_state, (

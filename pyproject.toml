@@ -134,6 +134,10 @@ required-imports = ["from __future__ import annotations"]
 
 [tool.mypy]
 strict = true
+mypy_path = ".,tests/_layouts/"
+
+[tool.pyright]
+extraPaths = ["tests/_layouts/"]
 
 [tool.towncrier]
 directory = "news"
