@@ -1,6 +1,6 @@
-# This file was generated from skeleton-ci/skeleton-python@0.0.2rc-219-g781ce0c.
+# This file was generated from skeleton-ci/skeleton-python@0.0.2rc-225-g925394d.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-219-g781ce0c/project/%23%25%20if%20precommit%20%25%23.pre-commit-config.yaml%23%25%20endif%20%25%23.jinja
+# https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-225-g925394d/project/%23%25%20if%20precommit%20%25%23.pre-commit-config.yaml%23%25%20endif%20%25%23.jinja
 
 default_install_hook_types:
 - "pre-commit"

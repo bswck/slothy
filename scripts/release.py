@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # (C) 2023–present Bartosz Sławecki (bswck)
 #
-# This file was generated from skeleton-ci/skeleton-python@0.0.2rc-219-g781ce0c.
+# This file was generated from skeleton-ci/skeleton-python@0.0.2rc-225-g925394d.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-219-g781ce0c/project/scripts/release.py.jinja
+# https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-225-g925394d/project/scripts/release.py.jinja
 #
 """
 Automate the release process by updating local files, creating and pushing a new tag.
@@ -70,12 +70,11 @@ def _run(*prompt: str) -> None:
     subprocess.run([*prompt], check=True)
 
 
-def release(version: str, /, next_version: str = "patch") -> None:
+def release(version: str, /) -> None:
     """Release a semver version."""
     print(welcome_msg := "Simple release utility.".title())
     print("-" * len(welcome_msg))
     _LOGGER.info("Release version: %s", version)
-    _LOGGER.info("Post-release version: %s", next_version)
 
     _run("pre-commit", "run", "--all-files", "--hook-stage", "pre-push")
     changed_files = _command("git status --porcelain")
@@ -182,8 +181,6 @@ def release(version: str, /, next_version: str = "patch") -> None:
             _run("gh", "release", "create", new_version, "--generate-notes")
 
     _LOGGER.info("Done.")
-    _LOGGER.info("Bumping to the next patch version...")
-    _run("poetry", "version", next_version)
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -200,12 +197,6 @@ def main(argv: list[str] | None = None) -> None:
             "The version to release. Defaults to the "
             f"current version ({current_version})"
         ),
-    )
-    parser.add_argument(
-        "-n",
-        "--next",
-        dest="next_version",
-        default="patch",
     )
     release(*vars(parser.parse_args(argv)).values())
 

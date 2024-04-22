@@ -1,6 +1,6 @@
-# This file was generated from skeleton-ci/skeleton-python@0.0.2rc-219-g781ce0c.
+# This file was generated from skeleton-ci/skeleton-python@0.0.2rc-225-g925394d.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-219-g781ce0c/project/.github/workflows/audit.yml.jinja
+# https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-225-g925394d/project/.github/workflows/audit.yml.jinja
 
 # IMPORTANT!
 # Pinned versions of actions and Poetry are managed in a different repository.
@@ -23,7 +23,7 @@ jobs:
       with:
         cache: "poetry"
     - name: "Install the project"
-      run: "poetry install"
+      run: "poetry install --all-extras"
     - name: "Set up Python location for pip-audit"
       shell: "bash"
       run: 'echo "PIPAPI_PYTHON_LOCATION=$(poetry env info -e)" >> $GITHUB_ENV'

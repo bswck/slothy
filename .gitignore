@@ -1,6 +1,6 @@
-# This file was generated from skeleton-ci/skeleton-python@0.0.2rc-219-g781ce0c.
+# This file was generated from skeleton-ci/skeleton-python@0.0.2rc-225-g925394d.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-219-g781ce0c/project/.gitignore.jinja
+# https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-225-g925394d/project/.gitignore.jinja
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

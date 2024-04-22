@@ -1,9 +1,9 @@
-_commit: 0.0.2rc-219-g781ce0c
+_commit: 0.0.2rc-225-g925394d
 _src_path: gh:skeleton-ci/skeleton-python
 author: bswck
 cli: false
 copyright: Bartosz Sławecki
-description: 'Super-easy lazy importing in Python.'
+description: Super-easy lazy importing in Python.
 docs: true
 email: bartoszpiotrslawecki@gmail.com
 github: bswck
