@@ -27,7 +27,6 @@ else:
     __import__("pygments.formatters.terminal")
     __import__("pygments.util")
 
-
 locals_before_enter = {
     *locals(),  # Locals so far.
     "locals_before_enter",  # This name.
@@ -61,7 +60,7 @@ with LAZY_IMPORTING:
         assert isinstance(sys.modules["package.lazy_submodule"], LazyObject)
         assert isinstance(member, LazyObject)
 
-    with subtests.test("opt-out-context"):
+    with subtests.test("opt-out"):
         loaded_optout_module = LAZY_IMPORTING.load_lazy_object(optout_module)
         assert isinstance(sys.modules["optout_module"], ModuleType)
         LAZY_IMPORTING.bind_lazy_object(
@@ -70,7 +69,6 @@ with LAZY_IMPORTING:
             "optout_module",
         )
         assert optout_module is sys.modules["optout_module"]
-
 
 with subtests.test("state-after-exit"):
     assert_inactive()
@@ -86,7 +84,7 @@ with subtests.test("lazy-objects-unavailable-same-frame"):
         package
 
 # We now define this to test if lazy_importing overwrites it
-module_alias_dont_overwrite = None  # type: ignore[assignment]
+module_alias_dont_overwrite = None
 
 with subtests.test("single-use-context-manager"):
     with pytest.raises(RuntimeError, match="Cannot enter .+ twice"):
