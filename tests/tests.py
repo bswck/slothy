@@ -1,10 +1,13 @@
+from __future__ import annotations
 import sys
+from collections import defaultdict
 from types import ModuleType
 from typing import TYPE_CHECKING
 
 import pytest
 from lazy_importing import (
     LAZY_IMPORTING,
+    ALL_AUDITING_EVENTS,
     LazyObject,
     supports_lazy_access,
 )
@@ -15,6 +18,8 @@ from tests.context_utils import (
 )
 
 if TYPE_CHECKING:
+    from typing import Any
+
     from pytest_subtests import SubTests
 
     subtests: SubTests  # passed through runpy.run_path()
@@ -26,6 +31,13 @@ else:
     __import__("pygments.lexers.diff")
     __import__("pygments.formatters.terminal")
     __import__("pygments.util")
+
+audits_done: dict[str, list[tuple[Any, ...]]] = defaultdict(list)
+
+@sys.addaudithook
+def audit_hook(ev: str, args: tuple[Any, ...]) -> None:
+    if ev in ALL_AUDITING_EVENTS:
+        audits_done[ev].append(args)
 
 locals_before_enter = {
     *locals(),  # Locals so far.
@@ -109,3 +121,6 @@ def test_access() -> None:
         assert module_alias_dont_overwrite is None
 
 test_access()
+
+with subtests.test("all-audits-covered"):
+    assert set(audits_done) == ALL_AUDITING_EVENTS

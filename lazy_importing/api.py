@@ -11,6 +11,7 @@ from importlib.abc import Loader, MetaPathFinder
 from importlib.machinery import ModuleSpec
 from itertools import accumulate
 from sys import _getframe as getframe
+from sys import audit, modules
 from threading import RLock
 from typing import TYPE_CHECKING, cast
 
@@ -29,6 +30,8 @@ if TYPE_CHECKING:
 
 __all__ = (
     # Classes
+    "ALL_AUDITING_EVENTS",
+    "AuditingEvents",
     "LazyImportingContext",
     "LazyObject",
     "LazyObjectLoader",
@@ -50,6 +53,31 @@ lazy_loading: ContextVar[bool] = ContextVar("lazy_loading", default=False)
 old_meta_path: ContextVar[MetaPath] = ContextVar("old_meta_path")
 
 
+ALL_AUDITING_EVENTS: set[str] = set()
+
+
+def _event(name: str) -> str:
+    ALL_AUDITING_EVENTS.add(name)
+    return name
+
+
+class AuditingEvents:
+    """Auditing events raised by [lazy_importing][]."""
+
+    BEFORE_ENABLE: str = _event("lazy_importing.before_enable")
+    AFTER_ENABLE: str = _event("lazy_importing.after_enable")
+    BEFORE_DISABLE: str = _event("lazy_importing.before_disable")
+    AFTER_DISABLE: str = _event("lazy_importing.after_disable")
+    CREATE_MODULE: str = _event("lazy_importing.create_module")
+    EXEC_MODULE: str = _event("lazy_importing.exec_module")
+    FIND_SPEC: str = _event("lazy_importing.find_spec")
+    BEFORE_AUTOBIND: str = _event("lazy_importing.before_autobind")
+    AFTER_AUTOBIND: str = _event("lazy_importing.after_autobind")
+    BEFORE_INJECT_LOADER: str = _event("lazy_importing.before_inject_loader")
+    AFTER_INJECT_LOADER: str = _event("lazy_importing.after_inject_loader")
+    LAZY_OBJECT_SETATTR: str = _event("lazy_importing.LazyObject.__setattr__")
+
+
 def _get_import_targets(lazy_object_name: str) -> tuple[str, str | None]:
     """Return a (module, attribute) import target names pair from a lazy object name."""
     parts = iter(lazy_object_name.rsplit(".", 1))
@@ -60,14 +88,14 @@ def _cleanup_lazy_object(lazy_object: LazyObject) -> None:
     parent_module_names = lazy_object.__name__.split(".")[:-1]
     for module_name in accumulate(parent_module_names, lambda *parts: ".".join(parts)):
         # Go through parents to delete references to self.
-        lazy_parent = sys.modules.get(module_name)
+        lazy_parent = modules.get(module_name)
         if not isinstance(lazy_parent, LazyObject):
             # That's an important check.
             # We don't remove modules that were (most probably)
             # eagerly imported earlier!
             continue
         try:
-            del sys.modules[module_name]
+            del modules[module_name]
         except KeyError:
             # Assume that if it's not present, it was cleaned up correctly.
             # There is no risk of a race condition (we're inside a lock).
@@ -82,7 +110,7 @@ def _cleanup_lazy_object(lazy_object: LazyObject) -> None:
         for attr in attrs:
             delattr(lazy_parent, attr)
     with suppress(KeyError):
-        del sys.modules[lazy_object.__name__]
+        del modules[lazy_object.__name__]
 
 
 def bind_lazy_object(  # noqa: PLR0913
@@ -102,6 +130,7 @@ def bind_lazy_object(  # noqa: PLR0913
     for ref, other in lazy_objects.items():
         if other is not lazy_object:
             continue
+        audit(AuditingEvents.BEFORE_AUTOBIND, lazy_object, loaded_object, local_ns, ref)
         if lazy_importing.get():
             # If we're inside LAZY_IMPORTING block, force the replacement.
             local_ns[ref] = loaded_object
@@ -109,6 +138,7 @@ def bind_lazy_object(  # noqa: PLR0913
             # We're outside LAZY_IMPORTING block.
             # Respect if the caller frame decided to define the attribute otherwise.
             local_ns.setdefault(ref, loaded_object)
+        audit(AuditingEvents.AFTER_AUTOBIND, lazy_object, loaded_object, local_ns, ref)
 
 
 def load_lazy_object(
@@ -154,6 +184,11 @@ class LazyObject:
     __spec__: ModuleSpec
     __package__: str
 
+    def __setattr__(self, attr: str, value: Any) -> None:
+        """Intercept attribute assignment and raise an error if it's attempted."""
+        audit(AuditingEvents.LAZY_OBJECT_SETATTR, self, attr, value)
+        super().__setattr__(attr, value)
+
     @property
     def __path__(self) -> list[str]:
         """Return the path. Necessary to allow declaring package imports."""
@@ -164,7 +199,7 @@ class LazyObject:
         def __repr__(self) -> str:
             """Return a representation of self."""
             # Needs decision: try to `textwrap.shorten()` on the module name?
-            return f"<lazy object {self.__name__!r}>"
+            return f"<lazy object {getattr(self, '__name__', '(in construction)')!r}>"
 
 
 class LazyObjectLoader(dict):  # type: ignore[type-arg]
@@ -304,7 +339,9 @@ class LazyImportingContext:
         lazy_object_loader.global_ns = self._global_ns
         lazy_object_loader.local_ns = self._local_ns
         lazy_object_loader.lazy_objects = self.lazy_objects
+        audit(AuditingEvents.BEFORE_INJECT_LOADER, self, lazy_object_loader)
         self._local_ns[OBJECT_LOADER_ATTRIBUTE] = lazy_object_loader
+        audit(AuditingEvents.AFTER_INJECT_LOADER, self, lazy_object_loader)
 
     def __exit__(self, *exc_info: object) -> None:
         """Disable lazy importing mode."""
@@ -349,30 +386,38 @@ class LazyImporter(Loader, MetaPathFinder):
 
     def enable(self) -> None:
         """Delegate processing all import finder requests into the lazy importer."""
+        audit(AuditingEvents.BEFORE_ENABLE, self)
         self._lock.acquire()
         # Important:
         # We don't clear the original list not to break imports based on
         # the old sys.meta_path object. Instead, we overwrite with a new list.
         sys.meta_path = [self]
+        audit(AuditingEvents.AFTER_ENABLE, self)
 
     def disable(self) -> None:
         """Remove lazy importer from meta path."""
         # Bring back the same instance of sys.meta_path.
+        audit(AuditingEvents.BEFORE_DISABLE, self)
         sys.meta_path = self.meta_path
         self._lock.release()
+        audit(AuditingEvents.AFTER_DISABLE, self)
 
-    def create_module(self, spec: ModuleSpec) -> ModuleType:  # noqa: ARG002
+    def create_module(self, spec: ModuleSpec) -> ModuleType:
         """Create a module."""
-        return cast("ModuleType", LazyObject())
+        lazy_object = LazyObject()
+        audit(AuditingEvents.CREATE_MODULE, self, spec, lazy_object)
+        return cast("ModuleType", lazy_object)
 
     def exec_module(self, module: Any) -> None:
-        """Do nothing."""
+        """Do nothing (but raise an auditing event)."""
+        audit(AuditingEvents.EXEC_MODULE, self, module)
 
     def find_spec(
         self,
         fullname: str,
-        path: Sequence[str] | None = None,  # noqa: ARG002
-        target: ModuleType | None = None,  # noqa: ARG002
+        path: Sequence[str] | None = None,
+        target: ModuleType | None = None,
     ) -> ModuleSpec | None:
         """Find the actual spec and preserve it for loading it lazily later."""
+        audit(AuditingEvents.FIND_SPEC, self, fullname, path, target)
         return ModuleSpec(fullname, self)
