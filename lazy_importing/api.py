@@ -48,6 +48,7 @@ __all__ = (
 
 EXC_INFO_MISSING: tuple[None, None, None] = (None, None, None)
 OBJECT_LOADER_ATTRIBUTE: str = "__builtins__"
+MISSING_SENTINEL: object = object()
 lazy_importing: ContextVar[bool] = ContextVar("lazy_importing", default=False)
 lazy_loading: ContextVar[bool] = ContextVar("lazy_loading", default=False)
 old_meta_path: ContextVar[MetaPath] = ContextVar("old_meta_path")
@@ -280,17 +281,16 @@ def load_lazy_object(
     meta_path = sys.meta_path
     if optout:
         sys.meta_path = old_meta_path.get()
-    missing = object()
-    ret = missing
+    obj = MISSING_SENTINEL
     if attribute_name:
         base_module = import_module(module_name, package=package)
         with suppress(AttributeError):
-            ret = getattr(base_module, attribute_name)
-    if ret is missing:
-        ret = import_module(target_name, package=package)
+            obj = getattr(base_module, attribute_name)
+    if obj is MISSING_SENTINEL:
+        obj = import_module(target_name, package=package)
     if optout:
         sys.meta_path = meta_path
-    return ret
+    return obj
 
 
 class LazyObject:
