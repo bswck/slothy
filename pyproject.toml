@@ -134,6 +134,7 @@ required-imports = ["from __future__ import annotations"]
 
 [tool.mypy]
 strict = true
+explicit_package_bases = true
 mypy_path = ".,tests/_layouts/"
 
 [tool.pyright]
