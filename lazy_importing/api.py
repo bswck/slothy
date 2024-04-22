@@ -65,17 +65,134 @@ class AuditingEvents:
     """Auditing events raised by [lazy_importing][]."""
 
     BEFORE_ENABLE: str = _event("lazy_importing.before_enable")
+    """
+    Auditing event raised before enabling lazy importing.
+    Takes 1 argument: relevant [importer][lazy_importing.api.LazyImporter] object.
+    """
+
     AFTER_ENABLE: str = _event("lazy_importing.after_enable")
+    """
+    Auditing event raised after enabling lazy importing.
+    Takes 1 argument: relevant [importer][lazy_importing.api.LazyImporter] object.
+    """
+
     BEFORE_DISABLE: str = _event("lazy_importing.before_disable")
+    """
+    Auditing event raised before disabling lazy importing.
+    Takes 1 argument: relevant [importer][lazy_importing.api.LazyImporter] object.
+    """
+
     AFTER_DISABLE: str = _event("lazy_importing.after_disable")
+    """
+    Auditing event raised after disabling lazy importing.
+    Takes 1 argument: relevant [importer][lazy_importing.api.LazyImporter] object.
+    """
+
+    BEFORE_FIND_SPEC: str = _event("lazy_importing.before_find_spec")
+    """
+    Auditing event raised before creating a temporary spec for a lazily imported module.
+    Takes 4 arguments:
+
+    - relevant [importer][lazy_importing.api.LazyImporter] object,
+    - module full name ([str][]),
+    - module path ([str][] or [None][]),
+    - module target ([str][] or [None][]).
+    """
+
+    AFTER_FIND_SPEC: str = _event("lazy_importing.after_find_spec")
+    """
+    Auditing event raised after creating a temporary spec for a lazily imported module.
+    Takes 2 arguments:
+
+    - relevant [importer][lazy_importing.api.LazyImporter] object,
+    - newly created [module spec][importlib.machinery.ModuleSpec] object.
+    """
+
     CREATE_MODULE: str = _event("lazy_importing.create_module")
+    """
+    Auditing event raised after creating lazy object as a module
+    upon import system request.
+
+    Takes 3 arguments:
+
+    - relevant [importer][lazy_importing.api.LazyImporter] object,
+    - relevant [module spec][importlib.machinery.ModuleSpec] pbject.
+    - newly created [lazy object][lazy_importing.api.LazyObject].
+    """
+
     EXEC_MODULE: str = _event("lazy_importing.exec_module")
-    FIND_SPEC: str = _event("lazy_importing.find_spec")
+    """
+    Auditing event raised when module execution is requested.
+    Takes 2 arguments:
+
+    - relevant [importer][lazy_importing.api.LazyImporter] object,
+    - relevant [lazy object][lazy_importing.api.LazyObject].
+    """
+
     BEFORE_AUTOBIND: str = _event("lazy_importing.before_autobind")
+    """
+    Auditing event raised before automatically binding a lazy object in the targeted
+    namespace.
+    Takes 4 arguments:
+
+    - relevant [lazy object][lazy_importing.api.LazyObject],
+    - finally loaded object to replace the lazy object,
+    - targeted namespace,
+    - identifier of the object (collected upon
+      [context manager][lazy_importing.api.LazyImportingContext] exit).
+    """
+
     AFTER_AUTOBIND: str = _event("lazy_importing.after_autobind")
+    """
+    Auditing event raised after automatically binding a lazy object in the targeted
+    namespace.
+    Takes 4 arguments:
+
+    - relevant [lazy object][lazy_importing.api.LazyObject],
+    - finally loaded object to replace the lazy object,
+    - targeted namespace,
+    - identifier of the object (collected upon
+      [context manager][lazy_importing.api.LazyImportingContext] exit).
+    """
+
     BEFORE_INJECT_LOADER: str = _event("lazy_importing.before_inject_loader")
+    """
+    Auditing event raised before injecting a
+    [lazy object loader][lazy_importing.api.LazyObjectLoader] in the targeted namespace.
+    Takes 2 arguments:
+
+    - relevant [lazy object][lazy_importing.api.LazyObject],
+    - the loader.
+    """
+
     AFTER_INJECT_LOADER: str = _event("lazy_importing.after_inject_loader")
+    """
+    Auditing event raised after injecting a
+    [lazy object loader][lazy_importing.api.LazyObjectLoader] in the targeted namespace.
+    Takes 2 arguments:
+
+    - relevant [lazy object][lazy_importing.api.LazyObject],
+    - the loader.
+    """
+
     LAZY_OBJECT_SETATTR: str = _event("lazy_importing.LazyObject.__setattr__")
+    """
+    Auditing event raised before setting an attribute on a lazy object.
+    Takes 3 arguments:
+
+    - relevant [lazy object][lazy_importing.api.LazyObject],
+    - attribute name,
+    - value.
+    """
+
+    LAZY_OBJECT_DELATTR: str = _event("lazy_importing.LazyObject.__delattr__")
+    """
+    Auditing event raised before deleting an attribute from a lazy object.
+    Takes 2 arguments:
+
+    - relevant [lazy object][lazy_importing.api.LazyObject],
+    - attribute name.
+    """
 
 
 def _get_import_targets(lazy_object_name: str) -> tuple[str, str | None]:
@@ -188,6 +305,11 @@ class LazyObject:
         """Intercept attribute assignment and raise an error if it's attempted."""
         audit(AuditingEvents.LAZY_OBJECT_SETATTR, self, attr, value)
         super().__setattr__(attr, value)
+
+    def __delattr__(self, attr: str) -> None:
+        """Intercept attribute assignment and raise an error if it's attempted."""
+        audit(AuditingEvents.LAZY_OBJECT_DELATTR, self, attr)
+        super().__delattr__(attr)
 
     @property
     def __path__(self) -> list[str]:
@@ -419,5 +541,7 @@ class LazyImporter(Loader, MetaPathFinder):
         target: ModuleType | None = None,
     ) -> ModuleSpec | None:
         """Find the actual spec and preserve it for loading it lazily later."""
-        audit(AuditingEvents.FIND_SPEC, self, fullname, path, target)
-        return ModuleSpec(fullname, self)
+        audit(AuditingEvents.BEFORE_FIND_SPEC, self, fullname, path, target)
+        spec = ModuleSpec(fullname, self)
+        audit(AuditingEvents.AFTER_FIND_SPEC, self, spec)
+        return spec
