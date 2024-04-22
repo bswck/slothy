@@ -217,13 +217,13 @@ def _cleanup_lazy_object(lazy_object: LazyObject) -> None:
             # Assume that if it's not present, it was cleaned up correctly.
             # There is no risk of a race condition (we're inside a lock).
             continue
-        attrs = set()
-        for attr, child in vars(lazy_parent).items():
-            if not isinstance(child, LazyObject):
-                continue
-            # Assume a parent doesn't lie about their child
-            # (would have to be set manually).
-            attrs.add(attr)
+        # Assume a parent doesn't lie about their child
+        # (would have to be set manually).
+        attrs = {
+            attr
+            for attr, child in vars(lazy_parent).items()
+            if isinstance(child, LazyObject)
+        }
         for attr in attrs:
             delattr(lazy_parent, attr)
     with suppress(KeyError):
