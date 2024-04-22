@@ -32,6 +32,7 @@ else:
     __import__("pygments.formatters.terminal")
     __import__("pygments.util")
 
+# Dict to keep track of audits and arguments passed.
 audits_done: dict[str, list[tuple[Any, ...]]] = defaultdict(list)
 
 @sys.addaudithook
@@ -39,13 +40,7 @@ def audit_hook(ev: str, args: tuple[Any, ...]) -> None:
     if ev in ALL_AUDITING_EVENTS:
         audits_done[ev].append(args)
 
-locals_before_enter = {
-    *locals(),  # Locals so far.
-    "locals_before_enter",  # This name.
-    # Opt-out module related. These will stay after exiting LAZY_IMPORTING.
-    "optout_module",
-    "loaded_optout_module",
-}
+importer = LAZY_IMPORTING.importer
 
 with LAZY_IMPORTING:
     with subtests.test("state-after-enter"):
@@ -88,7 +83,24 @@ with subtests.test("state-after-exit"):
 with subtests.test("frame-cleanup"):
     # Check if locals defined before entering the context manager
     # are the same after we exit.
-    assert locals_before_enter == set(locals())
+    with pytest.raises(NameError):
+        package
+    with pytest.raises(NameError):
+        module
+    with pytest.raises(NameError):
+        module_alias
+    with pytest.raises(NameError):
+        module_alias_dont_overwrite
+    optout_module  # Shouldn't raise.
+    loaded_optout_module  # Shouldn't raise.
+    with pytest.raises(NameError):
+        member
+    with pytest.raises(NameError):
+        eager_submodule_member
+    with pytest.raises(NameError):
+        lazy_submodule
+    with pytest.raises(NameError):
+        lazy_submodule_alias
 
 with subtests.test("lazy-objects-unavailable-same-frame"):
     with pytest.raises(NameError):
