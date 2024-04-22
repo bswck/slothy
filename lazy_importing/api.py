@@ -471,7 +471,8 @@ class LazyImportingContext:
         self.importer.disable()
         self.context.run(lazy_importing.set, False)
         self._cleanup_objects()
-        if exc_info == EXC_INFO_MISSING:
+        # Treat exc_info==() as manual calls with assumed success.
+        if not exc_info or exc_info == EXC_INFO_MISSING:
             self._inject_loader()
 
 
