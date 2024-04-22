@@ -112,6 +112,9 @@ def test_access() -> None:
         assert "package.eager_submodule" in sys.modules  # it's eager!
         assert eager_submodule_member == "package.eager_submodule"
 
+    with pytest.raises(NameError):
+        undefined  # type: ignore[name-defined]
+
     assert isinstance(lazy_submodule, ModuleType)
     assert lazy_submodule.member == "package.lazy_submodule"
 
