@@ -51,7 +51,7 @@ def supports_lazy_access(f: Callable[P, R]) -> Callable[P, R]:
 
     The sole purpose of this function is to create an additional external frame
     before the decorated function `f` is called. This ensures that
-    the [lazy object loader](lazy_importing.cm.LazyObjectLoader)
+    the [lazy object loader][lazy_importing.api.LazyObjectLoader]
     is requested a missing identifier during the function being called.
     """
     if version_info < (3, 10):
