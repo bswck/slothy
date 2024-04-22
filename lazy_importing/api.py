@@ -39,7 +39,7 @@ __all__ = (
 
 
 EXC_INFO_MISSING: tuple[None, None, None] = (None, None, None)
-LOADER_ATTRIBUTE: str = "__builtins__"
+OBJECT_LOADER_ATTRIBUTE: str = "__builtins__"
 lazy_importing: ContextVar[bool] = ContextVar("lazy_importing", default=False)
 lazy_loading: ContextVar[bool] = ContextVar("lazy_loading", default=False)
 old_meta_path: ContextVar[MetaPath] = ContextVar("old_meta_path")
@@ -100,18 +100,24 @@ def bind_lazy_object(
             local_ns.setdefault(ref, loaded_object)
 
 
-def import_lazy_object(
+def load_lazy_object(
     lazy_object: LazyObject,
-    global_ns: dict[str, Any],
-    local_ns: dict[str, Any],
+    global_ns: dict[str, Any] | None = None,
+    local_ns: dict[str, Any] | None = None,
 ) -> Any:
-    """Perform an import of a lazy object."""
-    package = local_ns.get("__package__") or global_ns.get("__package__")
-    module_name, attribute_name = _get_import_targets(lazy_object.__name__)
-    module = import_module(module_name, package=package)
-    if attribute_name is None:
-        return module
-    return getattr(module, attribute_name)
+    """Perform an actual import of a lazy object."""
+    package = None
+    if local_ns:
+        package = local_ns.get("__package__")
+    if global_ns:
+        package = package or global_ns.get("__package__")
+    target_name = lazy_object.__name__
+    module_name, attribute_name = _get_import_targets(target_name)
+    if attribute_name:
+        base_module = import_module(module_name, package=package)
+        with suppress(AttributeError):
+            return getattr(base_module, attribute_name)
+    return import_module(target_name, package=package)
 
 
 class LazyObject:
@@ -152,7 +158,7 @@ class LazyObjectLoader(dict):  # type: ignore[type-arg]
             lazy_object = self.lazy_objects[key]
         except KeyError:
             raise NameError(key) from None
-        final_object = import_lazy_object(
+        final_object = load_lazy_object(
             lazy_object,
             global_ns=self.global_ns,
             local_ns=self.local_ns,
@@ -235,16 +241,16 @@ class LazyImportingContext:
             _cleanup_lazy_object(lazy_object=lazy_object)
 
     def _inject_loader(self) -> None:
-        builtins = self._local_ns.get(LOADER_ATTRIBUTE)
+        builtins = self._local_ns.get(OBJECT_LOADER_ATTRIBUTE)
         if builtins is None:
-            builtins = self._global_ns[LOADER_ATTRIBUTE]
+            builtins = self._global_ns[OBJECT_LOADER_ATTRIBUTE]
         if not isinstance(builtins, dict):
             builtins = vars(builtins)
         lazy_object_loader = self._object_loader_class(builtins)
         lazy_object_loader.global_ns = self._global_ns
         lazy_object_loader.local_ns = self._local_ns
         lazy_object_loader.lazy_objects = self._lazy_objects
-        self._local_ns[LOADER_ATTRIBUTE] = lazy_object_loader
+        self._local_ns[OBJECT_LOADER_ATTRIBUTE] = lazy_object_loader
 
     def __exit__(self, *exc_info: object) -> None:
         """Disable lazy importing mode."""
