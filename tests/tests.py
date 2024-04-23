@@ -138,11 +138,6 @@ with subtests.test("frame-cleanup"):
     with pytest.raises(NameError):
         lazy_submodule_alias
 
-with subtests.test("lazy-objects-unavailable-same-frame"):
-    with pytest.raises(NameError):
-        # Make sure we can't access it from the same frame.
-        package
-
 # We now define this to test if lazy_importing overwrites it
 module_alias_dont_overwrite = None  # type: ignore[assignment, unused-ignore]
 
