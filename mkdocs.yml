@@ -1,6 +1,6 @@
-# This file was generated from skeleton-ci/skeleton-python@0.0.2rc-226-g9c7f11f.
+# This file was generated from skeleton-ci/skeleton-python@0.0.2rc-231-gdf16d55.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-226-g9c7f11f/project/%23%25%20if%20docs%20%25%23mkdocs.yml%23%25%20endif%20%25%23.jinja
+# https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-231-gdf16d55/project/%23%25%20if%20docs%20%25%23mkdocs.yml%23%25%20endif%20%25%23.jinja
 
 site_name: "lazy-importing"
 site_description: "Super-easy lazy importing in Python."
@@ -68,9 +68,22 @@ plugins:
     handlers:
       python:
         options:
+          # https://mkdocstrings.github.io/python/usage/configuration/
           docstring_style: "numpy"
+          docstring_section_style: "list"
+          docstring_options:
+            ignore_init_summary: true
+            trim_doctest_flags: false
           members_order: "source"
+          merge_init_into_class: true
+          parameter_headings: true
+          show_inheritance_diagram: true
+          show_if_no_docstring: true
           show_signature_annotations: true
+          show_labels: false
+          show_symbol_type_heading: true
+          show_symbol_type_toc: true
+          summary: true
         paths: ["lazy_importing/"]
         import:
         - "https://docs.python.org/3/objects.inv"

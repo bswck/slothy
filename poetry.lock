@@ -1015,7 +1015,6 @@ Markdown = ">=3.3"
 MarkupSafe = ">=1.1"
 mkdocs = ">=1.4"
 mkdocs-autorefs = ">=0.3.1"
-mkdocstrings-python = {version = ">=0.5.2", optional = true, markers = "extra == \"python\""}
 platformdirs = ">=2.2.0"
 pymdown-extensions = ">=6.3"
 typing-extensions = {version = ">=4.1", markers = "python_version < \"3.10\""}
@@ -1027,18 +1026,22 @@ python-legacy = ["mkdocstrings-python-legacy (>=0.2.1)"]
 
 [[package]]
 name = "mkdocstrings-python"
-version = "1.10.0"
+version = "1.10.0.1.8.1"
 description = "A Python handler for mkdocstrings."
 optional = false
 python-versions = ">=3.8"
-files = [
-    {file = "mkdocstrings_python-1.10.0-py3-none-any.whl", hash = "sha256:ba833fbd9d178a4b9d5cb2553a4df06e51dc1f51e41559a4d2398c16a6f69ecc"},
-    {file = "mkdocstrings_python-1.10.0.tar.gz", hash = "sha256:71678fac657d4d2bb301eed4e4d2d91499c095fd1f8a90fa76422a87a5693828"},
-]
+files = []
+develop = false
 
 [package.dependencies]
 griffe = ">=0.44"
 mkdocstrings = ">=0.24.2"
+
+[package.source]
+type = "git"
+url = "git@github.com:pawamoy-insiders/mkdocstrings-python.git"
+reference = "HEAD"
+resolved_reference = "5aaff00d8aa8b584bcd03d824457eb7a014d63e0"
 
 [[package]]
 name = "more-itertools"
@@ -1892,4 +1895,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8"
-content-hash = "a099b4e5b1cc73019bffd5b8f5d0beefe898086dbddb11c5a9f308291c38d091"
+content-hash = "2e6763d7b39832f9f7cbf3b11e6fda3b6f80381e22f1845585426a61fbd1e127"

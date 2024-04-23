@@ -1,6 +1,6 @@
-# This file was generated from skeleton-ci/skeleton-python@0.0.2rc-226-g9c7f11f.
+# This file was generated from skeleton-ci/skeleton-python@0.0.2rc-231-gdf16d55.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-226-g9c7f11f/project/.github/workflows/mypy.yml.jinja
+# https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-231-gdf16d55/project/.github/workflows/mypy.yml.jinja
 
 # IMPORTANT!
 # Pinned versions of actions and Poetry are managed in a different repository.
