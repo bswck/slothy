@@ -11,6 +11,10 @@ watch:
 
 nav:
 - "Overview": "index.md"
+- "Why Lazy Importing?": "why_lazy_importing.md"
+- "Installation": "installation.md"
+- "Usage": "usage.md"
+- "How It Works": "how_it_works.md"
 - "API Reference": "api.md"
 - "Contributing": "contributing.md"
 - "Code of Conduct": "code_of_conduct.md"
