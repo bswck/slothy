@@ -1,4 +1,4 @@
-# <div align="center">lazy-importing<br>[![skeleton](https://img.shields.io/badge/0.0.2rc–231–gdf16d55-skeleton?label=%F0%9F%92%80%20skeleton-ci/skeleton-python&labelColor=black&color=grey&link=https%3A//github.com/skeleton-ci/skeleton-python)](https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-231-gdf16d55) [![Supported Python versions](https://img.shields.io/pypi/pyversions/lazy-importing.svg?logo=python&label=Python)](https://pypi.org/project/lazy-importing/) [![Package version](https://img.shields.io/pypi/v/lazy-importing?label=PyPI)](https://pypi.org/project/lazy-importing/)</div>
+# <div align="center">lazy-importing<br>[![skeleton](https://img.shields.io/badge/0.0.2rc–232–g14d4cbf-skeleton?label=%F0%9F%92%80%20skeleton-ci/skeleton-python&labelColor=black&color=grey&link=https%3A//github.com/skeleton-ci/skeleton-python)](https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-232-g14d4cbf) [![Supported Python versions](https://img.shields.io/pypi/pyversions/lazy-importing.svg?logo=python&label=Python)](https://pypi.org/project/lazy-importing/) [![Package version](https://img.shields.io/pypi/v/lazy-importing?label=PyPI)](https://pypi.org/project/lazy-importing/)</div>
 
 [![Tests](https://github.com/bswck/lazy-importing/actions/workflows/test.yml/badge.svg)](https://github.com/bswck/lazy-importing/actions/workflows/test.yml)
 [![Coverage](https://coverage-badge.samuelcolvin.workers.dev/bswck/lazy-importing.svg)](https://coverage-badge.samuelcolvin.workers.dev/redirect/bswck/lazy-importing)
@@ -108,9 +108,9 @@ poetry add lazy-importing
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 <!--
-This section was generated from skeleton-ci/skeleton-python@0.0.2rc-231-gdf16d55.
+This section was generated from skeleton-ci/skeleton-python@0.0.2rc-232-g14d4cbf.
 Instead of changing this particular file, you might want to alter the template:
-https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-231-gdf16d55/project/README.md.jinja
+https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-232-g14d4cbf/project/README.md.jinja
 -->
 > [!Note]
 > If you use Windows, it is highly recommended to complete the installation in the way presented below through [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install).

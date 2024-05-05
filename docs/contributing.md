@@ -1,8 +1,8 @@
 
 <!--
-This file was generated from skeleton-ci/skeleton-python@0.0.2rc-231-gdf16d55.
+This file was generated from skeleton-ci/skeleton-python@0.0.2rc-232-g14d4cbf.
 Instead of changing this particular file, you might want to alter the template:
-https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-231-gdf16d55/project/%23%25%20if%20docs%20%25%23docs%23%25%20endif%20%25%23/contributing.md.jinja
+https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-232-g14d4cbf/project/%23%25%20if%20docs%20%25%23docs%23%25%20endif%20%25%23/contributing.md.jinja
 -->
 # Contributing to [lazy-importing](https://github.com/bswck/lazy-importing) 🎉
 Contributions are very welcome. 🚀
@@ -47,9 +47,9 @@ Ready to contribute? Here's a quick guide on how to set up lazy-importing and ma
 
 
 <!--
-This section was generated from skeleton-ci/skeleton-python@0.0.2rc-231-gdf16d55.
+This section was generated from skeleton-ci/skeleton-python@0.0.2rc-232-g14d4cbf.
 Instead of changing this particular file, you might want to alter the template:
-https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-231-gdf16d55/project/%23%25%20if%20docs%20%25%23docs%23%25%20endif%20%25%23/contributing.md.jinja
+https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-232-g14d4cbf/project/%23%25%20if%20docs%20%25%23docs%23%25%20endif%20%25%23/contributing.md.jinja
 -->
 !!! Note
     If you use Windows, it is highly recommended to complete the installation in the way presented below through [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install).

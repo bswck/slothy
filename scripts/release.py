@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # (C) 2023–present Bartosz Sławecki (bswck)
 #
-# This file was generated from skeleton-ci/skeleton-python@0.0.2rc-231-gdf16d55.
+# This file was generated from skeleton-ci/skeleton-python@0.0.2rc-232-g14d4cbf.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-231-gdf16d55/project/scripts/release.py.jinja
+# https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-232-g14d4cbf/project/scripts/release.py.jinja
 #
 """
 Automate the release process by updating local files, creating and pushing a new tag.
