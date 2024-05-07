@@ -7,3 +7,9 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 <!-- insertion marker -->
 
+## [v0.1.0-beta](https://github.com/bswck/lazy-importing/tree/v0.1.0-beta) (2024-05-07)
+
+
+### Added
+
+- Basic functionality and documentation.
