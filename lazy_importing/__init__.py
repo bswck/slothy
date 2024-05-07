@@ -1,10 +1,6 @@
 # SPDX-License-Identifier: MIT
 # (C) 2024-present Bartosz Sławecki (bswck)
-"""
-`lazy_importing`.
-
-Super-easy lazy importing in Python.
-"""
+"""Super-easy lazy importing in Python."""
 # ruff: noqa: F403, PLE0604
 
 from __future__ import annotations
@@ -13,8 +9,10 @@ from functools import wraps
 from sys import version_info
 from typing import TYPE_CHECKING
 
-from lazy_importing import api
+from lazy_importing import api, audits, placeholder
 from lazy_importing.api import *
+from lazy_importing.audits import *
+from lazy_importing.placeholder import *
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -29,6 +27,8 @@ if TYPE_CHECKING:
 __all__ = (
     "api",
     *api.__all__,
+    *audits.__all__,
+    *placeholder.__all__,
 )
 
 LAZY_IMPORTING: api.LazyImportingContext

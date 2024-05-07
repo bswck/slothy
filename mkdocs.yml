@@ -77,11 +77,13 @@ plugins:
           members_order: "source"
           merge_init_into_class: true
           parameter_headings: true
+          show_submodules: true
           show_inheritance_diagram: true
-          show_if_no_docstring: true
-          show_signature_annotations: true
+          show_signature_annotations: false
+          signature_crossrefs: true
+          line_length: 60
           show_labels: false
-          show_symbol_type_heading: true
+          show_symbol_type_heading: false
           show_symbol_type_toc: true
           summary: true
         paths: ["lazy_importing/"]

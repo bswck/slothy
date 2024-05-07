@@ -9,4 +9,8 @@ if TYPE_CHECKING:
 
 
 def test_main(subtests: SubTests) -> None:
-    runpy.run_path("tests/tests.py", init_globals={"subtests": subtests})
+    runpy.run_path(
+        "tests/tests.py",
+        run_name="tests",
+        init_globals={"subtests": subtests},
+    )
