@@ -6,14 +6,14 @@ from types import ModuleType
 from typing import TYPE_CHECKING
 
 import pytest
-from lazy_importing import (
-    LAZY_IMPORTING,
+from slothy import (
+    SLOTHY,
     ALL_AUDITING_EVENTS,
     LazyObjectPlaceholder,
-    supports_lazy_access,
+    supports_slothy,
     audits,
 )
-from lazy_importing.api import lazy_importing, lazy_loading
+from slothy.api import slothy, lazy_loading
 
 if TYPE_CHECKING:
     from typing import Any
@@ -30,15 +30,15 @@ def audit_hook(ev: str, args: tuple[Any, ...]) -> None:
     if ev in ALL_AUDITING_EVENTS:
         audits_done[ev].append(args)
 
-importer = LAZY_IMPORTING.importer
+importer = SLOTHY.importer
 old_meta_path = sys.meta_path
 
 with subtests.test("state-before-enter"):
-    assert __name__ not in {*lazy_importing, *lazy_loading}
+    assert __name__ not in {*slothy, *lazy_loading}
 
-with LAZY_IMPORTING:
+with SLOTHY:
     with subtests.test("state-after-enter"):
-        assert __name__ in lazy_importing
+        assert __name__ in slothy
         assert __name__ not in lazy_loading
 
     assert sys.meta_path == [importer]
@@ -97,10 +97,10 @@ with LAZY_IMPORTING:
         assert isinstance(member, LazyObjectPlaceholder)
 
     with subtests.test("cant-opt-out"), pytest.raises(RuntimeError):
-        LAZY_IMPORTING.load_lazy_object(try_optout_module)
+        SLOTHY.load_lazy_object(try_optout_module)
 
 with subtests.test("state-after-exit"):
-    assert __name__ not in lazy_importing
+    assert __name__ not in slothy
     assert __name__ not in lazy_loading
 
 with subtests.test("audits-after-exit"):
@@ -129,15 +129,15 @@ with subtests.test("frame-cleanup"):
     with pytest.raises(NameError):
         lazy_submodule_alias
 
-# We now define this to test if lazy_importing overwrites it
+# We now define this to test if slothy overwrites it
 module_alias_dont_overwrite = None  # type: ignore[assignment, unused-ignore]
 
 with subtests.test("single-use-cm"), \
     pytest.raises(RuntimeError, match="Cannot enter .+ twice"), \
-    LAZY_IMPORTING:
+    SLOTHY:
     pass
 
-@supports_lazy_access
+@supports_slothy
 def test_access() -> None:
     # assert_inactive()
     with subtests.test("import-on-access"):

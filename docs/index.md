@@ -1,9 +1,9 @@
 
-# <div align="center">lazy-importing<br>[![skeleton](https://img.shields.io/badge/0.0.2rc–234–gca605f0-skeleton?label=%F0%9F%92%80%20skeleton-ci/skeleton-python&labelColor=black&color=grey&link=https%3A//github.com/skeleton-ci/skeleton-python)](https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-234-gca605f0) [![Supported Python versions](https://img.shields.io/pypi/pyversions/lazy-importing.svg?logo=python&label=Python)](https://pypi.org/project/lazy-importing/) [![Package version](https://img.shields.io/pypi/v/lazy-importing?label=PyPI)](https://pypi.org/project/lazy-importing/)</div>
+# <div align="center">slothy<br>[![skeleton](https://img.shields.io/badge/0.0.2rc–234–gca605f0-skeleton?label=%F0%9F%92%80%20skeleton-ci/skeleton-python&labelColor=black&color=grey&link=https%3A//github.com/skeleton-ci/skeleton-python)](https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-234-gca605f0) [![Supported Python versions](https://img.shields.io/pypi/pyversions/slothy.svg?logo=python&label=Python)](https://pypi.org/project/slothy/) [![Package version](https://img.shields.io/pypi/v/slothy?label=PyPI)](https://pypi.org/project/slothy/)</div>
 
-[![Tests](https://github.com/bswck/lazy-importing/actions/workflows/test.yml/badge.svg)](https://github.com/bswck/lazy-importing/actions/workflows/test.yml)
-[![Coverage](https://coverage-badge.samuelcolvin.workers.dev/bswck/lazy-importing.svg)](https://coverage-badge.samuelcolvin.workers.dev/redirect/bswck/lazy-importing)
-[![Documentation Status](https://readthedocs.org/projects/lazy-importing/badge/?version=latest)](https://lazy-importing.readthedocs.io/en/latest/?badge=latest)
+[![Tests](https://github.com/bswck/slothy/actions/workflows/test.yml/badge.svg)](https://github.com/bswck/slothy/actions/workflows/test.yml)
+[![Coverage](https://coverage-badge.samuelcolvin.workers.dev/bswck/slothy.svg)](https://coverage-badge.samuelcolvin.workers.dev/redirect/bswck/slothy)
+[![Documentation Status](https://readthedocs.org/projects/slothy/badge/?version=latest)](https://slothy.readthedocs.io/en/latest/?badge=latest)
 
 Super-easy lazy importing in Python.
 
@@ -16,9 +16,9 @@ as well as a convenient guard against expensive imports.
 # Usage
 
 ```py
-from lazy_importing import LAZY_IMPORTING
+from slothy import SLOTHY
 
-with LAZY_IMPORTING:
+with SLOTHY:
     from pandas import DataFrame
 
 # pandas.DataFrame not imported
@@ -38,17 +38,17 @@ if __name__ == "__main__":
 
 ## Python <3.10 Boilerplate
 On Python 3.8-3.9, every function accessing a lazily-imported object
-must be decorated with `supports_lazy_access`:
+must be decorated with `supports_slothy`:
 
 ```py
-from lazy_importing import LAZY_IMPORTING, supports_lazy_access
+from slothy import SLOTHY, supports_slothy
 
-with LAZY_IMPORTING:
+with SLOTHY:
     from pandas import DataFrame
 
 # pandas.DataFrame not imported
 
-@supports_lazy_access
+@supports_slothy
 def main() -> None:
     # pandas.DataFrame not imported
     print(DataFrame)  # <class 'pandas.core.frame.DataFrame'>
@@ -62,15 +62,15 @@ if __name__ == "__main__":
 
 ## Deleted References
 
-Importing symbols `with LAZY_IMPORTING` will make them intentionally unavailable in your
-namespace after the `with LAZY_IMPORTING` block finishes.
+Importing symbols `with SLOTHY` will make them intentionally unavailable in your
+namespace after the `with SLOTHY` block finishes.
 
 Consequently,
 
 ```py
-from lazy_importing import LAZY_IMPORTING
+from slothy import SLOTHY
 
-with LAZY_IMPORTING:
+with SLOTHY:
     from pandas import DataFrame
 
 try:
@@ -91,13 +91,13 @@ by sharing his knowledge of CPython implementation details regarding name lookup
 You might simply install it with pip:
 
 ```shell
-pip install lazy-importing
+pip install slothy
 ```
 
 If you use [Poetry](https://python-poetry.org/), then you might want to run:
 
 ```shell
-poetry add lazy-importing
+poetry add slothy
 ```
 
 ## For Contributors
@@ -111,7 +111,7 @@ https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-234-gca605f0/fragmen
 -->
 !!! Note
     If you use Windows, it is highly recommended to complete the installation in the way presented below through [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install).
-1.  Fork the [lazy-importing repository](https://github.com/bswck/lazy-importing) on GitHub.
+1.  Fork the [slothy repository](https://github.com/bswck/slothy) on GitHub.
 
 1.  [Install Poetry](https://python-poetry.org/docs/#installation).<br/>
     Poetry is an amazing tool for managing dependencies & virtual environments, building packages and publishing them.
@@ -132,8 +132,8 @@ https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-234-gca605f0/fragmen
 1.  Clone your fork locally and install dependencies.
 
     ```shell
-    git clone https://github.com/your-username/lazy-importing path/to/lazy-importing
-    cd path/to/lazy-importing
+    git clone https://github.com/your-username/slothy path/to/slothy
+    cd path/to/slothy
     poetry env use $(cat .python-version)
     poetry install
     ```
@@ -145,9 +145,9 @@ https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-234-gca605f0/fragmen
     pre-commit install
     ```
 
-For more information on how to contribute, check out [CONTRIBUTING.md](https://github.com/bswck/lazy-importing/blob/HEAD/CONTRIBUTING.md).<br/>
+For more information on how to contribute, check out [CONTRIBUTING.md](https://github.com/bswck/slothy/blob/HEAD/CONTRIBUTING.md).<br/>
 Always happy to accept contributions! ❤️
 
 # Legal Info
 © Copyright by Bartosz Sławecki ([@bswck](https://github.com/bswck)).
-<br />This software is licensed under the terms of [MIT License](https://github.com/bswck/lazy-importing/blob/HEAD/LICENSE).
+<br />This software is licensed under the terms of [MIT License](https://github.com/bswck/slothy/blob/HEAD/LICENSE).

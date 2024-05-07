@@ -14,7 +14,7 @@ from sys import _getframe as getframe
 from sys import meta_path, modules
 from typing import TYPE_CHECKING, cast
 
-from lazy_importing.audits import (
+from slothy.audits import (
     after_autobind,
     after_disable,
     after_enable,
@@ -28,7 +28,7 @@ from lazy_importing.audits import (
     on_create_module,
     on_exec_module,
 )
-from lazy_importing.placeholder import LazyObjectPlaceholder
+from slothy.placeholder import LazyObjectPlaceholder
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
@@ -47,7 +47,7 @@ else:
 
 __all__ = (
     # Classes
-    "LazyImportingContext",
+    "SlothyContext",
     "LazyObjectLoader",
 )
 
@@ -56,7 +56,7 @@ EXC_INFO_MISSING: tuple[None, None, None] = (None, None, None)
 OBJECT_LOADER_ATTRIBUTE: str = "__builtins__"
 MISSING_SENTINEL: object = object()
 
-lazy_importing: set[str] = set()
+slothy: set[str] = set()
 lazy_loading: set[str] = set()
 
 
@@ -108,11 +108,11 @@ def _bind_lazy_object(
         if other is not lazy_object:
             continue
         before_autobind(lazy_object, loaded_object, local_ns, ref)
-        if module_name is not None and module_name in lazy_importing:
-            # If we're inside LAZY_IMPORTING block, force the replacement.
+        if module_name is not None and module_name in slothy:
+            # If we're inside SLOTHY block, force the replacement.
             local_ns[ref] = loaded_object
         else:
-            # We're outside LAZY_IMPORTING block.
+            # We're outside SLOTHY block.
             # Respect if the caller frame decided to define the attribute otherwise.
             local_ns.setdefault(ref, loaded_object)
         after_autobind(lazy_object, loaded_object, local_ns, ref)
@@ -127,9 +127,9 @@ def _load_lazy_object(
     """Perform an actual import of a lazy object."""
     lazy_loading.add(module_name)
     try:
-        if module_name is not None and module_name in lazy_importing:
-            # If we're inside LAZY_IMPORTING block, raise a RuntimeError.
-            msg = "Cannot load objects inside LAZY_IMPORTING blocks"
+        if module_name is not None and module_name in slothy:
+            # If we're inside SLOTHY block, raise a RuntimeError.
+            msg = "Cannot load objects inside SLOTHY blocks"
             raise RuntimeError(msg)
         package = local_ns.get("__package__") or global_ns.get("__package__")
         target_name = lazy_object.__name__
@@ -180,7 +180,7 @@ class LazyObjectLoader(dict):  # type: ignore[type-arg]
         return final_object
 
 
-class LazyImportingContext:
+class SlothyContext:
     """A context manager that enables lazy importing."""
 
     lazy_objects: LazyObjectMapping
@@ -202,14 +202,14 @@ class LazyImportingContext:
         ----------
         importer_factory
             The importer to use.
-            Defaults to [`LazyImporter`][lazy_importing.api.LazyImporter].
+            Defaults to [`LazyImporter`][slothy.api.LazyImporter].
         local_ns
             The local namespace to use. Defaults to the local namespace of the caller.
         global_ns
             The global namespace to use. Defaults to the global namespace of the caller.
         object_loader_class
             The loader factory to use.
-            Defaults to [`LazyObjectLoader`][lazy_importing.LazyObjectLoader].
+            Defaults to [`LazyObjectLoader`][slothy.LazyObjectLoader].
         stack_offset
             The stack offset to use.
 
@@ -259,7 +259,7 @@ class LazyImportingContext:
         if self._exited:
             msg = "Cannot enter the same lazy importing context twice."
             raise RuntimeError(msg)
-        __lazy_importing_skip_frame__ = True  # noqa: F841
+        __slothy_skip_frame__ = True  # noqa: F841
         self.importer.enable()
         return self
 
@@ -300,10 +300,10 @@ class LazyImportingContext:
 _OLD_META_PATH: MetaPath = None  # type: ignore[assignment]
 
 
-class _LazyImportingSys(SysBase):
+class _SlothySys(SysBase):
     # This is hell...
     __meta_path__: MetaPath = meta_path
-    _lazy_importing_metapaths: ClassVar[dict[str, MetaPath]] = {}
+    _slothy_metapaths: ClassVar[dict[str, MetaPath]] = {}
 
     @property
     def meta_path(self) -> MetaPath:
@@ -313,13 +313,13 @@ class _LazyImportingSys(SysBase):
                 continue
             frame_locals = frame_info.frame.f_locals
             module_name = frame_locals.get("__name__")
-            if not frame_locals.get("__lazy_importing_skip_frame__"):
+            if not frame_locals.get("__slothy_skip_frame__"):
                 break
-            if module_name is not None and module_name in lazy_importing:
+            if module_name is not None and module_name in slothy:
                 break
-        if module_name is None or module_name not in lazy_importing:
+        if module_name is None or module_name not in slothy:
             return self.__meta_path__
-        return self._lazy_importing_metapaths.get(module_name, self.__meta_path__)
+        return self._slothy_metapaths.get(module_name, self.__meta_path__)
 
     @meta_path.setter
     def meta_path(self, value: MetaPath) -> None:
@@ -329,22 +329,22 @@ class _LazyImportingSys(SysBase):
                 continue
             frame_locals = frame_info.frame.f_locals
             module_name = frame_locals.get("__name__")
-            if not frame_locals.get("__lazy_importing_skip_frame__"):
+            if not frame_locals.get("__slothy_skip_frame__"):
                 break
-            if module_name is not None and module_name in lazy_importing:
+            if module_name is not None and module_name in slothy:
                 break
         if value is _OLD_META_PATH:
             if module_name is not None:
-                self._lazy_importing_metapaths.pop(module_name, None)
+                self._slothy_metapaths.pop(module_name, None)
                 return
             value = self.__meta_path__
-        if module_name is None or module_name not in lazy_importing:
+        if module_name is None or module_name not in slothy:
             self.__meta_path__ = value
             return
-        self._lazy_importing_metapaths[module_name] = value
+        self._slothy_metapaths[module_name] = value
 
 
-sys.__class__ = _LazyImportingSys
+sys.__class__ = _SlothySys
 
 
 class LazyImporter(Loader, MetaPathFinder):
@@ -382,24 +382,24 @@ class LazyImporter(Loader, MetaPathFinder):
         # We don't re-initialize the original list not to break imports based on
         # the old `sys.meta_path`. Instead, we overwrite the attribute with a new list
         # which will only be available to the module of name `module_name`;
-        # (`sys.meta_path`) is a dynamic property that examines `lazy_importing_module`.
-        if not isinstance(sys, _LazyImportingSys) or self._enabled:
+        # (`sys.meta_path`) is a dynamic property that examines `slothy_module`.
+        if not isinstance(sys, _SlothySys) or self._enabled:
             return
         self._enabled = True
         before_enable(self)
-        lazy_importing.add(self.module_name)
-        __lazy_importing_skip_frame__ = True  # noqa: F841
+        slothy.add(self.module_name)
+        __slothy_skip_frame__ = True  # noqa: F841
         sys.meta_path = [self]
         after_enable(self)
 
     def disable(self) -> None:
         """Remove lazy importer from meta path."""
         # Bring back the same instance of sys.meta_path.
-        if not (isinstance(sys, _LazyImportingSys) and self._enabled):
+        if not (isinstance(sys, _SlothySys) and self._enabled):
             return
         before_disable(self)
         sys.meta_path = _OLD_META_PATH
-        lazy_importing.discard(self.module_name)
+        slothy.discard(self.module_name)
         after_disable(self)
 
     def create_module(self, spec: ModuleSpec) -> ModuleType:

@@ -9,10 +9,10 @@ from functools import wraps
 from sys import version_info
 from typing import TYPE_CHECKING
 
-from lazy_importing import api, audits, placeholder
-from lazy_importing.api import *
-from lazy_importing.audits import *
-from lazy_importing.placeholder import *
+from slothy import api, audits, placeholder
+from slothy.api import *
+from slothy.audits import *
+from slothy.placeholder import *
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -31,27 +31,27 @@ __all__ = (
     *placeholder.__all__,
 )
 
-LAZY_IMPORTING: api.LazyImportingContext
+SLOTHY: api.SlothyContext
 
 
 def __dir__() -> tuple[str, ...]:
-    return ("LAZY_IMPORTING", *__all__)
+    return ("SLOTHY", *__all__)
 
 
 def __getattr__(name: str) -> Any:
-    if name == "LAZY_IMPORTING":
-        return api.LazyImportingContext(stack_offset=2)
+    if name == "SLOTHY":
+        return api.SlothyContext(stack_offset=2)
     msg = f"module {__name__!r} has no attribute {name!r}"
     raise AttributeError(msg)
 
 
-def supports_lazy_access(f: Callable[P, R]) -> Callable[P, R]:
+def supports_slothy(f: Callable[P, R]) -> Callable[P, R]:
     """
     Decorate a function for CPython 3.8 and 3.9 compatibility with lazy importing.
 
     The sole purpose of this function is to create an additional external frame
     before the decorated function `f` is called. This ensures that
-    the [lazy object loader][lazy_importing.api.LazyObjectLoader]
+    the [lazy object loader][slothy.api.LazyObjectLoader]
     is requested a missing identifier during the function being called.
     """
     if version_info < (3, 10):

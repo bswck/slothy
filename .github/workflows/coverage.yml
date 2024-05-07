@@ -55,7 +55,7 @@ jobs:
         --fail-under=0
         --directory=.covhtml/
         --show-contexts
-        --title "lazy-importing coverage for ${{github.sha}}"
+        --title "slothy coverage for ${{github.sha}}"
     - name: "Upload coverage HTML report"
       uses: "actions/upload-artifact@v4"
       with:

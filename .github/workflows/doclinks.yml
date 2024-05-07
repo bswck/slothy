@@ -26,4 +26,4 @@ jobs:
     steps:
     - uses: "readthedocs/actions/preview@v1"
       with:
-        project-slug: "lazy-importing"
+        project-slug: "slothy"

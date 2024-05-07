@@ -8,16 +8,16 @@ docs: true
 email: bartoszpiotrslawecki@gmail.com
 github: bswck
 license: MIT
-package: lazy_importing
+package: slothy
 precommit: true
 pypi: true
 pypi_description: Super-easy lazy importing in Python.
-pypi_project: lazy-importing
+pypi_project: slothy
 pypy: false
 python: '3.8'
 python_until: ''
-repo: lazy-importing
-rtd: lazy-importing
+repo: slothy
+rtd: slothy
 tests: true
 tidelift: false
 visibility: public

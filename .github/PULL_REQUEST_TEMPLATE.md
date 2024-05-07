@@ -1,5 +1,5 @@
 <!--
-Thank you for contributing to **lazy-importing**! 🎉
+Thank you for contributing to **slothy**! 🎉
 
 Provide a general summary of your proposed changes in the Title field above.
 -->

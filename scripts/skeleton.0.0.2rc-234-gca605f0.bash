@@ -101,27 +101,27 @@ make_context() {
 	)
 	export REPO_URL
 	REPO_URL=$(cat <<- 'EOF'
-		https://github.com/bswck/lazy-importing
+		https://github.com/bswck/slothy
 	EOF
 	)
 	export COVERAGE_URL
 	COVERAGE_URL=$(cat <<- 'EOF'
-		https://coverage-badge.samuelcolvin.workers.dev/redirect/bswck/lazy-importing
+		https://coverage-badge.samuelcolvin.workers.dev/redirect/bswck/slothy
 	EOF
 	)
 	export DOCS_URL
 	DOCS_URL=$(cat <<- 'EOF'
-		https://lazy-importing.readthedocs.io/en/latest/
+		https://slothy.readthedocs.io/en/latest/
 	EOF
 	)
 	export PYPI_URL
 	PYPI_URL=$(cat <<- 'EOF'
-		https://pypi.org/project/lazy-importing/
+		https://pypi.org/project/slothy/
 	EOF
 	)
 	export TIDELIFT_URL
 	TIDELIFT_URL=$(cat <<- 'EOF'
-		https://tidelift.com/subscription/pkg/pypi-lazy-importing?utm_source=pypi-lazy-importing
+		https://tidelift.com/subscription/pkg/pypi-slothy?utm_source=pypi-slothy
 	EOF
 	)
 	export SKELETON
@@ -171,12 +171,12 @@ make_context() {
 	)
 	export GH_REPO_ARGS
 	GH_REPO_ARGS=$(cat <<- 'EOF'
-		"bswck/lazy-importing" --public --source=./ --remote=upstream --description="Super-easy lazy importing in Python."
+		"bswck/slothy" --public --source=./ --remote=upstream --description="Super-easy lazy importing in Python."
 	EOF
 	)
 	export GH_ENSURE_ENV
 	GH_ENSURE_ENV=$(cat <<- 'EOF'
-		jq -n '{"deployment_branch_policy": {"protected_branches": false,"custom_branch_policies": true}}' | gh api -H "Accept: application/vnd.github+json" -X PUT "/repos/bswck/lazy-importing/environments/$1" --silent --input -
+		jq -n '{"deployment_branch_policy": {"protected_branches": false,"custom_branch_policies": true}}' | gh api -H "Accept: application/vnd.github+json" -X PUT "/repos/bswck/slothy/environments/$1" --silent --input -
 	EOF
 	)
     export LAST_REF="0.0.2rc-234-gca605f0"

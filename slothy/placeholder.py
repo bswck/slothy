@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from lazy_importing.audits import on_lazy_object_delattr, on_lazy_object_setattr
+from slothy.audits import on_lazy_object_delattr, on_lazy_object_setattr
 
 if TYPE_CHECKING:
     from importlib.machinery import ModuleSpec

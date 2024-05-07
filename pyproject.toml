@@ -7,20 +7,20 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "lazy-importing"
+name = "slothy"
 version = "0.1.0-beta"
 description = "Super-easy lazy importing in Python."
 authors = ["bswck <bartoszpiotrslawecki@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [{ include = "lazy_importing/" }]
-homepage = "https://github.com/bswck/lazy-importing"
+packages = [{ include = "slothy/" }]
+homepage = "https://github.com/bswck/slothy"
 
 [tool.poetry.urls]
-Documentation = "https://lazy-importing.readthedocs.io/en/latest/"
-Issues = "https://github.com/bswck/lazy-importing/issues"
-Distribution = "https://pypi.org/project/lazy-importing/"
-Coverage = "https://coverage-badge.samuelcolvin.workers.dev/redirect/bswck/lazy-importing"
+Documentation = "https://slothy.readthedocs.io/en/latest/"
+Issues = "https://github.com/bswck/slothy/issues"
+Distribution = "https://pypi.org/project/slothy/"
+Coverage = "https://coverage-badge.samuelcolvin.workers.dev/redirect/bswck/slothy"
 
 [tool.poetry.dependencies]
 python = ">=3.8"
@@ -150,12 +150,12 @@ extraPaths = ["tests/import_target_layouts/"]
 
 [tool.towncrier]
 directory = "news"
-package = "lazy_importing"
+package = "slothy"
 filename = "CHANGELOG.md"
 start_string = "<!-- insertion marker -->\n"
 underlines = ["", "", ""]  # We use Markdown
-title_format = "## [{version}](https://github.com/bswck/lazy-importing/tree/{version}) ({project_date})"
-issue_format = "[#{issue}](https://github.com/bswck/lazy-importing/issues/{issue})"
+title_format = "## [{version}](https://github.com/bswck/slothy/tree/{version}) ({project_date})"
+issue_format = "[#{issue}](https://github.com/bswck/slothy/issues/{issue})"
 
 [[tool.towncrier.type]]
 directory = "security"
@@ -189,7 +189,7 @@ showcontent = true
 
 [tool.coverage.run]
 plugins = ["covdefaults"]
-source = ["lazy_importing/"]
+source = ["slothy/"]
 relative_files = true
 
 [tool.coverage.report]
