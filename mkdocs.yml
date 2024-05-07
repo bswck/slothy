@@ -5,7 +5,7 @@
 site_name: "lazy-importing"
 site_description: "Super-easy lazy importing in Python."
 site_url: "https://lazy-importing.readthedocs.io/en/latest/"
-repo_name: bswck/lazy_importing
+repo_name: "bswck/lazy_importing"
 repo_url: "https://github.com/bswck/lazy-importing"
 watch:
 - "lazy_importing"
