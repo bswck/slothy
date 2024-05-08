@@ -84,8 +84,16 @@ This is caused by the fact that there must be at least 1 frame between "declared
 and usage. More in-depth technical explanation will be provided soon.
 
 # Credits
-Kudos to [@AlexWaygood](https://github.com/AlexWaygood) who made this project possible
+Special thanks to Carl Meyer [@carljm](https://github.com/carljm) who willingly sacrificed his time
+to consult the project with me and share his deep knowledge of the problem at the bigger picture.
+His experience with [PEP 690](https://peps.python.org/pep-0690) as a Meta software engineer
+helped me grasp the topic in the context of real production. I find it delightful!
+
+Kudos to Alex Waygood [@AlexWaygood](https://github.com/AlexWaygood) who made this project possible
 by sharing his knowledge of CPython implementation details regarding name lookup behavior.
+
+Shoutout to Will McGugan [@willmcgugan](https://github.com/willmcgugan) who supported the idea of slothy
+from the very beginning and [promoted the project on Twitter](https://twitter.com/willmcgugan/status/1781327396773208427).
 
 # Installation
 You might simply install it with pip:
