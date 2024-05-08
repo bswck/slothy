@@ -9,11 +9,11 @@ import pytest
 from slothy import (
     SLOTHY,
     ALL_AUDITING_EVENTS,
-    LazyObjectPlaceholder,
+    SlothyObject,
     supports_slothy,
     audits,
 )
-from slothy.api import slothy, lazy_loading
+from slothy.api import slothy_importing, slothy_loading
 
 if TYPE_CHECKING:
     from typing import Any
@@ -34,12 +34,12 @@ importer = SLOTHY.importer
 old_meta_path = sys.meta_path
 
 with subtests.test("state-before-enter"):
-    assert __name__ not in {*slothy, *lazy_loading}
+    assert __name__ not in {*slothy_importing, *slothy_loading}
 
 with SLOTHY:
     with subtests.test("state-after-enter"):
-        assert __name__ in slothy
-        assert __name__ not in lazy_loading
+        assert __name__ in slothy_importing
+        assert __name__ not in slothy_loading
 
     assert sys.meta_path == [importer]
     assert old_meta_path is not sys.meta_path
@@ -71,7 +71,7 @@ with SLOTHY:
         setattr_arg_tuples = audits_done[audits.LAZY_OBJECT_SETATTR]
         names_set = set()
         for setattr_args in setattr_arg_tuples:
-            assert isinstance(setattr_args[0], LazyObjectPlaceholder)
+            assert isinstance(setattr_args[0], SlothyObject)
             names_set.add(setattr_args[1])
         expected_names_set = {"__name__", "__spec__", "__package__"}
         # https://docs.python.org/3/reference/import.html#loader__
@@ -89,19 +89,19 @@ with SLOTHY:
     module_alias = module_alias_dont_overwrite = module
 
     with subtests.test("placeholders-created"):
-        assert isinstance(sys.modules["module"], LazyObjectPlaceholder)
-        assert isinstance(sys.modules["try_optout_module"], LazyObjectPlaceholder)
-        assert isinstance(sys.modules["package"], LazyObjectPlaceholder)
-        assert isinstance(sys.modules["package.eager_submodule"], LazyObjectPlaceholder)
-        assert isinstance(sys.modules["package.lazy_submodule"], LazyObjectPlaceholder)
-        assert isinstance(member, LazyObjectPlaceholder)
+        assert isinstance(sys.modules["module"], SlothyObject)
+        assert isinstance(sys.modules["try_optout_module"], SlothyObject)
+        assert isinstance(sys.modules["package"], SlothyObject)
+        assert isinstance(sys.modules["package.eager_submodule"], SlothyObject)
+        assert isinstance(sys.modules["package.lazy_submodule"], SlothyObject)
+        assert isinstance(member, SlothyObject)
 
     with subtests.test("cant-opt-out"), pytest.raises(RuntimeError):
-        SLOTHY.load_lazy_object(try_optout_module)
+        SLOTHY.load_slothy_object(try_optout_module)
 
 with subtests.test("state-after-exit"):
-    assert __name__ not in slothy
-    assert __name__ not in lazy_loading
+    assert __name__ not in slothy_importing
+    assert __name__ not in slothy_loading
 
 with subtests.test("audits-after-exit"):
     assert audits_done[audits.BEFORE_DISABLE] == [(importer,)]

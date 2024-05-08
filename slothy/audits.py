@@ -15,11 +15,11 @@ if TYPE_CHECKING:
     from typing_extensions import ParamSpec, TypeAlias
 
     from slothy.api import (
-        LazyImporter,
-        LazyObjectLoader,
         SlothyContext,
+        SlothyImporter,
+        SlothyLoader,
     )
-    from slothy.placeholder import LazyObjectPlaceholder
+    from slothy.object import SlothyObject
 
     ExpectedArgs = ParamSpec("ExpectedArgs")
     Audit: TypeAlias = Callable[ExpectedArgs, None]
@@ -58,49 +58,49 @@ AuditFunc = partial(partial, audit)
 BEFORE_ENABLE: str = _event("slothy.before_enable")
 """
 Auditing event raised before enabling lazy importing.
-Takes 1 argument: relevant [importer][slothy.api.LazyImporter] object.
+Takes 1 argument: relevant [importer][slothy.api.SlothyImporter] object.
 """
 
-before_enable: Audit[[LazyImporter]] = AuditFunc(BEFORE_ENABLE)
+before_enable: Audit[[SlothyImporter]] = AuditFunc(BEFORE_ENABLE)
 
 
 AFTER_ENABLE: str = _event("slothy.after_enable")
 """
 Auditing event raised after enabling lazy importing.
-Takes 1 argument: relevant [importer][slothy.api.LazyImporter] object.
+Takes 1 argument: relevant [importer][slothy.api.SlothyImporter] object.
 """
 
-after_enable: Audit[[LazyImporter]] = AuditFunc(AFTER_ENABLE)
+after_enable: Audit[[SlothyImporter]] = AuditFunc(AFTER_ENABLE)
 
 BEFORE_DISABLE: str = _event("slothy.before_disable")
 """
 Auditing event raised before disabling lazy importing.
-Takes 1 argument: relevant [importer][slothy.api.LazyImporter] object.
+Takes 1 argument: relevant [importer][slothy.api.SlothyImporter] object.
 """
 
-before_disable: Audit[[LazyImporter]] = AuditFunc(BEFORE_DISABLE)
+before_disable: Audit[[SlothyImporter]] = AuditFunc(BEFORE_DISABLE)
 
 AFTER_DISABLE: str = _event("slothy.after_disable")
 """
 Auditing event raised after disabling lazy importing.
-Takes 1 argument: relevant [importer][slothy.api.LazyImporter] object.
+Takes 1 argument: relevant [importer][slothy.api.SlothyImporter] object.
 """
 
-after_disable: Audit[[LazyImporter]] = AuditFunc(AFTER_DISABLE)
+after_disable: Audit[[SlothyImporter]] = AuditFunc(AFTER_DISABLE)
 
 BEFORE_FIND_SPEC: str = _event("slothy.before_find_spec")
 """
 Auditing event raised before creating a temporary spec for a lazily imported module.
 Takes 4 arguments:
 
-- relevant [importer][slothy.api.LazyImporter] object,
+- relevant [importer][slothy.api.SlothyImporter] object,
 - module full name ([str][]),
 - module path ([Sequence][collections.abc.Sequence][[str][]] or [None][]),
 - module target ([types.ModuleType][] or [None][]).
 """
 
 before_find_spec: Audit[
-    [LazyImporter, str, Sequence[str] | None, ModuleType | None]
+    [SlothyImporter, str, Sequence[str] | None, ModuleType | None]
 ] = AuditFunc(
     BEFORE_FIND_SPEC,
 )
@@ -110,11 +110,11 @@ AFTER_FIND_SPEC: str = _event("slothy.after_find_spec")
 Auditing event raised after creating a temporary spec for a lazily imported module.
 Takes 2 arguments:
 
-- relevant [importer][slothy.api.LazyImporter] object,
+- relevant [importer][slothy.api.SlothyImporter] object,
 - newly created [module spec][importlib.machinery.ModuleSpec] object.
 """
 
-after_find_spec: Audit[[LazyImporter, ModuleSpec]] = AuditFunc(AFTER_FIND_SPEC)
+after_find_spec: Audit[[SlothyImporter, ModuleSpec]] = AuditFunc(AFTER_FIND_SPEC)
 
 CREATE_MODULE: str = _event("slothy.on_create_module")
 """
@@ -123,12 +123,12 @@ upon import system request.
 
 Takes 3 arguments:
 
-- relevant [importer][slothy.api.LazyImporter] object,
+- relevant [importer][slothy.api.SlothyImporter] object,
 - relevant [module spec][importlib.machinery.ModuleSpec] object.
-- newly created [lazy object][slothy.placeholder.LazyObjectPlaceholder].
+- newly created [lazy object][slothy.object.SlothyObject].
 """
 
-on_create_module: Audit[[LazyImporter, ModuleSpec, LazyObjectPlaceholder]] = AuditFunc(
+on_create_module: Audit[[SlothyImporter, ModuleSpec, SlothyObject]] = AuditFunc(
     CREATE_MODULE,
 )
 
@@ -137,11 +137,11 @@ EXEC_MODULE: str = _event("slothy.on_exec_module")
 Auditing event raised when module execution is requested.
 Takes 2 arguments:
 
-- relevant [importer][slothy.api.LazyImporter] object,
-- relevant [lazy object][slothy.placeholder.LazyObjectPlaceholder].
+- relevant [importer][slothy.api.SlothyImporter] object,
+- relevant [lazy object][slothy.object.SlothyObject].
 """
 
-on_exec_module: Audit[[LazyImporter, LazyObjectPlaceholder]] = AuditFunc(EXEC_MODULE)
+on_exec_module: Audit[[SlothyImporter, SlothyObject]] = AuditFunc(EXEC_MODULE)
 
 BEFORE_AUTOBIND: str = _event("slothy.before_autobind")
 """
@@ -149,14 +149,14 @@ Auditing event raised before automatically binding a lazy object in the targeted
 namespace.
 Takes 4 arguments:
 
-- relevant [lazy object][slothy.placeholder.LazyObjectPlaceholder],
+- relevant [lazy object][slothy.object.SlothyObject],
 - finally loaded object to replace the lazy object,
 - targeted namespace,
 - identifier of the object (collected upon
     [context manager][slothy.api.SlothyContext] exit).
 """
 
-before_autobind: Audit[[LazyObjectPlaceholder, Any, dict[str, Any], str]] = AuditFunc(
+before_autobind: Audit[[SlothyObject, Any, dict[str, Any], str]] = AuditFunc(
     BEFORE_AUTOBIND,
 )
 
@@ -166,68 +166,66 @@ Auditing event raised after automatically binding a lazy object in the targeted
 namespace.
 Takes 4 arguments:
 
-- relevant [lazy object][slothy.placeholder.LazyObjectPlaceholder],
+- relevant [lazy object][slothy.object.SlothyObject],
 - finally loaded object to replace the lazy object,
 - targeted namespace,
 - identifier of the object (collected upon
     [context manager][slothy.api.SlothyContext] exit).
 """
 
-after_autobind: Audit[[LazyObjectPlaceholder, Any, dict[str, Any], str]] = AuditFunc(
+after_autobind: Audit[[SlothyObject, Any, dict[str, Any], str]] = AuditFunc(
     AFTER_AUTOBIND,
 )
 
 BEFORE_INJECT_LOADER: str = _event("slothy.before_inject_loader")
 """
 Auditing event raised before injecting a
-[lazy object loader][slothy.api.LazyObjectLoader] in the targeted namespace.
+[lazy object loader][slothy.api.SlothyLoader] in the targeted namespace.
 Takes 2 arguments:
 
 - relevant [context manager][slothy.api.SlothyContext],
 - the loader.
 """
 
-before_inject_loader: Audit[[SlothyContext, LazyObjectLoader]] = AuditFunc(
+before_inject_loader: Audit[[SlothyContext, SlothyLoader]] = AuditFunc(
     BEFORE_INJECT_LOADER,
 )
 
 AFTER_INJECT_LOADER: str = _event("slothy.after_inject_loader")
 """
 Auditing event raised after injecting a
-[lazy object loader][slothy.api.LazyObjectLoader] in the targeted namespace.
+[lazy object loader][slothy.api.SlothyLoader] in the targeted namespace.
 Takes 2 arguments:
 
 - relevant [context manager][slothy.api.SlothyContext],
 - the loader.
 """
 
-after_inject_loader: Audit[[SlothyContext, LazyObjectLoader]] = AuditFunc(
+after_inject_loader: Audit[[SlothyContext, SlothyLoader]] = AuditFunc(
     AFTER_INJECT_LOADER,
 )
 
-LAZY_OBJECT_SETATTR: str = _event("slothy.LazyObject.__setattr__")
+LAZY_OBJECT_SETATTR: str = _event("slothy.SlothyPlaceholder.__setattr__")
 """
 Auditing event raised before setting an attribute on a lazy object.
 Takes 3 arguments:
 
-- relevant [lazy object][slothy.placeholder.LazyObjectPlaceholder],
+- relevant [lazy object][slothy.object.SlothyObject],
 - attribute name,
 - value.
 """
 
-on_lazy_object_setattr: Audit[[LazyObjectPlaceholder, str, Any]] = AuditFunc(
+on_slothy_setattr: Audit[[SlothyObject, str, Any]] = AuditFunc(
     LAZY_OBJECT_SETATTR,
 )
 
-LAZY_OBJECT_DELATTR: str = _event("slothy.LazyObject.__delattr__")
+LAZY_OBJECT_DELATTR: str = _event("slothy.SlothyPlaceholder.__delattr__")
 """
 Auditing event raised before deleting an attribute from a lazy object.
 Takes 2 arguments:
 
-- relevant [lazy object][slothy.placeholder.LazyObjectPlaceholder],
+- relevant [lazy object][slothy.object.SlothyObject],
 - attribute name.
 """
 
-on_lazy_object_delattr: Audit[[LazyObjectPlaceholder, str]] = AuditFunc(
-    LAZY_OBJECT_DELATTR
-)
+on_slothy_delattr: Audit[[SlothyObject, str]] = AuditFunc(LAZY_OBJECT_DELATTR)

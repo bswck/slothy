@@ -9,10 +9,11 @@ from functools import wraps
 from sys import version_info
 from typing import TYPE_CHECKING
 
-from slothy import api, audits, placeholder
+# Use builtins.* to annotate built-in object from now on
+from slothy import api, audits, object
 from slothy.api import *
 from slothy.audits import *
-from slothy.placeholder import *
+from slothy.object import *
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -26,9 +27,11 @@ if TYPE_CHECKING:
 
 __all__ = (
     "api",
+    "audits",
+    # do not export object module not to show a built-in name in the importing module
     *api.__all__,
     *audits.__all__,
-    *placeholder.__all__,
+    *object.__all__,
 )
 
 SLOTHY: api.SlothyContext
@@ -51,7 +54,7 @@ def supports_slothy(f: Callable[P, R]) -> Callable[P, R]:
 
     The sole purpose of this function is to create an additional external frame
     before the decorated function `f` is called. This ensures that
-    the [lazy object loader][slothy.api.LazyObjectLoader]
+    the [lazy object loader][slothy.api.SlothyLoader]
     is requested a missing identifier during the function being called.
     """
     if version_info < (3, 10):

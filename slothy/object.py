@@ -4,17 +4,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from slothy.audits import on_lazy_object_delattr, on_lazy_object_setattr
+from slothy.audits import on_slothy_delattr, on_slothy_setattr
 
 if TYPE_CHECKING:
     from importlib.machinery import ModuleSpec
     from typing import Any
 
 
-__all__ = ("LazyObjectPlaceholder",)
+__all__ = ("SlothyObject",)
 
 
-class LazyObjectPlaceholder:
+class SlothyObject:
     """
     A placeholder for an object imported lazily.
 
@@ -28,12 +28,12 @@ class LazyObjectPlaceholder:
 
     def __setattr__(self, attr: str, value: Any) -> None:
         """Intercept attribute assignment and raise an error if it's attempted."""
-        on_lazy_object_setattr(self, attr, value)
+        on_slothy_setattr(self, attr, value)
         super().__setattr__(attr, value)
 
     def __delattr__(self, attr: str) -> None:
         """Intercept attribute assignment and raise an error if it's attempted."""
-        on_lazy_object_delattr(self, attr)
+        on_slothy_delattr(self, attr)
         super().__delattr__(attr)
 
     @property
@@ -54,4 +54,4 @@ class LazyObjectPlaceholder:
                 getattr(self, "__package__", None),
             ):
                 state += " (in construction)"
-            return f"<lazy object {state}>"
+            return f"<slothy object {state}>"

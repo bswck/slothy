@@ -12,7 +12,7 @@ watch:
 
 nav:
 - "Overview": "index.md"
-- "Why Lazy Importing?": "why_slothy.md"
+- "Why Slothy Importing?": "why_slothy.md"
 - "Installation": "installation.md"
 - "Usage": "usage.md"
 - "How It Works": "how_it_works.md"

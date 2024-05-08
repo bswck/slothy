@@ -28,7 +28,7 @@ from slothy.audits import (
     on_create_module,
     on_exec_module,
 )
-from slothy.placeholder import LazyObjectPlaceholder
+from slothy.object import SlothyObject
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 
     from typing_extensions import Self, TypeAlias
 
-    LazyObjectMapping: TypeAlias = "dict[str, LazyObjectPlaceholder]"
+    SlothyObjectMapping: TypeAlias = "dict[str, SlothyObject]"
     MetaPath: TypeAlias = "list[_MetaPathFinder]"
 else:
     SysBase = type(sys)
@@ -48,7 +48,7 @@ else:
 __all__ = (
     # Classes
     "SlothyContext",
-    "LazyObjectLoader",
+    "SlothyLoader",
 )
 
 
@@ -56,22 +56,22 @@ EXC_INFO_MISSING: tuple[None, None, None] = (None, None, None)
 OBJECT_LOADER_ATTRIBUTE: str = "__builtins__"
 MISSING_SENTINEL: object = object()
 
-slothy: set[str] = set()
-lazy_loading: set[str] = set()
+slothy_importing: set[str] = set()
+slothy_loading: set[str] = set()
 
 
-def _get_import_targets(lazy_object_name: str) -> tuple[str, str | None]:
+def _get_import_targets(slothy_object_name: str) -> tuple[str, str | None]:
     """Return a (module, attribute) import target names pair from a lazy object name."""
-    parts = iter(lazy_object_name.rsplit(".", 1))
+    parts = iter(slothy_object_name.rsplit(".", 1))
     return next(parts), next(parts, None)
 
 
-def _cleanup_lazy_object(lazy_object: LazyObjectPlaceholder) -> None:
-    parent_module_names = lazy_object.__name__.split(".")[:-1]
+def _cleanup_slothy_object(slothy_object: SlothyObject) -> None:
+    parent_module_names = slothy_object.__name__.split(".")[:-1]
     for module_name in accumulate(parent_module_names, lambda *parts: ".".join(parts)):
         # Go through parents to delete references to self.
-        lazy_parent = modules.get(module_name)
-        if not isinstance(lazy_parent, LazyObjectPlaceholder):
+        slothy_parent = modules.get(module_name)
+        if not isinstance(slothy_parent, SlothyObject):
             # That's an important check.
             # We don't remove modules that were (most probably)
             # eagerly imported earlier!
@@ -80,59 +80,59 @@ def _cleanup_lazy_object(lazy_object: LazyObjectPlaceholder) -> None:
             del modules[module_name]
         except KeyError:
             # Assume that if it's not present, it was cleaned up correctly.
-            # There is no risk of a race condition (we're inside a lock).
+            # Food for thought: Is there a risk of a race condition?
             continue
         # Assume a parent doesn't lie about their child
         # (would have to be set manually).
         attrs = {
             attr
-            for attr, child in vars(lazy_parent).items()
-            if isinstance(child, LazyObjectPlaceholder)
+            for attr, child in vars(slothy_parent).items()
+            if isinstance(child, SlothyObject)
         }
         for attr in attrs:
-            delattr(lazy_parent, attr)
+            delattr(slothy_parent, attr)
     with suppress(KeyError):
-        del modules[lazy_object.__name__]
+        del modules[slothy_object.__name__]
 
 
-def _bind_lazy_object(
+def _bind_slothy_object(
     module_name: str,
-    lazy_object: LazyObjectPlaceholder,
+    slothy_object: SlothyObject,
     loaded_object: Any,
     *,
-    lazy_objects: dict[str, LazyObjectPlaceholder],
+    slothy_objects: dict[str, SlothyObject],
     local_ns: dict[str, Any],
 ) -> None:
     """Automatically replace all references to lazy objects with the loaded object."""
-    for ref, other in lazy_objects.items():
-        if other is not lazy_object:
+    for ref, other in slothy_objects.items():
+        if other is not slothy_object:
             continue
-        before_autobind(lazy_object, loaded_object, local_ns, ref)
-        if module_name is not None and module_name in slothy:
+        before_autobind(slothy_object, loaded_object, local_ns, ref)
+        if module_name is not None and module_name in slothy_importing:
             # If we're inside SLOTHY block, force the replacement.
             local_ns[ref] = loaded_object
         else:
             # We're outside SLOTHY block.
             # Respect if the caller frame decided to define the attribute otherwise.
             local_ns.setdefault(ref, loaded_object)
-        after_autobind(lazy_object, loaded_object, local_ns, ref)
+        after_autobind(slothy_object, loaded_object, local_ns, ref)
 
 
-def _load_lazy_object(
+def _load_slothy_object(
     module_name: str,
-    lazy_object: LazyObjectPlaceholder,
+    slothy_object: SlothyObject,
     global_ns: dict[str, Any],
     local_ns: dict[str, Any],
 ) -> Any:
     """Perform an actual import of a lazy object."""
-    lazy_loading.add(module_name)
+    slothy_loading.add(module_name)
     try:
-        if module_name is not None and module_name in slothy:
+        if module_name is not None and module_name in slothy_importing:
             # If we're inside SLOTHY block, raise a RuntimeError.
             msg = "Cannot load objects inside SLOTHY blocks"
             raise RuntimeError(msg)
         package = local_ns.get("__package__") or global_ns.get("__package__")
-        target_name = lazy_object.__name__
+        target_name = slothy_object.__name__
         target_module_name, attribute_name = _get_import_targets(target_name)
         obj = MISSING_SENTINEL
         if attribute_name:
@@ -143,39 +143,39 @@ def _load_lazy_object(
             obj = import_module(target_name, package=package)
         return obj
     finally:
-        lazy_loading.discard(module_name)
+        slothy_loading.discard(module_name)
 
 
-class LazyObjectLoader(dict):  # type: ignore[type-arg]
+class SlothyLoader(dict):  # type: ignore[type-arg]
     """New [`__builtins__`][builtins] to provide lazy objects on first reference."""
 
-    __slots__ = ("lazy_objects", "global_ns", "local_ns", "module_name")
+    __slots__ = ("slothy_objects", "global_ns", "local_ns", "module_name")
 
     module_name: str
     global_ns: dict[str, object]
     local_ns: dict[str, object]
-    lazy_objects: LazyObjectMapping
+    slothy_objects: SlothyObjectMapping
 
     def __getitem__(self, key: Any) -> Any:
         """Intercept undefined name lookup and load a lazy object if applicable."""
         with suppress(KeyError):
             return super().__getitem__(key)
         try:
-            lazy_object = (lazy_objects := self.lazy_objects)[key]
+            slothy_object = (slothy_objects := self.slothy_objects)[key]
         except KeyError:
             raise NameError(key) from None
-        final_object = _load_lazy_object(
+        final_object = _load_slothy_object(
             module_name := self.module_name,
-            lazy_object,
+            slothy_object,
             global_ns=self.global_ns,
             local_ns=(local_ns := self.local_ns),
         )
-        _bind_lazy_object(
+        _bind_slothy_object(
             module_name,
-            lazy_object,
+            slothy_object,
             loaded_object=final_object,
             local_ns=local_ns,
-            lazy_objects=lazy_objects,
+            slothy_objects=slothy_objects,
         )
         return final_object
 
@@ -183,16 +183,16 @@ class LazyObjectLoader(dict):  # type: ignore[type-arg]
 class SlothyContext:
     """A context manager that enables lazy importing."""
 
-    lazy_objects: LazyObjectMapping
-    _object_loader_class: type[LazyObjectLoader]
+    slothy_objects: SlothyObjectMapping
+    _slothy_loader_class: type[SlothyLoader]
 
     def __init__(  # noqa: PLR0913
         self,
         *,
-        importer_factory: Callable[..., LazyImporter] | None = None,
+        importer_factory: Callable[..., SlothyImporter] | None = None,
         local_ns: dict[str, Any] | None = None,
         global_ns: dict[str, Any] | None = None,
-        object_loader_class: type[LazyObjectLoader] | None = None,
+        object_loader_class: type[SlothyLoader] | None = None,
         stack_offset: int = 1,
     ) -> None:
         """
@@ -202,14 +202,14 @@ class SlothyContext:
         ----------
         importer_factory
             The importer to use.
-            Defaults to [`LazyImporter`][slothy.api.LazyImporter].
+            Defaults to [`SlothyImporter`][slothy.api.SlothyImporter].
         local_ns
             The local namespace to use. Defaults to the local namespace of the caller.
         global_ns
             The global namespace to use. Defaults to the global namespace of the caller.
         object_loader_class
             The loader factory to use.
-            Defaults to [`LazyObjectLoader`][slothy.LazyObjectLoader].
+            Defaults to [`SlothyLoader`][slothy.SlothyLoader].
         stack_offset
             The stack offset to use.
 
@@ -221,36 +221,36 @@ class SlothyContext:
         if global_ns is None:
             global_ns = getframe(stack_offset).f_globals
         self._global_ns = global_ns
-        self._object_loader_class = object_loader_class or LazyObjectLoader
-        self._importer_factory = importer_factory or LazyImporter
+        self._slothy_loader_class = object_loader_class or SlothyLoader
+        self._importer_factory = importer_factory or SlothyImporter
         module_name = self._global_ns["__name__"]
         self.module_name = module_name
         self.importer = self._importer_factory(module_name)
-        self.lazy_objects = {}
+        self.slothy_objects = {}
 
-    def load_lazy_object(self, lazy_object: Any) -> Any:
+    def load_slothy_object(self, slothy_object: Any) -> Any:
         """Perform an actual import of a lazy object."""
-        return _load_lazy_object(
+        return _load_slothy_object(
             self.module_name,
-            lazy_object,
+            slothy_object,
             global_ns=self._global_ns,
             local_ns=self._local_ns,
         )
 
-    def bind_lazy_object(
+    def bind_slothy_object(
         self,
-        lazy_object: Any,
+        slothy_object: Any,
         loaded_object: Any,
         *references: str,
     ) -> Any:
         """Perform an actual import of a lazy object."""
-        new_lazy_objects = self.lazy_objects.copy()
-        new_lazy_objects.update(dict.fromkeys(references, lazy_object))
-        _bind_lazy_object(
+        new_slothy_objects = self.slothy_objects.copy()
+        new_slothy_objects.update(dict.fromkeys(references, slothy_object))
+        _bind_slothy_object(
             self.module_name,
-            lazy_object,
+            slothy_object,
             loaded_object,
-            lazy_objects=new_lazy_objects,
+            slothy_objects=new_slothy_objects,
             local_ns=self._local_ns,
         )
 
@@ -264,13 +264,13 @@ class SlothyContext:
         return self
 
     def _cleanup_objects(self) -> None:
-        for identifier, lazy_object in self._local_ns.copy().items():
-            if not isinstance(lazy_object, LazyObjectPlaceholder):
+        for identifier, slothy_object in self._local_ns.copy().items():
+            if not isinstance(slothy_object, SlothyObject):
                 continue
             with suppress(KeyError):
                 del self._local_ns[identifier]
-                self.lazy_objects[identifier] = lazy_object
-            _cleanup_lazy_object(lazy_object=lazy_object)
+                self.slothy_objects[identifier] = slothy_object
+            _cleanup_slothy_object(slothy_object=slothy_object)
 
     def _inject_loader(self) -> None:
         builtins = self._local_ns.get(OBJECT_LOADER_ATTRIBUTE)
@@ -278,14 +278,14 @@ class SlothyContext:
             builtins = self._global_ns[OBJECT_LOADER_ATTRIBUTE]
         if not isinstance(builtins, dict):
             builtins = vars(builtins)
-        object_loader = self._object_loader_class(builtins)
-        object_loader.module_name = self.module_name
-        object_loader.global_ns = self._global_ns
-        object_loader.local_ns = self._local_ns
-        object_loader.lazy_objects = self.lazy_objects
-        before_inject_loader(self, object_loader)
-        self._local_ns[OBJECT_LOADER_ATTRIBUTE] = object_loader
-        after_inject_loader(self, object_loader)
+        slothy_loader = self._slothy_loader_class(builtins)
+        slothy_loader.module_name = self.module_name
+        slothy_loader.global_ns = self._global_ns
+        slothy_loader.local_ns = self._local_ns
+        slothy_loader.slothy_objects = self.slothy_objects
+        before_inject_loader(self, slothy_loader)
+        self._local_ns[OBJECT_LOADER_ATTRIBUTE] = slothy_loader
+        after_inject_loader(self, slothy_loader)
 
     def __exit__(self, *exc_info: object) -> None:
         """Disable lazy importing mode."""
@@ -301,7 +301,7 @@ _OLD_META_PATH: MetaPath = None  # type: ignore[assignment]
 
 
 class _SlothySys(SysBase):
-    # This is hell...
+    # This is hell ;)
     __meta_path__: MetaPath = meta_path
     _slothy_metapaths: ClassVar[dict[str, MetaPath]] = {}
 
@@ -315,9 +315,9 @@ class _SlothySys(SysBase):
             module_name = frame_locals.get("__name__")
             if not frame_locals.get("__slothy_skip_frame__"):
                 break
-            if module_name is not None and module_name in slothy:
+            if module_name is not None and module_name in slothy_importing:
                 break
-        if module_name is None or module_name not in slothy:
+        if module_name is None or module_name not in slothy_importing:
             return self.__meta_path__
         return self._slothy_metapaths.get(module_name, self.__meta_path__)
 
@@ -331,14 +331,14 @@ class _SlothySys(SysBase):
             module_name = frame_locals.get("__name__")
             if not frame_locals.get("__slothy_skip_frame__"):
                 break
-            if module_name is not None and module_name in slothy:
+            if module_name is not None and module_name in slothy_importing:
                 break
         if value is _OLD_META_PATH:
             if module_name is not None:
                 self._slothy_metapaths.pop(module_name, None)
                 return
             value = self.__meta_path__
-        if module_name is None or module_name not in slothy:
+        if module_name is None or module_name not in slothy_importing:
             self.__meta_path__ = value
             return
         self._slothy_metapaths[module_name] = value
@@ -347,8 +347,8 @@ class _SlothySys(SysBase):
 sys.__class__ = _SlothySys
 
 
-class LazyImporter(Loader, MetaPathFinder):
-    """A context-local importer (finder & loader) to perform lazy importing."""
+class SlothyImporter(Loader, MetaPathFinder):
+    """An importer used by the [slothy context manager][slothy.api.SlothyContext]."""
 
     _initialized: bool = False
     _importers: ClassVar[dict[str, Self]] = {}
@@ -387,7 +387,7 @@ class LazyImporter(Loader, MetaPathFinder):
             return
         self._enabled = True
         before_enable(self)
-        slothy.add(self.module_name)
+        slothy_importing.add(self.module_name)
         __slothy_skip_frame__ = True  # noqa: F841
         sys.meta_path = [self]
         after_enable(self)
@@ -399,17 +399,17 @@ class LazyImporter(Loader, MetaPathFinder):
             return
         before_disable(self)
         sys.meta_path = _OLD_META_PATH
-        slothy.discard(self.module_name)
+        slothy_importing.discard(self.module_name)
         after_disable(self)
 
     def create_module(self, spec: ModuleSpec) -> ModuleType:
         """Create a module."""
-        lazy_object = LazyObjectPlaceholder()
-        on_create_module(self, spec, lazy_object)
-        return cast("ModuleType", lazy_object)
+        slothy_object = SlothyObject()
+        on_create_module(self, spec, slothy_object)
+        return cast("ModuleType", slothy_object)
 
     def exec_module(self, module: Any) -> None:
-        """Raise an auditing event. Do nothing meaningful."""
+        """Raise an auditing event and return immediately."""
         on_exec_module(self, module)
 
     def find_spec(
