@@ -69,7 +69,7 @@ plugins:
     handlers:
       python:
         options:
-          # https://mkdocstrings.github.io/python/usage/configuration/
+          # https://mkdocstrings.github.io/python/usage/#configuration/
           docstring_style: "numpy"
           docstring_section_style: "list"
           docstring_options:
@@ -79,7 +79,7 @@ plugins:
           merge_init_into_class: true
           parameter_headings: true
           show_submodules: true
-          show_inheritance_diagram: true
+          show_inheritance_diagram: false
           show_signature_annotations: false
           signature_crossrefs: true
           line_length: 60
