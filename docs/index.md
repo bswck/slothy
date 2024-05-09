@@ -1,5 +1,5 @@
 
-# <div align="center">slothy<br>[![skeleton](https://img.shields.io/badge/0.0.2rc–234–gca605f0-skeleton?label=%F0%9F%92%80%20skeleton-ci/skeleton-python&labelColor=black&color=grey&link=https%3A//github.com/skeleton-ci/skeleton-python)](https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-234-gca605f0) [![Supported Python versions](https://img.shields.io/pypi/pyversions/slothy.svg?logo=python&label=Python)](https://pypi.org/project/slothy/) [![Package version](https://img.shields.io/pypi/v/slothy?label=PyPI)](https://pypi.org/project/slothy/)</div>
+# <div align="center">slothy<br>[![skeleton](https://img.shields.io/badge/0.0.2rc–237–g7b0b7e3-skeleton?label=%F0%9F%92%80%20skeleton-ci/skeleton-python&labelColor=black&color=grey&link=https%3A//github.com/skeleton-ci/skeleton-python)](https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-237-g7b0b7e3) [![Supported Python versions](https://img.shields.io/pypi/pyversions/slothy.svg?logo=python&label=Python)](https://pypi.org/project/slothy/) [![Package version](https://img.shields.io/pypi/v/slothy?label=PyPI)](https://pypi.org/project/slothy/)</div>
 
 [![Tests](https://github.com/bswck/slothy/actions/workflows/test.yml/badge.svg)](https://github.com/bswck/slothy/actions/workflows/test.yml)
 [![Coverage](https://coverage-badge.samuelcolvin.workers.dev/bswck/slothy.svg)](https://coverage-badge.samuelcolvin.workers.dev/redirect/bswck/slothy)
@@ -113,9 +113,9 @@ poetry add slothy
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 <!--
-This section was generated from skeleton-ci/skeleton-python@0.0.2rc-234-gca605f0.
+This section was generated from skeleton-ci/skeleton-python@0.0.2rc-237-g7b0b7e3.
 Instead of changing this particular file, you might want to alter the template:
-https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-234-gca605f0/fragments/readme.md
+https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-237-g7b0b7e3/fragments/readme.md
 -->
 !!! Note
     If you use Windows, it is highly recommended to complete the installation in the way presented below through [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install).

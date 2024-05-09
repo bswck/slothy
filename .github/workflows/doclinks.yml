@@ -1,6 +1,6 @@
-# This file was generated from skeleton-ci/skeleton-python@0.0.2rc-234-gca605f0.
+# This file was generated from skeleton-ci/skeleton-python@0.0.2rc-237-g7b0b7e3.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-234-gca605f0/project/.github/workflows/%23%25%20if%20docs%20%25%23doclinks.yml%23%25%20endif%20%25%23.jinja
+# https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-237-g7b0b7e3/project/.github/workflows/%23%25%20if%20docs%20%25%23doclinks.yml%23%25%20endif%20%25%23.jinja
 
 # IMPORTANT!
 # Pinned versions of actions and Poetry are managed in a different repository.
