@@ -49,11 +49,16 @@ def slothy(stack_offset: int = 2) -> Iterator[None]:
 
     """
     frame = get_frame(stack_offset)
-    builtin_import = frame.f_builtins["__import__"]
+    try:
+        builtin_import = frame.f_builtins["__import__"]
+    except KeyError:
+        msg = "__import__ not found"
+        raise ImportError(msg) from None
     frame.f_builtins["__import__"] = _SlothyImportWrapper(
         partial(
             _slothy_import_locally,
             frame.f_globals["__name__"],
+            builtin_import,
             _stack_offset=2,
         )
     )
@@ -350,6 +355,7 @@ def slothy_import(
 
 def _slothy_import_locally(
     _target: str,
+    _builtin_import: Callable[..., object],
     name: str,
     global_ns: dict[str, object] | None = None,
     local_ns: dict[str, object] | None = None,
@@ -361,9 +367,4 @@ def _slothy_import_locally(
     frame = get_frame(_stack_offset)
     if frame.f_globals["__name__"] == _target:
         return slothy_import(name, global_ns, local_ns, from_list, level)
-    try:
-        builtin_import = frame.f_builtins["__import__"]
-    except KeyError:
-        msg = "__import__ not found"
-        raise ImportError(msg) from None
-    return builtin_import(name, global_ns, local_ns, from_list or (), level)
+    return _builtin_import(name, global_ns, local_ns, from_list or (), level)
