@@ -139,7 +139,7 @@ def _process_slothy_objects(local_ns: dict[str, object]) -> None:
         if isinstance(ref, SlothyKey):
             ref.obj = value
             continue
-        local_ns[SlothyKey(ref, value)] = value  # type: ignore[index]
+        local_ns[SlothyKey(ref, value)] = value
         module_name = value._SlothyObject__args.module_name
         modules.pop(module_name, None)
 
@@ -393,7 +393,7 @@ class SlothyKey(str):
         local_ns = self.obj._SlothyObject__args.local_ns
         if self._do_refresh:
             del local_ns[key]
-            local_ns[self] = self.obj  # type: ignore[index]
+            local_ns[self] = self.obj
             self._do_refresh = False
         return True
 
