@@ -56,35 +56,23 @@ def slothy(*, prevent_eager: bool = False, stack_offset: int = 2) -> Iterator[No
 
     """
     frame = get_frame(stack_offset)
-    try:
-        builtin_import = frame.f_builtins["__import__"]
-    except KeyError:
-        msg = "__import__ not found"
-        raise ImportError(msg) from None
-    frame.f_builtins["__import__"] = _SlothyImportWrapper(
-        partial(
-            _slothy_import_locally,
-            frame.f_globals["__name__"],
-            builtin_import,
-            _stack_offset=stack_offset,
-        )
+    import_wrapper = partial(
+        _slothy_import_locally,
+        frame.f_globals["__name__"],
+        builtin_import := _get_builtin_import(frame.f_builtins),
+        _stack_offset=stack_offset,
     )
+    import_wrapper.__slothy__ = True  # type: ignore[attr-defined]
+    frame.f_builtins["__import__"] = import_wrapper
     try:
         yield
     finally:
         _process_slothy_objects(frame.f_locals)
-        # Important note: we assume that the built-in `__import__` was not
-        # patched before.
         frame.f_builtins["__import__"] = builtin_import
 
 
-class _SlothyImportWrapper(NamedTuple):
-    """Internal slothy import wrapper."""
-
-    import_: Callable[..., object]
-
-    def __call__(self, *args: object, **kwds: object) -> object:
-        return self.import_(*args, **kwds)
+def _is_slothy_import(obj: object) -> object:
+    return getattr(obj, "__slothy__", None)
 
 
 def slothy_if(
@@ -192,13 +180,13 @@ def _get_builtin_import(builtins: dict[str, Any]) -> Callable[..., Any]:
 class SlothyObject:
     """Slothy object."""
 
-    _SlothyObject__args: _ImportArgs
-    _SlothyObject__builtins: dict[str, Any]
-    _SlothyObject__attr_path: tuple[str, ...]
-    _SlothyObject__source: str | None
-    _SlothyObject__refs: set[str]
-    _SlothyObject__desc_ref: str | None
-    _SlothyObject__import: Callable[[Callable[..., ModuleType] | None], None]
+    if TYPE_CHECKING:
+        _SlothyObject__args: _ImportArgs
+        _SlothyObject__builtins: dict[str, Any]
+        _SlothyObject__attr_path: tuple[str, ...]
+        _SlothyObject__source: str | None
+        _SlothyObject__refs: set[str]
+        _SlothyObject__import: Callable[[Callable[..., ModuleType] | None], None]
 
     def __init__(
         self,
@@ -267,7 +255,7 @@ class SlothyObject:
     def __get__(self, inst: object, owner: type[object] | None = None) -> object:
         """Import on-demand via descriptor protocol."""
         builtin_import = _get_builtin_import(self.__builtins)
-        if isinstance(builtin_import, _SlothyImportWrapper):
+        if _is_slothy_import(builtin_import):
             return self
         obj = self.__import()
         if hasattr(obj, "__get__"):
@@ -277,7 +265,7 @@ class SlothyObject:
     def __set__(self, inst: object, value: object) -> None:
         """Import on-demand via descriptor protocol."""
         builtin_import = _get_builtin_import(self.__builtins)
-        if isinstance(builtin_import, _SlothyImportWrapper):
+        if _is_slothy_import(builtin_import):
             return
         obj = self.__import()
         if hasattr(obj, "__set__"):
@@ -286,7 +274,7 @@ class SlothyObject:
     def __delete__(self, inst: object) -> None:
         """Import on-demand via descriptor protocol."""
         builtin_import = _get_builtin_import(self.__builtins)
-        if isinstance(builtin_import, _SlothyImportWrapper):
+        if _is_slothy_import(builtin_import):
             return
         obj = self.__import()
         if hasattr(obj, "__delete__"):
@@ -337,7 +325,7 @@ binding: ContextVar[bool] = ContextVar("binding", default=False)
 class SlothyKey(str):
     """Slothy key. Activates on namespace lookup."""
 
-    __slots__ = ("key", "obj", "_hash", "_import", "_do_refresh")
+    __slots__ = ("key", "obj", "_hash", "_import", "_should_refresh")
 
     def __new__(cls, key: str, obj: SlothyObject) -> Self:  # noqa: ARG003
         """Create a new slothy key."""
@@ -360,7 +348,7 @@ class SlothyKey(str):
         self.obj = obj
         self._hash = hash(key)
         self._import = obj._SlothyObject__import
-        self._do_refresh = True
+        self._should_refresh = True
 
     def __eq__(self, key: object) -> bool:
         """
@@ -387,14 +375,14 @@ class SlothyKey(str):
         elif binding.get():
             return True
         their_import = self.obj._SlothyObject__builtins.get("__import__")
-        if not isinstance(their_import, _SlothyImportWrapper):
+        if not _is_slothy_import(their_import):
             self._import(their_import)
             return True
         local_ns = self.obj._SlothyObject__args.local_ns
-        if self._do_refresh:
+        if self._should_refresh:
             del local_ns[key]
             local_ns[self] = self.obj
-            self._do_refresh = False
+            self._should_refresh = False
         return True
 
     def __hash__(self) -> int:
@@ -455,8 +443,8 @@ def _slothy_import_locally(
     _stack_offset: int = 1,
 ) -> object:
     """Slothily import an object only if requested in a `with slothy():` statement."""
-    frame = get_frame(_stack_offset)
-    if frame.f_globals["__name__"] == _target:
+    global_ns = global_ns or get_frame(_stack_offset).f_globals
+    if global_ns["__name__"] == _target:
         offset = _stack_offset + 1
         return slothy_import(name, global_ns, local_ns, from_list, level, offset)
     return _builtin_import(name, global_ns, local_ns, from_list or (), level)
