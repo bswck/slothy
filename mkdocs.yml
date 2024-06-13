@@ -69,6 +69,8 @@ plugins:
     handlers:
       python:
         options:
+          show_root_heading: true
+          heading_level: 3
           # https://mkdocstrings.github.io/python/usage/#configuration/
           docstring_style: "numpy"
           docstring_section_style: "list"

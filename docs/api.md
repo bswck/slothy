@@ -1,3 +1,9 @@
-:: slothy.SLOTHY_ENABLED
-:: slothy._impl.slothy
-:: slothy._impl.slothy_if
+::: slothy.SLOTHY_ENABLED
+    options:
+      show_root_full_path: false
+::: slothy._impl.slothy
+    options:
+      show_root_full_path: false
+::: slothy._impl.slothy_if
+    options:
+      show_root_full_path: false

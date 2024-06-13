@@ -7,11 +7,13 @@ from os import getenv
 
 __all__ = ("SLOTHY_ENABLED", "slothy", "slothy_if")
 
+SLOTHY_ENABLED: bool
+"""Whether slothy is enabled."""
+
 try:
     sys._getframe  # noqa: B018, SLF001
 except AttributeError:
     SLOTHY_ENABLED = False
-    """Whether slothy is enabled."""
 else:
     SLOTHY_ENABLED = not getenv("SLOTHY_DISABLE")
 
