@@ -8,7 +8,7 @@ default_install_hook_types:
 
 repos:
 - repo: "https://github.com/astral-sh/ruff-pre-commit"
-  rev: "v0.3.4"
+  rev: "v0.4.8"
   hooks:
   - id: "ruff"
     name: "Run the Ruff linter"
@@ -18,7 +18,7 @@ repos:
     name: "Run the Ruff formatter"
     types_or: ["python", "pyi"]
 - repo: "https://github.com/pre-commit/pre-commit-hooks"
-  rev: "v4.5.0"
+  rev: "v4.6.0"
   hooks:
   - id: "check-merge-conflict"
     args: ["--assume-in-merge"]

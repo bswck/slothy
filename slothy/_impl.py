@@ -182,7 +182,7 @@ class SlothyObject:
         try:
             module = _builtin_import(*self.__args)
             obj = getattr(module, self.__attr) if self.__attr is not None else module
-        except BaseException as exc:
+        except BaseException as exc:  # noqa: BLE001
             args = exc.args
             if self.__source:
                 args = (
