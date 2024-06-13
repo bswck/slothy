@@ -1,4 +1,4 @@
-"""Slothy module gathering exported functionality."""
+"""Slothy's exported functionality."""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ try:
     sys._getframe  # noqa: B018, SLF001
 except AttributeError:
     SLOTHY_ENABLED = False
+    """Whether slothy is enabled."""
 else:
     SLOTHY_ENABLED = not getenv("SLOTHY_DISABLE")
 
