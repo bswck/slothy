@@ -7,7 +7,6 @@ Inspired by https://gist.github.com/JelleZijlstra/23c01ceb35d1bc8f335128f59a32db
 # ruff: noqa: SLF001, FBT003
 from __future__ import annotations
 
-from builtins import __import__ as builtin_import
 from contextlib import contextmanager, nullcontext
 from contextvars import ContextVar, copy_context
 from functools import partial
@@ -18,6 +17,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
     from contextlib import AbstractContextManager
     from types import FrameType
+    from typing import Any
 
 try:
     from sys import _getframe as get_frame
@@ -49,6 +49,7 @@ def slothy(stack_offset: int = 2) -> Iterator[None]:
 
     """
     frame = get_frame(stack_offset)
+    builtin_import = frame.f_builtins["__import__"]
     frame.f_builtins["__import__"] = _SlothyImportWrapper(
         partial(
             _slothy_import_locally,
@@ -140,7 +141,7 @@ class SlothyObject:
     def __init__(
         self,
         args: _ImportArgs,
-        builtins: dict[str, object],
+        builtins: dict[str, Any],
         attr: str | None = None,
         source: str | None = None,
     ) -> None:
@@ -169,7 +170,12 @@ class SlothyObject:
     def __import(self) -> object:
         """Actually import the object."""
         try:
-            module = builtin_import(*self.__args)
+            _builtin_import: Callable[..., object] = self.__builtins["__import__"]
+        except KeyError:
+            msg = "__import__ not found"
+            raise ImportError(msg) from None
+        try:
+            module = _builtin_import(*self.__args)
             obj = getattr(module, self.__attr) if self.__attr is not None else module
         except BaseException as exc:
             args = exc.args
@@ -352,6 +358,12 @@ def _slothy_import_locally(
     _stack_offset: int = 1,
 ) -> object:
     """Slothily import an object only if requested in a `with slothy():` statement."""
-    if get_frame(_stack_offset).f_globals["__name__"] == _target:
+    frame = get_frame(_stack_offset)
+    if frame.f_globals["__name__"] == _target:
         return slothy_import(name, global_ns, local_ns, from_list, level)
+    try:
+        builtin_import = frame.f_builtins["__import__"]
+    except KeyError:
+        msg = "__import__ not found"
+        raise ImportError(msg) from None
     return builtin_import(name, global_ns, local_ns, from_list or (), level)
