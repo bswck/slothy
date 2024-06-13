@@ -137,11 +137,11 @@ class SlothyObject:
     """Slothy object."""
 
     _SlothyObject__args: _ImportArgs
-    _SlothyObject__builtins: dict[str, object]
+    _SlothyObject__builtins: dict[str, Any]
     _SlothyObject__attr: str | None
     _SlothyObject__source: str | None
     _SlothyObject__refs: set[str]
-    _SlothyObject__import: Callable[[], None]
+    _SlothyObject__import: Callable[[Callable[..., object] | None], None]
 
     def __init__(
         self,
@@ -172,15 +172,16 @@ class SlothyObject:
         self.__source = source
         self.__refs: set[str] = set()
 
-    def __import(self) -> object:
+    def __import(self, builtin_import: Callable[..., object] | None = None) -> object:
         """Actually import the object."""
+        if builtin_import is None:
+            try:
+                builtin_import = self.__builtins["__import__"]
+            except KeyError:
+                msg = "__import__ not found"
+                raise ImportError(msg) from None
         try:
-            _builtin_import: Callable[..., object] = self.__builtins["__import__"]
-        except KeyError:
-            msg = "__import__ not found"
-            raise ImportError(msg) from None
-        try:
-            module = _builtin_import(*self.__args)
+            module = builtin_import(*self.__args)
             obj = getattr(module, self.__attr) if self.__attr is not None else module
         except BaseException as exc:  # noqa: BLE001
             args = exc.args
@@ -301,9 +302,9 @@ class SlothyKey:
             return False
         elif binding.get():
             return True
-        their_import = self.obj._SlothyObject__builtins["__import__"]
+        their_import = self.obj._SlothyObject__builtins.get("__import__")
         if not isinstance(their_import, _SlothyImportWrapper):
-            self._import()
+            self._import(their_import)
             return True
         local_ns = self.obj._SlothyObject__args.local_ns
         if self._do_refresh:
