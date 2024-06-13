@@ -59,7 +59,7 @@ def slothy(stack_offset: int = 2) -> Iterator[None]:
             _slothy_import_locally,
             frame.f_globals["__name__"],
             builtin_import,
-            _stack_offset=2,
+            _stack_offset=stack_offset,
         )
     )
     try:
@@ -231,11 +231,18 @@ class SlothyObject:
         if source:
             source = " " + source.join("()")
         attr = self.__attr
+        module_name = self.__args.module_name
         if attr is None:
-            return f"<import {self.__args.module_name}{source}>"
+            return f"<import {module_name}{source}>"
         if attr in self.__args.from_list:
-            return f"<from {self.__args.module_name} import {attr}{source}>"
-        return f"<import {self.__args.module_name}.{attr}{source}>"
+            # TODO(#2): Shorten long reprs.  # noqa: TD003
+            from_list = ", ".join(
+                # Select the target item with <>.
+                item.join("<>" if item == attr else ("", ""))
+                for item in self.__args.from_list
+            )
+            return f"<from {module_name} import {from_list}{source}>"
+        return f"<import {module_name}.{attr}{source}>"
 
     def __getattr__(self, attr: str) -> object:
         """Allow import chains."""
@@ -370,5 +377,6 @@ def _slothy_import_locally(
     """Slothily import an object only if requested in a `with slothy():` statement."""
     frame = get_frame(_stack_offset)
     if frame.f_globals["__name__"] == _target:
-        return slothy_import(name, global_ns, local_ns, from_list, level)
+        offset = _stack_offset + 1
+        return slothy_import(name, global_ns, local_ns, from_list, level, offset)
     return _builtin_import(name, global_ns, local_ns, from_list or (), level)
