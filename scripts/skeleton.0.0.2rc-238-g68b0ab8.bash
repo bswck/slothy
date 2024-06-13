@@ -81,7 +81,7 @@ make_context() {
 	)
 	export PYPY
 	PYPY=$(cat <<- 'EOF'
-		False
+		True
 	EOF
 	)
 	export PYTHONS

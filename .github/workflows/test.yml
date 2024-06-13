@@ -35,6 +35,8 @@ jobs:
           platform: "ubuntu"
         - python: "3.11"
           platform: "ubuntu"
+        - python: "pypy3.10"
+          platform: "ubuntu"
     env:
       context: "${{matrix.python}}-${{matrix.platform}}"
     timeout-minutes: 10

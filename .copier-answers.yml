@@ -13,7 +13,7 @@ precommit: true
 pypi: true
 pypi_description: Super-easy lazy importing in Python.
 pypi_project: slothy
-pypy: false
+pypy: true
 python: '3.8'
 python_until: ''
 repo: slothy
