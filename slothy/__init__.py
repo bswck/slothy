@@ -5,7 +5,7 @@ from __future__ import annotations
 import sys
 from os import getenv
 
-__all__ = ("SLOTHY_ENABLED", "slothy", "slothy_if", "lazy_imports")
+__all__ = ("SLOTHY_ENABLED", "slothy", "slothy_if", "lazy_importing")
 
 SLOTHY_ENABLED: bool
 """Whether slothy is enabled."""
@@ -20,7 +20,7 @@ else:
 if SLOTHY_ENABLED:
     from slothy._impl import slothy, slothy_if
 
-    lazy_imports = slothy
+    lazy_importing = slothy  # Readability alias.
 else:
     from contextlib import contextmanager, nullcontext
     from typing import TYPE_CHECKING
@@ -67,4 +67,4 @@ else:
             raise RuntimeError(EAGER_PREVENTION_MSG)
         return nullcontext()
 
-    lazy_imports = slothy
+    lazy_importing = slothy
