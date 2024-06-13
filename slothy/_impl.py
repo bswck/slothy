@@ -178,6 +178,15 @@ def _module_get_attr_path(
     return obj
 
 
+def _get_builtin_import(builtins: dict[str, Any]) -> Callable[..., Any]:
+    try:
+        builtin_import: Callable[..., Any] = builtins["__import__"]
+    except KeyError:
+        msg = "__import__ not found"
+        raise ImportError(msg) from None
+    return builtin_import
+
+
 class SlothyObject:
     """Slothy object."""
 
@@ -186,6 +195,7 @@ class SlothyObject:
     _SlothyObject__attr_path: tuple[str, ...]
     _SlothyObject__source: str | None
     _SlothyObject__refs: set[str]
+    _SlothyObject__desc_ref: str | None
     _SlothyObject__import: Callable[[Callable[..., ModuleType] | None], None]
 
     def __init__(
@@ -223,11 +233,7 @@ class SlothyObject:
     ) -> object:
         """Actually import the object."""
         if builtin_import is None:
-            try:
-                builtin_import = self.__builtins["__import__"]
-            except KeyError:
-                msg = "__import__ not found"
-                raise ImportError(msg) from None
+            builtin_import = _get_builtin_import(self.__builtins)
         try:
             import_args = self.__args
             module = builtin_import(*import_args)
@@ -258,6 +264,9 @@ class SlothyObject:
 
     def __get__(self, inst: object, owner: type[object] | None = None) -> object:
         """Import on-demand via descriptor protocol."""
+        builtin_import = _get_builtin_import(self.__builtins)
+        if isinstance(builtin_import, _SlothyImportWrapper):
+            return self
         obj = self.__import()
         if hasattr(obj, "__get__"):
             return obj.__get__(inst, owner)
@@ -265,12 +274,18 @@ class SlothyObject:
 
     def __set__(self, inst: object, value: object) -> None:
         """Import on-demand via descriptor protocol."""
+        builtin_import = _get_builtin_import(self.__builtins)
+        if isinstance(builtin_import, _SlothyImportWrapper):
+            return
         obj = self.__import()
         if hasattr(obj, "__set__"):
             obj.__set__(inst, value)
 
     def __delete__(self, inst: object) -> None:
         """Import on-demand via descriptor protocol."""
+        builtin_import = _get_builtin_import(self.__builtins)
+        if isinstance(builtin_import, _SlothyImportWrapper):
+            return
         obj = self.__import()
         if hasattr(obj, "__delete__"):
             obj.__delete__(inst)
