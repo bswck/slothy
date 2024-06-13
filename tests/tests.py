@@ -27,6 +27,15 @@ with cast(
 
 builtin_import = __import__
 
+with subtests.test("prevent-eager"), (
+    nullcontext()
+    if supported_implementation
+    else pytest.raises(
+        RuntimeError,
+        match="cannot default to eager mode",
+    )
+), slothy(prevent_eager=True):
+    pass
 
 with slothy():
     with subtests.test("builtin-import-overridden"):
@@ -35,8 +44,15 @@ with slothy():
         else:
             assert __import__ is builtin_import
 
-    import module1
-    from module2 import item
+    with subtests.test("module-importing"):
+        import module1
+
+    with subtests.test("submodule-importing"):
+        import package.submodule1 as submodule1  # noqa: PLR0402
+        import package.submodule2
+
+    with subtests.test("from-import"):
+        from module2 import item
 
     if supported_implementation:
         with subtests.test("wildcard-imports-disallowed"), pytest.raises(
@@ -48,9 +64,23 @@ with slothy():
         SlothyObject = builtin_import("slothy._impl")._impl.SlothyObject
         assert isinstance(module1, SlothyObject)
         assert isinstance(item, SlothyObject)
+        assert isinstance(module1, SlothyObject)
+        assert isinstance(submodule1, SlothyObject)
+        assert isinstance(package.submodule2, SlothyObject)
     else:
         assert isinstance(module1, ModuleType)
         assert isinstance(item, int)
+        assert isinstance(module1, ModuleType)
+        assert isinstance(submodule1, ModuleType)
+        assert isinstance(package.submodule2, ModuleType)
+
+    module_entries = (
+        "module1",
+        "module2",
+        "package",
+        "package.submodule1",
+        "package.submodule2",
+    )
 
 with subtests.test("builtin-import-unchanged"):
     assert __import__ is builtin_import
@@ -59,11 +89,11 @@ with subtests.test("modules-purged-if-slothy"):
     if supported_implementation:
         # This behavior is necessary, because we want the same imports
         # to perform actual imports in non-slothy mode.
-        assert "module1" not in sys.modules
-        assert "module2" not in sys.modules
+        for module_entry in module_entries:
+            assert module_entry not in sys.modules
     else:
-        assert "module1" in sys.modules
-        assert "module2" in sys.modules
+        for module_entry in module_entries:
+            assert module_entry in sys.modules
 
 with slothy(), subtests.test("reenter-works"):
     # Should not be a problem if we re-enter.
@@ -83,7 +113,6 @@ with slothy_if(True), subtests.test("slothy-if-true"):
 
 with slothy_if(False), subtests.test("slothy-if-false"):
     assert __import__ is builtin_import
-
 
 with subtests.test("test-class-scope"):
 
