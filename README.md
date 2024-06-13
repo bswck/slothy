@@ -15,26 +15,26 @@ as well as a convenient guard against expensive imports.
 >>> from slothy import slothy
 >>>
 >>> with slothy():
-...     from functools import partial, reduce, singledispatchmethod
-...     print(partial)  # <from functools import partial, ... (file "<stdin>", line 2)>
-...     print(reduce)  # <from functools import ..., reduce, ... (file "<stdin>", line 2)>
-...     print(singledispatchmethod)  # <from functools import ..., singledispatchmethod (file "<stdin>", line 2)>
+...     from functools import partial, reduce
+...     print(partial)  # <from functools import partial, ...>
+...     print(reduce)  # <from functools import ..., reduce>
 >>>
 >>> # First time imported items are referenced, they're imported.
 ... # If a declared item is never referenced, the module containing it is never
 ... # imported too, provided it was not imported by some external instruction.
-... partial, reduce, singledispatch
-(<class 'functools.partial'>, <built-in function reduce>, <class 'functools.singledispatchmethod'>)
+... reduce
+(<class 'functools.partial'>, <built-in function reduce>)
 ```
 
 `slothy()` will default to eager imports on unsupported Python implementations,
 i.e. those that don't define `sys._getframe`. While this library is 3.8+
-and that eliminates the risk of running slothy in these implementation,
-future versions of them can finally support 3.8 and that's why slothy takes them into account anyway.
+and that eliminates the risk of running slothy in most of these implementations now,
+future versions of them can finally support 3.8.
 
-To ensure lazy importing mode and fail on unsupported Python implementations,
-use `slothy(prevent_eager=True)`. Preventing eager imports might be useful
-in type-checking sections, where eager imports could have cycles.
+To prevent eager imports in `with slothy()` statements and instead fail on unsupported
+Python implementations, use `slothy(prevent_eager=True)`. Preventing eager imports might
+be useful in type-checking sections, where eager imports could cause cycles resulting
+in less readable tracebacks.
 
 # Credits
 Many thanks to Jelle Zijlstra [@JelleZijlstra](https://github.com/JelleZijlstra) who wrote a [basic
