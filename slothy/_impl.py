@@ -20,6 +20,8 @@ if TYPE_CHECKING:
     from types import FrameType, ModuleType
     from typing import Any
 
+    from typing_extensions import Self
+
 try:
     from sys import _getframe as get_frame
 except AttributeError as err:
@@ -332,8 +334,14 @@ class SlothyObjectWithList(SlothyObject):
 binding: ContextVar[bool] = ContextVar("binding", default=False)
 
 
-class SlothyKey:
+class SlothyKey(str):
     """Slothy key. Activates on namespace lookup."""
+
+    __slots__ = ("key", "obj", "_hash", "_import", "_do_refresh")
+
+    def __new__(cls, key: str, obj: SlothyObject) -> Self:  # noqa: ARG003
+        """Create a new slothy key."""
+        return super().__new__(cls, key)
 
     def __init__(self, key: str, obj: SlothyObject) -> None:
         """
