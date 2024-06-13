@@ -9,14 +9,15 @@ from __future__ import annotations
 
 from contextlib import contextmanager, nullcontext
 from contextvars import ContextVar, copy_context
-from functools import partial
+from functools import partial, reduce
+from pathlib import Path
 from sys import modules
 from typing import TYPE_CHECKING, NamedTuple
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
     from contextlib import AbstractContextManager
-    from types import FrameType
+    from types import FrameType, ModuleType
     from typing import Any
 
 try:
@@ -33,12 +34,16 @@ __all__ = ("slothy",)
 
 
 @contextmanager
-def slothy(stack_offset: int = 2) -> Iterator[None]:
+def slothy(*, prevent_eager: bool = False, stack_offset: int = 2) -> Iterator[None]:  # noqa: ARG001
     """
     Use slothy imports in a `with` statement.
 
     Parameters
     ----------
+    prevent_eager
+        If True, will raise a `RuntimeError` if slothy cannot guarantee
+        to not fall back to eager imports on unsupported Python implementation.
+        On supported Python implementations this parameter doesn't change the behavior.
     stack_offset
         The stack offset to use.
 
@@ -80,14 +85,23 @@ class _SlothyImportWrapper(NamedTuple):
         return self.import_(*args, **kwds)
 
 
-def slothy_if(condition: object, stack_offset: int = 3) -> AbstractContextManager[None]:
+def slothy_if(
+    condition: object,
+    *,
+    prevent_eager: bool = False,
+    stack_offset: int = 3,
+) -> AbstractContextManager[None]:
     """
-    Use slothy imports only if condition is true.
+    Use slothy imports only if condition evaluates to truth.
 
     Parameters
     ----------
     condition
         The condition to evaluate.
+    prevent_eager
+        If True, will raise a `RuntimeError` if slothy cannot guarantee
+        to not fall back to eager imports on unsupported Python implementation.
+        On supported Python implementations this parameter doesn't change the behavior.
     stack_offset
         The stack offset to use.
 
@@ -97,7 +111,11 @@ def slothy_if(condition: object, stack_offset: int = 3) -> AbstractContextManage
         The context manager.
 
     """
-    return slothy(stack_offset) if condition else nullcontext()
+    return (
+        slothy(prevent_eager=prevent_eager, stack_offset=stack_offset)
+        if condition
+        else nullcontext()
+    )
 
 
 def _process_slothy_objects(local_ns: dict[str, object]) -> None:
@@ -120,7 +138,8 @@ def _process_slothy_objects(local_ns: dict[str, object]) -> None:
             ref.obj = value
             continue
         local_ns[SlothyKey(ref, value)] = value  # type: ignore[index]
-        modules.pop(value._SlothyObject__args.module_name, None)
+        module_name = value._SlothyObject__args.module_name
+        modules.pop(module_name, None)
 
 
 class _ImportArgs(NamedTuple):
@@ -133,21 +152,47 @@ class _ImportArgs(NamedTuple):
     level: int
 
 
+def _module_get_attr_path(
+    import_args: _ImportArgs,
+    module: ModuleType,
+    attrs: tuple[str, ...],
+) -> object:
+    root = attrs[0]
+    attr_path = ".".join(attrs)
+    try:
+        obj = getattr(module, root)
+    except AttributeError as err:
+        spec = module.__spec__
+        location = "unknown location"
+        module_name = import_args.module_name
+        if spec is not None:
+            module_name = spec.name
+            location = getattr(module, "__file__", None) or location
+        suffix = " " + location.join("()")
+        if root in import_args.from_list:
+            msg = f"cannot import name {attr_path!r} from {module_name!r}" + suffix
+            raise ImportError(msg) from err
+        raise
+    else:
+        obj = reduce(getattr, attrs[1:], obj)
+    return obj
+
+
 class SlothyObject:
     """Slothy object."""
 
     _SlothyObject__args: _ImportArgs
     _SlothyObject__builtins: dict[str, Any]
-    _SlothyObject__attr: str | None
+    _SlothyObject__attr_path: tuple[str, ...]
     _SlothyObject__source: str | None
     _SlothyObject__refs: set[str]
-    _SlothyObject__import: Callable[[Callable[..., object] | None], None]
+    _SlothyObject__import: Callable[[Callable[..., ModuleType] | None], None]
 
     def __init__(
         self,
         args: _ImportArgs,
         builtins: dict[str, Any],
-        attr: str | None = None,
+        attr_path: tuple[str, ...] = (),
         source: str | None = None,
     ) -> None:
         """
@@ -159,8 +204,8 @@ class SlothyObject:
             The arguments to pass to [`builtins.__import__`].
         builtins
             The builtins namespace.
-        attr
-            The attribute to import.
+        attr_path
+            The attributes to pull from the imported object.
         source
             The source of the import.
 
@@ -168,11 +213,14 @@ class SlothyObject:
         super().__init__()
         self.__args = args
         self.__builtins = builtins
-        self.__attr = attr
+        self.__attr_path = attr_path
         self.__source = source
         self.__refs: set[str] = set()
 
-    def __import(self, builtin_import: Callable[..., object] | None = None) -> object:
+    def __import(
+        self,
+        builtin_import: Callable[..., ModuleType] | None = None,
+    ) -> object:
         """Actually import the object."""
         if builtin_import is None:
             try:
@@ -181,8 +229,10 @@ class SlothyObject:
                 msg = "__import__ not found"
                 raise ImportError(msg) from None
         try:
-            module = builtin_import(*self.__args)
-            obj = getattr(module, self.__attr) if self.__attr is not None else module
+            import_args = self.__args
+            module = builtin_import(*import_args)
+            attrs = self.__attr_path
+            obj = _module_get_attr_path(import_args, module, attrs) if attrs else module
         except BaseException as exc:  # noqa: BLE001
             args = exc.args
             if self.__source:
@@ -230,26 +280,27 @@ class SlothyObject:
         source = self.__source or ""
         if source:
             source = " " + source.join("()")
-        attr = self.__attr
+        attrs = self.__attr_path
+        targets = ".".join(attrs)
+        attr = next(iter(attrs), None)
         module_name = self.__args.module_name
+        from_list = self.__args.from_list
         if attr is None:
             return f"<import {module_name}{source}>"
-        if attr in self.__args.from_list:
-            # TODO(#2): Shorten long reprs.  # noqa: TD003
-            from_list = ", ".join(
-                # Select the target item with <>.
-                item.join("<>" if item == attr else ("", ""))
-                for item in self.__args.from_list
-            )
-            return f"<from {module_name} import {from_list}{source}>"
-        return f"<import {module_name}.{attr}{source}>"
+        if attr in from_list:
+            if from_list[0] != attr:
+                targets = f"..., {targets}"
+            if from_list[-1] != attr:
+                targets += ", ..."
+            return f"<from {module_name} import {targets}{source}>"
+        return f"<import {module_name}.{targets}{source}>"
 
     def __getattr__(self, attr: str) -> object:
         """Allow import chains."""
         return SlothyObject(
             args=self.__args,
             builtins=self.__builtins,
-            attr=attr,
+            attr_path=(*self.__attr_path, attr),
             source=self.__source,
         )
 
@@ -330,7 +381,13 @@ class SlothyKey:
 
 def _format_source(frame: FrameType) -> str:
     """Refer to an import in the `<file name>:<line number>` format."""
-    return f"{frame.f_code.co_filename}:{frame.f_lineno}"
+    orig_filename = frame.f_code.co_filename
+    # Canonical names like "<stdin>"
+    if orig_filename.startswith("<") and orig_filename.endswith(">"):
+        filename = orig_filename
+    else:
+        filename = str(Path(frame.f_code.co_filename).resolve())
+    return f'file "{filename}", line {frame.f_lineno}'
 
 
 def slothy_import(
@@ -340,7 +397,7 @@ def slothy_import(
     from_list: tuple[str, ...] | None = None,
     level: int = 0,
     _stack_offset: int = 1,
-) -> object:
+) -> SlothyObject:
     """
     Slothy import.
 
