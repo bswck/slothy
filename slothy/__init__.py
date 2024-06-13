@@ -40,6 +40,11 @@ else:
             stacklevel=1,
         )
 
+    EAGER_PREVENTION_MSG = (
+        "Unsupported Python implementation: "
+        "slothy imports cannot default to eager mode"
+    )
+
     @contextmanager
     def slothy(
         *,
@@ -48,19 +53,18 @@ else:
     ) -> Iterator[None]:
         """Replace slothy with a no-op on unsupported Python implementation."""
         if prevent_eager:
-            msg = (
-                "Unsupported Python implementation: "
-                "slothy imports cannot default to eager mode"
-            )
-            raise RuntimeError(msg)
+            raise RuntimeError(EAGER_PREVENTION_MSG)
         yield
 
     def slothy_if(
         condition: object,  # noqa: ARG001
         *,
+        prevent_eager: bool = False,
         stack_offset: int = 3,  # noqa: ARG001
     ) -> AbstractContextManager[None]:
         """Replace slothy with a no-op on unsupported Python implementation."""
+        if prevent_eager:
+            raise RuntimeError(EAGER_PREVENTION_MSG)
         return nullcontext()
 
     lazy_imports = slothy
