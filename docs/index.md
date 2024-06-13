@@ -7,18 +7,15 @@
 
 Super-easy lazy importing in Python.
 
-!!! important
-    Only CPython is supported.
-
 Intended to be used as a drop-in replacement for `if typing.TYPE_CHECKING` blocks
 as well as a convenient guard against expensive imports.
 
 # Usage
 
 ```py
-from slothy import SLOTHY
+from slothy import slothy
 
-with SLOTHY:
+with slothy():
     from pandas import DataFrame
 
 # pandas.DataFrame not imported
@@ -33,57 +30,12 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 ```
-
-# Caveats
-
-## Python <3.10 Boilerplate
-On Python 3.8-3.9, every function accessing a lazily-imported object
-must be decorated with `supports_slothy`:
-
-```py
-from slothy import SLOTHY, supports_slothy
-
-with SLOTHY:
-    from pandas import DataFrame
-
-# pandas.DataFrame not imported
-
-@supports_slothy
-def main() -> None:
-    # pandas.DataFrame not imported
-    print(DataFrame)  # <class 'pandas.core.frame.DataFrame'>
-    # pandas.DataFrame imported just before print() called; from now on,
-    # available everywhere in the module.
-
-
-if __name__ == "__main__":
-    main()
-```
-
-## Deleted References
-
-Importing symbols `with SLOTHY` will make them intentionally unavailable in your
-namespace after the `with SLOTHY` block finishes.
-
-Consequently,
-
-```py
-from slothy import SLOTHY
-
-with SLOTHY:
-    from pandas import DataFrame
-
-try:
-    DataFrame
-except NameError:
-    print("DataFrame undefined")
-```
-
-outputs `DataFrame undefined`.
-This is caused by the fact that there must be at least 1 frame between "declared import"
-and usage. More in-depth technical explanation will be provided soon.
 
 # Credits
+Many thanks to Jelle Zijlstra [@JelleZijlstra](https://github.com/JelleZijlstra) who wrote a [basic
+dict key lookup-based lazy importing implementation](https://gist.github.com/JelleZijlstra/23c01ceb35d1bc8f335128f59a32db4c)
+that is now the core solution of slothy.
+
 Special thanks to Carl Meyer [@carljm](https://github.com/carljm) who willingly sacrificed his time
 to consult the project with me and share his deep knowledge of the problem at the bigger picture.
 His experience with [PEP 690](https://peps.python.org/pep-0690) as a Meta software engineer
