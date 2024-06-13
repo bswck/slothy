@@ -22,7 +22,7 @@ as well as a convenient guard against expensive imports.
 >>> # First time imported items are referenced, they're imported.
 ... # If a declared item is never referenced, the module containing it is never
 ... # imported too, provided it was not imported by some external instruction.
-... reduce
+... partial, reduce
 (<class 'functools.partial'>, <built-in function reduce>)
 ```
 
