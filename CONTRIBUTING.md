@@ -1,7 +1,7 @@
 <!--
-This file was generated from skeleton-ci/skeleton-python@0.0.2rc-238-g68b0ab8.
+This file was generated from scaffops/python@0.0.2rc-238-g68b0ab8.
 Instead of changing this particular file, you might want to alter the template:
-https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-238-g68b0ab8/fragments/contributing.md
+https://github.com/scaffops/python/tree/0.0.2rc-238-g68b0ab8/fragments/contributing.md
 -->
 # Contributing to [slothy](https://github.com/bswck/slothy) 🎉
 Contributions are very welcome. 🚀
@@ -46,9 +46,9 @@ Ready to contribute? Here's a quick guide on how to set up slothy and make a cha
 
 
 <!--
-This section was generated from skeleton-ci/skeleton-python@0.0.2rc-238-g68b0ab8.
+This section was generated from scaffops/python@0.0.2rc-238-g68b0ab8.
 Instead of changing this particular file, you might want to alter the template:
-https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-238-g68b0ab8/fragments/guide.md
+https://github.com/scaffops/python/tree/0.0.2rc-238-g68b0ab8/fragments/guide.md
 -->
 > [!Note]
 > If you use Windows, it is highly recommended to complete the installation in the way presented below through [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install).

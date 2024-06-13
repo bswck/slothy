@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # (C) 2023–present Bartosz Sławecki (bswck)
 #
-# Interact with skeleton-ci/skeleton-python (current version: https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-238-g68b0ab8).
+# Interact with scaffops/python (current version: https://github.com/scaffops/python/tree/0.0.2rc-238-g68b0ab8).
 #
-# This file was generated from skeleton-ci/skeleton-python@0.0.2rc-238-g68b0ab8.
+# This file was generated from scaffops/python@0.0.2rc-238-g68b0ab8.
 # Instead of changing this particular file, you might want to alter the template:
-# https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-238-g68b0ab8/project/scripts/skeleton.%7B%7Bsref%7D%7D.bash.jinja
+# https://github.com/scaffops/python/tree/0.0.2rc-238-g68b0ab8/project/scripts/skeleton.%7B%7Bsref%7D%7D.bash.jinja
 #
 # Usage:
 #
@@ -27,7 +27,7 @@ set -eEuo pipefail
 
 TEMPFILE=$(mktemp)
 
-curl "https://raw.githubusercontent.com/skeleton-ci/skeleton-python/HEAD/setup.bash" > "$TEMPFILE"
+curl "https://raw.githubusercontent.com/scaffops/python/HEAD/setup.bash" > "$TEMPFILE"
 trap 'builtin command rm -f "$TEMPFILE"' EXIT
 
 # shellcheck disable=SC1090
@@ -126,17 +126,17 @@ make_context() {
 	)
 	export SKELETON
 	SKELETON=$(cat <<- 'EOF'
-		skeleton-ci/skeleton-python
+		scaffops/python
 	EOF
 	)
 	export SKELETON_URL
 	SKELETON_URL=$(cat <<- 'EOF'
-		https://github.com/skeleton-ci/skeleton-python
+		https://github.com/scaffops/python
 	EOF
 	)
 	export RAW_SKELETON_URL
 	RAW_SKELETON_URL=$(cat <<- 'EOF'
-		https://raw.githubusercontent.com/skeleton-ci/skeleton-python
+		https://raw.githubusercontent.com/scaffops/python
 	EOF
 	)
 	export SKELETON_REF
@@ -151,22 +151,22 @@ make_context() {
 	)
 	export SKELETON_REV
 	SKELETON_REV=$(cat <<- 'EOF'
-		https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-238-g68b0ab8
+		https://github.com/scaffops/python/tree/0.0.2rc-238-g68b0ab8
 	EOF
 	)
 	export SREV
 	SREV=$(cat <<- 'EOF'
-		https://github.com/skeleton-ci/skeleton-python/tree/0.0.2rc-238-g68b0ab8
+		https://github.com/scaffops/python/tree/0.0.2rc-238-g68b0ab8
 	EOF
 	)
 	export SKELETON_AND_REF
 	SKELETON_AND_REF=$(cat <<- 'EOF'
-		skeleton-ci/skeleton-python@0.0.2rc-238-g68b0ab8
+		scaffops/python@0.0.2rc-238-g68b0ab8
 	EOF
 	)
 	export SNREF
 	SNREF=$(cat <<- 'EOF'
-		skeleton-ci/skeleton-python@0.0.2rc-238-g68b0ab8
+		scaffops/python@0.0.2rc-238-g68b0ab8
 	EOF
 	)
 	export GH_REPO_ARGS
