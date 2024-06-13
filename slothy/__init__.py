@@ -5,16 +5,18 @@ from __future__ import annotations
 import sys
 from os import getenv
 
-__all__ = ("slothy", "slothy_if")
+__all__ = ("SLOTHY_ENABLED", "slothy", "slothy_if")
 
 try:
     sys._getframe  # noqa: B018, SLF001
 except AttributeError:
-    SLOTHY_DISABLE = True
+    SLOTHY_ENABLED = False
 else:
-    SLOTHY_DISABLE = bool(getenv("SLOTHY_DISABLE"))
+    SLOTHY_ENABLED = not getenv("SLOTHY_DISABLE")
 
-if SLOTHY_DISABLE:
+if SLOTHY_ENABLED:
+    from slothy._impl import slothy, slothy_if
+else:
     from contextlib import contextmanager, nullcontext
     from typing import TYPE_CHECKING
     from warnings import warn
@@ -44,5 +46,3 @@ if SLOTHY_DISABLE:
     ) -> AbstractContextManager[None]:
         """Replace slothy with a no-op on unsupported platforms."""
         return nullcontext()
-else:
-    from slothy._impl import slothy, slothy_if
