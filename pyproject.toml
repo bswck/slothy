@@ -49,8 +49,6 @@ keyring = ">=25.0.0"
 addopts = "--doctest-modules"
 python_files = ["run_tests.py"]
 
-
-
 [tool.poetry.group.docs]
 optional = true
 
@@ -94,7 +92,7 @@ shell = "towncrier create $TICKET.security.md --edit"
 args = [{name = "TICKET", default = "+", positional = true}]
 
 [tool.ruff]
-exclude = ["tests/", "scripts/"]
+exclude = ["scripts/"]
 
 [tool.ruff.lint]
 # To discuss the presented rationales, contact the author (bswck).
@@ -137,16 +135,20 @@ ignore = [
     "COM812",
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/tested_site/*" = ["ALL"]
+"tests/*" = ["D", "S101", "SLF001"]
+
 [tool.ruff.lint.isort]
 required-imports = ["from __future__ import annotations"]
 
 [tool.mypy]
 strict = true
 explicit_package_bases = true
-mypy_path = ".,tests/import_target_layouts/"
+mypy_path = ".,tests/tested_site/"
 
 [tool.pyright]
-extraPaths = ["tests/import_target_layouts/"]
+extraPaths = ["tests/tested_site/"]
 
 [tool.towncrier]
 directory = "news"

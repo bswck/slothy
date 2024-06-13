@@ -1,163 +1,104 @@
+# ruff: noqa: FBT003, F821
 from __future__ import annotations
+
 import sys
-from collections import defaultdict
-from importlib.machinery import ModuleSpec
+from contextlib import nullcontext
 from types import ModuleType
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import pytest
-from slothy import (
-    SLOTHY,
-    ALL_AUDITING_EVENTS,
-    SlothyObject,
-    supports_slothy,
-    audits,
-)
-from slothy.api import slothy_importing, slothy_loading
 
 if TYPE_CHECKING:
-    from typing import Any
+    from contextlib import AbstractContextManager
 
     from pytest_subtests import SubTests
 
     subtests: SubTests  # passed through runpy.run_path()
 
-# Dict to keep track of audits and arguments passed.
-audits_done: dict[str, list[tuple[Any, ...]]] = defaultdict(list)
+supported_implementation = hasattr(sys, "_getframe")
 
-@sys.addaudithook
-def audit_hook(ev: str, args: tuple[Any, ...]) -> None:
-    if ev in ALL_AUDITING_EVENTS:
-        audits_done[ev].append(args)
+with cast(
+    "AbstractContextManager[None]",
+    nullcontext()
+    if supported_implementation
+    else pytest.warns(RuntimeWarning, match=r"does not support `sys._getframe\(\)`"),
+):
+    from slothy import slothy, slothy_if
 
-importer = SLOTHY.importer
-old_meta_path = sys.meta_path
+builtin_import = __import__
 
-with subtests.test("state-before-enter"):
-    assert __name__ not in {*slothy_importing, *slothy_loading}
 
-with SLOTHY:
-    with subtests.test("state-after-enter"):
-        assert __name__ in slothy_importing
-        assert __name__ not in slothy_loading
+with slothy():
+    with subtests.test("builtin-import-overridden"):
+        if supported_implementation:
+            assert __import__ is not builtin_import
+        else:
+            assert __import__ is builtin_import
 
-    assert sys.meta_path == [importer]
-    assert old_meta_path is not sys.meta_path
-    new_meta_path = sys.meta_path
-    assert new_meta_path is not old_meta_path
-    assert new_meta_path == [importer]
+    import module1
+    from module2 import item
 
-    with subtests.test("audits-after-enter"):
-        assert audits_done[audits.BEFORE_ENABLE] == [(importer,)]
-        assert audits_done[audits.AFTER_ENABLE] == [(importer,)]
+    if supported_implementation:
+        with subtests.test("wildcard-imports-disallowed"), pytest.raises(
+            RuntimeError, match="Wildcard slothy imports are not supported"
+        ):
+            from module3 import *  # noqa: F403
 
-    # All the imports below only "emulate" real importing.
-    # We return lazy objects that keep track of what will really be imported.
+    if supported_implementation:
+        SlothyObject = builtin_import("slothy._impl")._impl.SlothyObject
+        assert isinstance(module1, SlothyObject)
+        assert isinstance(item, SlothyObject)
+    else:
+        assert isinstance(module1, ModuleType)
+        assert isinstance(item, int)
 
-    import package
+with subtests.test("builtin-import-unchanged"):
+    assert __import__ is builtin_import
 
-    with subtests.test("after-import-audits"):
-        assert audits_done[audits.BEFORE_FIND_SPEC] == [(
-            importer, "package", None, None,
-        )]
-        after_find_spec_args = audits_done[audits.AFTER_FIND_SPEC][-1]
-        assert after_find_spec_args[0] is importer
-        assert isinstance(after_find_spec_args[1], ModuleSpec)
-        package_spec = after_find_spec_args[1]
-        assert audits_done[audits.CREATE_MODULE] == [(
-            importer, package_spec, package,
-        )]
-        assert audits_done[audits.EXEC_MODULE] == [(importer, package)]
-        setattr_arg_tuples = audits_done[audits.LAZY_OBJECT_SETATTR]
-        names_set = set()
-        for setattr_args in setattr_arg_tuples:
-            assert isinstance(setattr_args[0], SlothyObject)
-            names_set.add(setattr_args[1])
-        expected_names_set = {"__name__", "__spec__", "__package__"}
-        # https://docs.python.org/3/reference/import.html#loader__
-        if sys.version_info < (3, 14):
-            expected_names_set.add("__loader__")
-        assert names_set == expected_names_set
+with subtests.test("modules-purged-if-slothy"):
+    if supported_implementation:
+        # This behavior is necessary, because we want the same imports
+        # to perform actual imports in non-slothy mode.
+        assert "module1" not in sys.modules
+        assert "module2" not in sys.modules
+    else:
+        assert "module1" in sys.modules
+        assert "module2" in sys.modules
 
-    import module
-    import try_optout_module
-    from module import member
-    # Support aliases.
-    from package.eager_submodule import member as eager_submodule_member
-    from package import lazy_submodule, lazy_submodule as lazy_submodule_alias
+with slothy(), subtests.test("reenter-works"):
+    # Should not be a problem if we re-enter.
+    if supported_implementation:
+        assert __import__ is not builtin_import
+    else:
+        assert __import__ is builtin_import
 
-    module_alias = module_alias_dont_overwrite = module
+with subtests.test("builtin-import-unchanged-after-reenter"):
+    assert __import__ is builtin_import
 
-    with subtests.test("placeholders-created"):
-        assert isinstance(sys.modules["module"], SlothyObject)
-        assert isinstance(sys.modules["try_optout_module"], SlothyObject)
-        assert isinstance(sys.modules["package"], SlothyObject)
-        assert isinstance(sys.modules["package.eager_submodule"], SlothyObject)
-        assert isinstance(sys.modules["package.lazy_submodule"], SlothyObject)
-        assert isinstance(member, SlothyObject)
+with slothy_if(True), subtests.test("slothy-if-true"):
+    if supported_implementation:
+        assert __import__ is not builtin_import
+    else:
+        assert __import__ is builtin_import
 
-    with subtests.test("cant-opt-out"), pytest.raises(RuntimeError):
-        SLOTHY.load_slothy_object(try_optout_module)
+with slothy_if(False), subtests.test("slothy-if-false"):
+    assert __import__ is builtin_import
 
-with subtests.test("state-after-exit"):
-    assert __name__ not in slothy_importing
-    assert __name__ not in slothy_loading
 
-with subtests.test("audits-after-exit"):
-    assert audits_done[audits.BEFORE_DISABLE] == [(importer,)]
-    assert audits_done[audits.AFTER_DISABLE] == [(importer,)]
+with subtests.test("test-class-scope"):
 
-with subtests.test("frame-cleanup"):
-    # Check if locals defined before entering the context manager
-    # are the same after we exit.
-    with pytest.raises(NameError):
-        package
-    with pytest.raises(NameError):
-        module
-    with pytest.raises(NameError):
-        module_alias
-    with pytest.raises(NameError):
-        module_alias_dont_overwrite
-    with pytest.raises(NameError):
-        try_optout_module
-    with pytest.raises(NameError):
-        member
-    with pytest.raises(NameError):
-        eager_submodule_member
-    with pytest.raises(NameError):
-        lazy_submodule
-    with pytest.raises(NameError):
-        lazy_submodule_alias
+    class Test:
+        """Test class containing a slothy import binding an attribute."""
 
-# We now define this to test if slothy overwrites it
-module_alias_dont_overwrite = None  # type: ignore[assignment, unused-ignore]
+        with slothy():
+            from module3 import a, b
 
-with subtests.test("single-use-cm"), \
-    pytest.raises(RuntimeError, match="Cannot enter .+ twice"), \
-    SLOTHY:
-    pass
+            if supported_implementation:
+                SlothyObject = builtin_import("slothy._impl")._impl.SlothyObject
+                assert isinstance(a, SlothyObject)
+            else:
+                assert isinstance(a, int)
 
-@supports_slothy
-def test_access() -> None:
-    # assert_inactive()
-    with subtests.test("import-on-access"):
-        assert isinstance(package, ModuleType)
-        assert "package" in sys.modules
-        assert "package.eager_submodule" in sys.modules  # it's eager!
-        assert eager_submodule_member == "package.eager_submodule"
-
-    with pytest.raises(NameError):
-        undefined  # type: ignore[name-defined]
-
-    assert isinstance(lazy_submodule, ModuleType)
-    assert lazy_submodule.member == "package.lazy_submodule"
-
-    with subtests.test("auto-binding-aliases"):
-        assert "lazy_submodule_alias" in globals()
-        assert lazy_submodule_alias is lazy_submodule
-        assert module_alias_dont_overwrite is None
-
-test_access()
-
-with subtests.test("all-audits-covered"):
-    assert set(audits_done) == ALL_AUDITING_EVENTS
+    # If it's a supported implementation, the item should be imported
+    # on demand via descriptor protocol.
+    assert Test.a == 1
