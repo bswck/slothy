@@ -318,7 +318,7 @@ binding: ContextVar[bool] = ContextVar("binding", default=False)
 
 
 class SlothyKey:
-    """Slothy key. Activates on identifier lookup."""
+    """Slothy key. Activates on namespace lookup."""
 
     def __init__(self, key: str, obj: SlothyObject) -> None:
         """
