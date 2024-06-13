@@ -7,6 +7,14 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 <!-- insertion marker -->
 
+## [v0.2.0b1](https://github.com/bswck/slothy/tree/v0.2.0b1) (2024-06-14)
+
+
+### Changed
+
+- Rewrote the entire library according to Jelle Zijlstra's 'special key' implementation. ([#47](https://github.com/bswck/slothy/issues/47))
+
+
 ## [v0.1.0-beta](https://github.com/bswck/slothy/tree/v0.1.0-beta) (2024-05-08)
 
 
