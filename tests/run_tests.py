@@ -16,7 +16,7 @@ def _force_reload(module_names: tuple[str, ...] = ("slothy", "slothy._impl")) ->
 
 if hasattr(sys, "_getframe"):
 
-    def test_supported_impl(subtests: SubTests) -> None:
+    def test_supported_implementation(subtests: SubTests) -> None:
         _force_reload()
         runpy.run_path(
             "tests/tests.py",
@@ -25,7 +25,7 @@ if hasattr(sys, "_getframe"):
         )
 
 
-def test_unsupported_impl(subtests: SubTests) -> None:
+def test_unsupported_implementation(subtests: SubTests) -> None:
     _force_reload()
     getframe = sys._getframe
     del sys._getframe
