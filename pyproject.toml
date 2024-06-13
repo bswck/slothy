@@ -6,6 +6,10 @@
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[project]
+name = "slothy"
+dynamic = ["version"]
+
 [tool.poetry]
 name = "slothy"
 version = "0.1.0-beta"
