@@ -5,7 +5,7 @@ from __future__ import annotations
 import sys
 from os import getenv
 
-__all__ = ("SLOTHY_ENABLED", "slothy", "slothy_if")
+__all__ = ("SLOTHY_ENABLED", "slothy", "slothy_if", "lazy_imports")
 
 SLOTHY_ENABLED: bool
 """Whether slothy is enabled."""
@@ -19,6 +19,8 @@ else:
 
 if SLOTHY_ENABLED:
     from slothy._impl import slothy, slothy_if
+
+    lazy_imports = slothy
 else:
     from contextlib import contextmanager, nullcontext
     from typing import TYPE_CHECKING
@@ -39,13 +41,26 @@ else:
         )
 
     @contextmanager
-    def slothy(stack_offset: int = 2) -> Iterator[None]:  # noqa: ARG001
-        """Replace slothy with a no-op on unsupported platforms."""
+    def slothy(
+        *,
+        prevent_eager: bool = False,
+        stack_offset: int = 2,  # noqa: ARG001
+    ) -> Iterator[None]:
+        """Replace slothy with a no-op on unsupported Python implementation."""
+        if prevent_eager:
+            msg = (
+                "Unsupported Python implementation: "
+                "slothy imports cannot default to eager mode"
+            )
+            raise RuntimeError(msg)
         yield
 
     def slothy_if(
         condition: object,  # noqa: ARG001
+        *,
         stack_offset: int = 3,  # noqa: ARG001
     ) -> AbstractContextManager[None]:
-        """Replace slothy with a no-op on unsupported platforms."""
+        """Replace slothy with a no-op on unsupported Python implementation."""
         return nullcontext()
+
+    lazy_imports = slothy
