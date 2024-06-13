@@ -230,11 +230,12 @@ class SlothyObject:
         source = self.__source or ""
         if source:
             source = " " + source.join("()")
-        if self.__attr is None:
+        attr = self.__attr
+        if attr is None:
             return f"<import {self.__args.module_name}{source}>"
-        if self.__attr in self.__args.from_list:
-            return f"<from {self.__args.module_name} import {self.__attr}{source}>"
-        return f"<import {self.__args.module_name}.{self.__attr}{source}>"
+        if attr in self.__args.from_list:
+            return f"<from {self.__args.module_name} import {attr}{source}>"
+        return f"<import {self.__args.module_name}.{attr}{source}>"
 
     def __getattr__(self, attr: str) -> object:
         """Allow import chains."""
