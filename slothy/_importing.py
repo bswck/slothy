@@ -27,7 +27,7 @@ try:
 except AttributeError as err:
     msg = (
         "This Python implementation does not support `sys._getframe()` "
-        "and thus cannot use `slothy`; do not import `slothy` from "
+        "and thus cannot use `slothy_importing`; do not import `slothy_importing` from "
         f"`{__name__}`, import from the public interface instead"
     )
     raise RuntimeError(msg) from err

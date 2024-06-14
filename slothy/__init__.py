@@ -39,7 +39,7 @@ else:
             category=RuntimeWarning,
             message=(
                 "This Python implementation does not support "
-                "`sys._getframe()` and thus cannot use `slothy`. "
+                "`sys._getframe()` and thus cannot use `slothy_importing`. "
             ),
             stacklevel=1,
         )
