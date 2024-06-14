@@ -4,7 +4,7 @@ The core implementation of slothy importing.
 Inspired by https://gist.github.com/JelleZijlstra/23c01ceb35d1bc8f335128f59a32db4c.
 """
 
-# ruff: noqa: SLF001, FBT003
+# ruff: noqa: SLF001, FBT003, PLR0913
 from __future__ import annotations
 
 from contextlib import contextmanager, nullcontext
@@ -64,7 +64,7 @@ def slothy_importing(
         _slothy_import_locally,
         frame.f_globals["__name__"],
         builtin_import := _get_builtin_import(frame.f_builtins),
-        _stack_offset=stack_offset + 1,
+        stack_offset=stack_offset,
     )
     import_wrapper.__slothy__ = True  # type: ignore[attr-defined]
     frame.f_builtins["__import__"] = import_wrapper
@@ -422,7 +422,7 @@ def slothy_import(
     local_ns: dict[str, object] | None = None,
     from_list: tuple[str, ...] | None = None,
     level: int = 0,
-    _stack_offset: int = 1,
+    stack_offset: int = 1,
 ) -> SlothyObject:
     """
     Slothy import.
@@ -435,7 +435,7 @@ def slothy_import(
     if "*" in from_list:
         msg = "Wildcard slothy imports are not supported"
         raise RuntimeError(msg)
-    frame = get_frame(_stack_offset)
+    frame = get_frame(stack_offset)
     if global_ns is None:
         global_ns = frame.f_globals
     if local_ns is None:
@@ -455,9 +455,9 @@ def _slothy_import_locally(
     local_ns: dict[str, object] | None = None,
     from_list: tuple[str, ...] | None = None,
     level: int = 0,
-    _stack_offset: int = 2,
+    stack_offset: int = 2,
 ) -> object:
     """Slothily import an object only in slothy importing context manager."""
     if global_ns["__name__"] == _target:
-        return slothy_import(name, global_ns, local_ns, from_list, level, _stack_offset)
+        return slothy_import(name, global_ns, local_ns, from_list, level, stack_offset)
     return _builtin_import(name, global_ns, local_ns, from_list or (), level)
