@@ -32,11 +32,15 @@ except AttributeError as err:
     )
     raise RuntimeError(msg) from err
 
-__all__ = ("slothy",)
+__all__ = ("slothy_importing", "slothy_importing_if")
 
 
 @contextmanager
-def slothy(*, prevent_eager: bool = False, stack_offset: int = 2) -> Iterator[None]:  # noqa: ARG001
+def slothy_importing(
+    *,
+    prevent_eager: bool = False,  # noqa: ARG001
+    stack_offset: int = 2,
+) -> Iterator[None]:
     """
     Use slothy imports in a `with` statement.
 
@@ -60,10 +64,11 @@ def slothy(*, prevent_eager: bool = False, stack_offset: int = 2) -> Iterator[No
         _slothy_import_locally,
         frame.f_globals["__name__"],
         builtin_import := _get_builtin_import(frame.f_builtins),
-        _stack_offset=stack_offset,
+        _stack_offset=stack_offset + 1,
     )
     import_wrapper.__slothy__ = True  # type: ignore[attr-defined]
     frame.f_builtins["__import__"] = import_wrapper
+
     try:
         yield
     finally:
@@ -75,7 +80,7 @@ def _is_slothy_import(obj: object) -> object:
     return getattr(obj, "__slothy__", None)
 
 
-def slothy_if(
+def slothy_importing_if(
     condition: object,
     *,
     prevent_eager: bool = False,
@@ -102,7 +107,7 @@ def slothy_if(
 
     """
     return (
-        slothy(prevent_eager=prevent_eager, stack_offset=stack_offset)
+        slothy_importing(prevent_eager=prevent_eager, stack_offset=stack_offset)
         if condition
         else nullcontext()
     )
@@ -124,9 +129,11 @@ def _process_slothy_objects(local_ns: dict[str, object]) -> None:
     for ref, value in local_ns.copy().items():
         if not isinstance(value, SlothyObject):
             continue
+
         if isinstance(ref, SlothyKey):
             ref.obj = value
             continue
+
         local_ns[SlothyKey(ref, value)] = value
         module_name = value._SlothyObject__args.module_name
         modules.pop(module_name, None)
@@ -148,7 +155,7 @@ def _module_get_attr_path(
     attrs: tuple[str, ...],
 ) -> object:
     root = attrs[0]
-    attr_path = ".".join(attrs)
+
     try:
         obj = getattr(module, root)
     except AttributeError as err:
@@ -159,13 +166,13 @@ def _module_get_attr_path(
             module_name = spec.name
             location = getattr(module, "__file__", None) or location
         suffix = " " + location.join("()")
+
         if root in import_args.from_list:
-            msg = f"cannot import name {attr_path!r} from {module_name!r}" + suffix
+            msg = f"cannot import name {root!r} from {module_name!r}" + suffix
             raise ImportError(msg) from err
         raise
-    else:
-        obj = reduce(getattr, attrs[1:], obj)
-    return obj
+
+    return reduce(getattr, attrs[1:], obj)
 
 
 def _get_builtin_import(builtins: dict[str, Any]) -> Callable[..., Any]:
@@ -178,7 +185,7 @@ def _get_builtin_import(builtins: dict[str, Any]) -> Callable[..., Any]:
 
 
 class SlothyObject:
-    """Slothy object."""
+    """Slothy object. You should not be using this directly."""
 
     if TYPE_CHECKING:
         _SlothyObject__args: _ImportArgs
@@ -224,6 +231,7 @@ class SlothyObject:
         """Actually import the object."""
         if builtin_import is None:
             builtin_import = _get_builtin_import(self.__builtins)
+
         try:
             import_args = self.__args
             module = builtin_import(*import_args)
@@ -239,6 +247,7 @@ class SlothyObject:
                 )
             exc = type(exc)(*args).with_traceback(exc.__traceback__)
             raise exc from None
+
         local_ns = self.__args.local_ns
         ctx = copy_context()
         ctx.run(binding.set, True)
@@ -246,6 +255,7 @@ class SlothyObject:
             existing_value = ctx.run(local_ns.get, ref)
             if isinstance(existing_value, SlothyObject):
                 ctx.run(local_ns.__setitem__, ref, obj)
+
         return obj
 
     def __set_name__(self, owner: object, name: str) -> None:
@@ -257,6 +267,7 @@ class SlothyObject:
         builtin_import = _get_builtin_import(self.__builtins)
         if _is_slothy_import(builtin_import):
             return self
+
         obj = self.__import()
         if hasattr(obj, "__get__"):
             return obj.__get__(inst, owner)
@@ -267,6 +278,7 @@ class SlothyObject:
         builtin_import = _get_builtin_import(self.__builtins)
         if _is_slothy_import(builtin_import):
             return
+
         obj = self.__import()
         if hasattr(obj, "__set__"):
             obj.__set__(inst, value)
@@ -276,6 +288,7 @@ class SlothyObject:
         builtin_import = _get_builtin_import(self.__builtins)
         if _is_slothy_import(builtin_import):
             return
+
         obj = self.__import()
         if hasattr(obj, "__delete__"):
             obj.__delete__(inst)
@@ -285,11 +298,13 @@ class SlothyObject:
         source = self.__source or ""
         if source:
             source = " " + source.join("()")
+
         attrs = self.__attr_path
         targets = ".".join(attrs)
         attr = next(iter(attrs), None)
         module_name = self.__args.module_name
         from_list = self.__args.from_list
+
         if attr is None:
             return f"<import {module_name}{source}>"
         if attr in from_list:
@@ -392,12 +407,12 @@ class SlothyKey(str):
 
 def _format_source(frame: FrameType) -> str:
     """Refer to an import in the `<file name>:<line number>` format."""
-    orig_filename = frame.f_code.co_filename
-    # Canonical names like "<stdin>"
-    if orig_filename.startswith("<") and orig_filename.endswith(">"):
-        filename = orig_filename
+    frame_fn = frame.f_code.co_filename
+    # Canonical names like "<stdin>"; same logic is used in linecache
+    if not frame_fn or frame_fn.startswith("<") and frame_fn.endswith(">"):
+        filename = frame_fn
     else:
-        filename = str(Path(frame.f_code.co_filename).resolve())
+        filename = str(Path(frame_fn).resolve())
     return f'file "{filename}", line {frame.f_lineno}'
 
 
@@ -436,15 +451,13 @@ def _slothy_import_locally(
     _target: str,
     _builtin_import: Callable[..., object],
     name: str,
-    global_ns: dict[str, object] | None = None,
+    global_ns: dict[str, object],
     local_ns: dict[str, object] | None = None,
     from_list: tuple[str, ...] | None = None,
     level: int = 0,
-    _stack_offset: int = 1,
+    _stack_offset: int = 2,
 ) -> object:
-    """Slothily import an object only if requested in a `with slothy():` statement."""
-    global_ns = global_ns or get_frame(_stack_offset).f_globals
+    """Slothily import an object only in slothy importing context manager."""
     if global_ns["__name__"] == _target:
-        offset = _stack_offset + 1
-        return slothy_import(name, global_ns, local_ns, from_list, level, offset)
+        return slothy_import(name, global_ns, local_ns, from_list, level, _stack_offset)
     return _builtin_import(name, global_ns, local_ns, from_list or (), level)

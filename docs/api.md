@@ -1,9 +1,9 @@
 ::: slothy.SLOTHY_ENABLED
     options:
       show_root_full_path: false
-::: slothy._impl.slothy
+::: slothy._importing.slothy
     options:
       show_root_full_path: false
-::: slothy._impl.slothy_if
+::: slothy._importing.slothy_if
     options:
       show_root_full_path: false

@@ -2,14 +2,15 @@ from __future__ import annotations
 
 import runpy
 import sys
-import warnings
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pytest_subtests import SubTests
 
 
-def _force_reload(module_names: tuple[str, ...] = ("slothy", "slothy._impl")) -> None:
+def _force_reload(
+    module_names: tuple[str, ...] = ("slothy", "slothy._importing"),
+) -> None:
     for module_name in module_names:
         sys.modules.pop(module_name, None)
 
@@ -37,7 +38,4 @@ def test_unsupported_implementation(subtests: SubTests) -> None:
     sys._getframe = getframe
 
 
-def test_slothy_no_warn() -> None:
-    _force_reload()
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
+# TODO: env vars tests  # noqa: TD002, TD003

@@ -23,10 +23,10 @@ with cast(
     if supported_implementation
     else pytest.warns(RuntimeWarning, match=r"does not support `sys._getframe\(\)`"),
 ):
-    from slothy import slothy, slothy_if
+    from slothy import slothy_importing, slothy_importing_if
 
 if supported_implementation:
-    from slothy._impl import SlothyObject
+    from slothy._importing import SlothyObject
 
 builtin_import = __import__
 
@@ -37,10 +37,10 @@ with subtests.test("prevent-eager"), (
         RuntimeError,
         match="cannot default to eager mode",
     )
-), slothy(prevent_eager=True):
+), slothy_importing(prevent_eager=True):
     pass
 
-with slothy():
+with slothy_importing():
     with subtests.test("builtin-import-overridden"):
         if supported_implementation:
             assert __import__ is not builtin_import
@@ -97,7 +97,7 @@ with subtests.test("modules-purged-if-slothy"):
         for module_entry in module_entries:
             assert module_entry in sys.modules
 
-with slothy(), subtests.test("reenter-works"):
+with slothy_importing(), subtests.test("reenter-works"):
     # Should not be a problem if we re-enter.
     if supported_implementation:
         assert __import__ is not builtin_import
@@ -107,13 +107,13 @@ with slothy(), subtests.test("reenter-works"):
 with subtests.test("builtin-import-unchanged-after-reenter"):
     assert __import__ is builtin_import
 
-with slothy_if(True), subtests.test("slothy-if-true"):
+with slothy_importing_if(True), subtests.test("slothy-if-true"):
     if supported_implementation:
         assert __import__ is not builtin_import
     else:
         assert __import__ is builtin_import
 
-with slothy_if(False), subtests.test("slothy-if-false"):
+with slothy_importing_if(False), subtests.test("slothy-if-false"):
     assert __import__ is builtin_import
 
 with subtests.test("test-class-scope"):
@@ -124,7 +124,7 @@ with subtests.test("test-class-scope"):
         desc_set_called = False
         desc_delete_called = False
 
-        with slothy():
+        with slothy_importing():
             # Curio: mypy doesn't support from-imports with multiple items.
             from module3 import a, b, c  # type: ignore[misc]
 
@@ -143,7 +143,7 @@ with subtests.test("test-class-scope"):
 
     test = Test()
 
-    with subtests.test("reenter-slothy-descriptor-no-import"), slothy():
+    with subtests.test("reenter-slothy-descriptor-no-import"), slothy_importing():
         if supported_implementation:
             assert isinstance(test.b, SlothyObject)
             assert isinstance(test.c, SlothyObject)

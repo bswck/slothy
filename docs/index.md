@@ -12,9 +12,9 @@ Intended to be used as a guard for type-checking and expensive imports.
 # Usage
 
 ```py
->>> from slothy import slothy
+>>> from slothy import lazy_importing
 >>>
->>> with slothy():
+>>> with lazy_importing(prevent_eager=False):
 ...     from functools import partial, reduce
 ...     print(partial)  # <from functools import partial, ...>
 ...     print(reduce)  # <from functools import ..., reduce>
@@ -26,15 +26,15 @@ Intended to be used as a guard for type-checking and expensive imports.
 (<class 'functools.partial'>, <built-in function reduce>)
 ```
 
-`slothy()` will default to eager imports on unsupported Python implementations,
+`lazy_importing()` will default to eager imports on unsupported Python implementations,
 i.e. those that don't define `sys._getframe`. While this library is 3.8+
 and that eliminates the risk of running slothy in most of these implementations now,
 future versions of them can finally support 3.8.
 
-To prevent eager imports in `with slothy()` statements and instead fail on unsupported
-Python implementations, use `slothy(prevent_eager=True)`. Preventing eager imports might
-be useful in type-checking sections, where eager imports could cause cycles resulting
-in less readable tracebacks.
+To prevent eager imports in `with lazy_importing()` statements and instead fail immediately
+on unsupported Python implementations, use `with lazy_importing(prevent_eager=True)`.
+Preventing eager imports might be useful in type-checking sections, where eager imports
+could cause cycles resulting in less readable tracebacks.
 
 # Credits
 Many thanks to Jelle Zijlstra [@JelleZijlstra](https://github.com/JelleZijlstra) who wrote a [basic
