@@ -7,6 +7,18 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 <!-- insertion marker -->
 
+## [v0.2.0](https://github.com/bswck/slothy/tree/v0.2.0) (2024-06-14)
+
+
+### Changed
+
+- Settled on stable interface: `slothy_importing`/`lazy_importing`, `slothy_importing_if`/`lazy_importing_if`.
+
+### Fixed
+
+- Frame offset management of `__import__` replacement function.
+
+
 ## [v0.2.0b2](https://github.com/bswck/slothy/tree/v0.2.0b2) (2024-06-14)
 
 
