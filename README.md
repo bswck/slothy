@@ -2,7 +2,6 @@
 
 [![Tests](https://github.com/bswck/slothy/actions/workflows/test.yml/badge.svg)](https://github.com/bswck/slothy/actions/workflows/test.yml)
 [![Coverage](https://coverage-badge.samuelcolvin.workers.dev/bswck/slothy.svg)](https://coverage-badge.samuelcolvin.workers.dev/redirect/bswck/slothy)
-[![Documentation Status](https://readthedocs.org/projects/slothy/badge/?version=latest)](https://slothy.readthedocs.io/en/latest/?badge=latest)
 
 Super-easy lazy importing in Python.
 
