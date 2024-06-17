@@ -168,8 +168,8 @@ with slothy_importing():
         "package1.submodule1",
         "package1.submodule2",
         "package1.submodule3",
-        # ↓ Because of `from package.subpackage import subsubmodule`,
-        #   NOT because of `from package import subpackage`.
+        # ↓ Because of `from package1.subpackage import subsubmodule`,
+        #   NOT because of `from package1 import subpackage`.
         "package1.subpackage",
         "package2.submodule",
         "lazyitem_package",
