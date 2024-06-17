@@ -1,6 +1,8 @@
 # ruff: noqa: B018, FBT003, F401, F821, PLR2004
 from __future__ import annotations
 
+import gc
+import platform
 import re
 import sys
 from contextlib import nullcontext
@@ -246,6 +248,9 @@ with slothy_importing():
             assert package1_fake is fake
 
             with subtests.test("garbage-collection-trackers-clear"):
+                if platform.python_implementation() == "PyPy":
+                    # https://doc.pypy.org/en/latest/cpython_differences.html#differences-related-to-garbage-collection-strategies
+                    gc.collect()
                 assert not SlothyObject_objects
                 assert not SlothyKey_objects
 
