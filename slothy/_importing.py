@@ -460,8 +460,8 @@ def _slothy_import(
     if "*" in from_list:
         msg = "Wildcard slothy imports are not supported"
         raise RuntimeError(msg)
-    args = _ImportArgs(name, global_ns, local_ns, from_list, level)
     frame = get_frame(stack_offset)
+    args = _ImportArgs(name, global_ns, local_ns, from_list, level)
     source = _format_source(frame)
     return SlothyObject(args=args, builtins=frame.f_builtins, source=source)
 
@@ -478,8 +478,9 @@ def _slothy_import_locally(
     _stack_offset: int = 1,
 ) -> object:
     """Slothily import an object only in slothy importing context manager."""
+    if name in modules and (parent := name.split(".", 1)[0]) in modules:
+        return modules[parent]
     frame = get_frame(_stack_offset)
-    # We're respecting if the caller set `global_ns` or `local_ns` to empty dicts!
     global_ns = frame.f_globals if global_ns is None else global_ns
     local_ns = frame.f_locals if local_ns is None else local_ns
     args = name, global_ns, local_ns, from_list or (), level
