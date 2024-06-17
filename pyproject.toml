@@ -96,7 +96,7 @@ shell = "towncrier create $TICKET.security.md --edit"
 args = [{name = "TICKET", default = "+", positional = true}]
 
 [tool.ruff]
-exclude = ["scripts/"]
+exclude = ["scripts/", "tests/leaking_patch/"]
 
 [tool.ruff.lint]
 # To discuss the presented rationales, contact the author (bswck).
@@ -140,7 +140,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/tested_site/*" = ["ALL"]
+"tests/tested_layouts/*" = ["ALL"]
 "tests/*" = ["D", "S101", "SLF001"]
 
 [tool.ruff.lint.isort]
@@ -149,10 +149,10 @@ required-imports = ["from __future__ import annotations"]
 [tool.mypy]
 strict = true
 explicit_package_bases = true
-mypy_path = ".,tests/tested_site/"
+mypy_path = ".,tests/tested_layouts/"
 
 [tool.pyright]
-extraPaths = ["tests/tested_site/"]
+extraPaths = ["tests/tested_layouts/"]
 
 [tool.towncrier]
 directory = "news"

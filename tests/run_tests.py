@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import runpy
 import sys
 from typing import TYPE_CHECKING
@@ -15,27 +16,27 @@ def _force_reload(
         sys.modules.pop(module_name, None)
 
 
+def test_unsupported_implementation(subtests: SubTests) -> None:
+    _force_reload()
+    os.environ["SLOTHY_DISABLE"] = "1"  # Do disable.
+    ns = runpy.run_path(
+        "tests/tests.py",
+        run_name="tests",
+        init_globals={"subtests": subtests, "supported_implementation": False},
+    )
+    module_entries = ns["expected_module_entries"]
+    _force_reload(module_entries)
+
+
 if hasattr(sys, "_getframe"):
 
     def test_supported_implementation(subtests: SubTests) -> None:
         _force_reload()
-        runpy.run_path(
+        os.environ["SLOTHY_DISABLE"] = ""  # Don't disable.
+        ns = runpy.run_path(
             "tests/tests.py",
             run_name="tests",
-            init_globals={"subtests": subtests},
+            init_globals={"subtests": subtests, "supported_implementation": True},
         )
-
-
-def test_unsupported_implementation(subtests: SubTests) -> None:
-    _force_reload()
-    getframe = sys._getframe
-    del sys._getframe
-    runpy.run_path(
-        "tests/tests.py",
-        run_name="tests",
-        init_globals={"subtests": subtests},
-    )
-    sys._getframe = getframe
-
-
-# TODO: env vars tests  # noqa: TD002, TD003
+        module_entries = ns["expected_module_entries"]
+        _force_reload(module_entries)
