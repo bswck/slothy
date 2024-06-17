@@ -31,6 +31,8 @@ with cast(
     from slothy import slothy_importing, slothy_importing_if
 
 if supported_implementation:
+    # We're using slothy's internal system for tracking whether
+    # slothy objects are properly garbage collected. :-)
     from slothy._importing import SlothyObject, _SlothyKey
 
     SlothyKey_objects: WeakSet[_SlothyKey] = WeakSet()
@@ -213,8 +215,9 @@ with slothy_importing():
 
     def test_all_imported() -> None:
         if supported_implementation:
-            assert SlothyObject_objects
-            assert SlothyKey_objects
+            with subtests.test("garbage-collection-trackers-full"):
+                assert SlothyObject_objects
+                assert SlothyKey_objects
 
         assert isinstance(module, ModuleType)
         assert isinstance(pkg, ModuleType)
@@ -241,8 +244,10 @@ with slothy_importing():
             sys.modules["package1.fake"] = fake
             pkg.fake = fake  # type: ignore[attr-defined]
             assert package1_fake is fake
-            assert not SlothyObject_objects
-            assert not SlothyKey_objects
+
+            with subtests.test("garbage-collection-trackers-clear"):
+                assert not SlothyObject_objects
+                assert not SlothyKey_objects
 
     if not supported_implementation:
         test_all_imported()
