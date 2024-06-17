@@ -7,6 +7,7 @@ from contextlib import nullcontext
 from pathlib import Path
 from types import ModuleType
 from typing import TYPE_CHECKING, cast
+from weakref import WeakSet
 
 import pytest
 
@@ -14,6 +15,8 @@ if TYPE_CHECKING:
     from contextlib import AbstractContextManager
 
     from pytest_subtests import SubTests
+
+    from slothy._importing import SlothyObject
 
     # Global variables passed through runpy.
     subtests: SubTests
@@ -28,7 +31,16 @@ with cast(
     from slothy import slothy_importing, slothy_importing_if
 
 if supported_implementation:
-    from slothy._importing import SlothyObject
+    from slothy._importing import SlothyObject, _SlothyKey
+
+    SlothyKey_objects: WeakSet[_SlothyKey] = WeakSet()
+    SlothyObject_objects: WeakSet[SlothyObject] = WeakSet()
+
+    SlothyObject.__slothy_tracker__ = SlothyObject_objects
+    _SlothyKey.__slothy_tracker__ = SlothyKey_objects
+
+    assert not SlothyObject_objects
+    assert not SlothyKey_objects
 
 builtin_import = __import__
 
@@ -113,48 +125,46 @@ with slothy_importing():
 
     if supported_implementation:
         PATH_HERE = str(Path(__file__).resolve())
-        REFERENCE = rf'"{re.escape(PATH_HERE)}", line \d+'
+        SRC_REF = rf'"{re.escape(PATH_HERE)}", line \d+'
 
         with subtests.test("import-outputs"):
             assert isinstance(module, SlothyObject)
-            assert re.fullmatch(rf"<import module \({REFERENCE}\)>", repr(module))
+            assert re.fullmatch(rf"<import module \({SRC_REF}\)>", repr(module))
 
             assert isinstance(pkg, SlothyObject)
-            assert re.fullmatch(rf"<import package1 \({REFERENCE}\)>", repr(pkg))
+            assert re.fullmatch(rf"<import package1 \({SRC_REF}\)>", repr(pkg))
 
             assert isinstance(attr, SlothyObject)
-            assert re.fullmatch(
-                rf"<from module import attr \({REFERENCE}\)>", repr(attr)
-            )
+            assert re.fullmatch(rf"<from module import attr \({SRC_REF}\)>", repr(attr))
 
             assert isinstance(subpackage, SlothyObject)
             assert re.fullmatch(
-                rf"<from package1 import subpackage \({REFERENCE}\)>",
+                rf"<from package1 import subpackage \({SRC_REF}\)>",
                 repr(subpackage),
             )
 
             with subtests.test("representing-neighboring-fromlist-members"):
                 assert isinstance(m1_1, SlothyObject)
                 assert re.fullmatch(
-                    rf"<from package1.submodule1 import member1 \({REFERENCE}\)>",
+                    rf"<from package1.submodule1 import member1 \({SRC_REF}\)>",
                     repr(m1_1),
                 )
 
                 assert isinstance(m2_1, SlothyObject)
                 assert re.fullmatch(
-                    rf"<from package1.submodule2 import member1, ... \({REFERENCE}\)>",
+                    rf"<from package1.submodule2 import member1, ... \({SRC_REF}\)>",
                     repr(m2_1),
                 )
 
                 assert isinstance(m2_2, SlothyObject)
                 assert re.fullmatch(
-                    rf"<from package1.submodule2 import ..., member2 \({REFERENCE}\)>",
+                    rf"<from package1.submodule2 import ..., member2 \({SRC_REF}\)>",
                     repr(m2_2),
                 )
 
                 assert isinstance(m3_1, SlothyObject)
                 assert re.fullmatch(
-                    rf"<from package1.submodule3 import member1, ... \({REFERENCE}\)>",
+                    rf"<from package1.submodule3 import member1, ... \({SRC_REF}\)>",
                     repr(m3_1),
                 )
 
@@ -162,14 +172,14 @@ with slothy_importing():
                 assert re.fullmatch(
                     (
                         r"<from package1.submodule3 import ..., member2, "
-                        rf"... \({REFERENCE}\)>"
+                        rf"... \({SRC_REF}\)>"
                     ),
                     repr(m3_2),
                 )
 
                 assert isinstance(m3_3, SlothyObject)
                 assert re.fullmatch(
-                    rf"<from package1.submodule3 import ..., member3 \({REFERENCE}\)>",
+                    rf"<from package1.submodule3 import ..., member3 \({SRC_REF}\)>",
                     repr(m3_3),
                 )
 
@@ -202,10 +212,16 @@ with slothy_importing():
         unwanted_module_entries += modules_in_from_imports
 
     def test_all_imported() -> None:
+        if supported_implementation:
+            assert SlothyObject_objects
+            assert SlothyKey_objects
+
         assert isinstance(module, ModuleType)
         assert isinstance(pkg, ModuleType)
         assert isinstance(attr, int)
         assert isinstance(subpackage, ModuleType)
+        assert isinstance(subsubmodule, ModuleType)
+        assert isinstance(package2.submodule, ModuleType)
         assert isinstance(m1_1, int)
         assert isinstance(m2_1, int)
         assert isinstance(m2_2, int)
@@ -216,7 +232,7 @@ with slothy_importing():
         if supported_implementation:
             with pytest.raises(
                 ImportError,
-                match=rf"\(caused by delayed execution of {REFERENCE}\)",
+                match=rf"\(caused by delayed execution of {SRC_REF}\)",
             ):
                 delusion
 
@@ -225,6 +241,8 @@ with slothy_importing():
             sys.modules["package1.fake"] = fake
             pkg.fake = fake  # type: ignore[attr-defined]
             assert package1_fake is fake
+            assert not SlothyObject_objects
+            assert not SlothyKey_objects
 
     if not supported_implementation:
         test_all_imported()

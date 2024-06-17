@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from contextlib import AbstractContextManager
     from types import FrameType, ModuleType
     from typing import Any
+    from weakref import WeakSet
 
     from typing_extensions import Self
 
@@ -225,6 +226,10 @@ class SlothyObject:
         _SlothyObject__refs: set[str]
         _SlothyObject__import: Callable[[Callable[..., ModuleType] | None], None]
 
+        # Trackers are used for garbage collection testing.
+        # Set your tracker here.
+        __slothy_tracker__: WeakSet[SlothyObject]
+
     def __init__(
         self,
         args: _ImportArgs,
@@ -254,8 +259,24 @@ class SlothyObject:
         self.__source = source
         self.__refs: set[str] = set()
 
+        if hasattr(self, "__slothy_tracker__"):
+            self.__slothy_tracker__.add(self)
+
     def __import(self, builtin_import: Callable[..., ModuleType]) -> object:
         """Actually import the object."""
+        ctx = copy_context()
+        ctx.run(binding.set, True)
+
+        @partial(partial, ctx.run)
+        def manage_scope(*, remove: bool) -> None:
+            local_ns = self.__args.local_ns
+            for ref in self.__refs:
+                existing_value = local_ns.get(ref)
+                if existing_value is self:
+                    del local_ns[ref]
+                    if not remove:
+                        local_ns[ref] = obj
+
         try:
             import_args = self.__args
             module = builtin_import(*import_args)
@@ -269,6 +290,7 @@ class SlothyObject:
             else:
                 obj = module
         except BaseException as exc:  # noqa: BLE001
+            manage_scope(remove=True)
             args = exc.args
             if self.__source:
                 args = (
@@ -278,16 +300,9 @@ class SlothyObject:
                 )
             exc = type(exc)(*args).with_traceback(exc.__traceback__)
             raise exc from None
-
-        local_ns = self.__args.local_ns
-        ctx = copy_context()
-        ctx.run(binding.set, True)
-        for ref in self.__refs:
-            existing_value = ctx.run(local_ns.get, ref)
-            if isinstance(existing_value, SlothyObject):
-                ctx.run(local_ns.__setitem__, ref, obj)
-
-        return obj
+        else:
+            manage_scope(remove=False)
+            return obj
 
     def __set_name__(self, owner: type, name: str) -> None:
         """Set the name of the object."""
@@ -319,6 +334,8 @@ class SlothyObject:
 
     def __getattr__(self, item: str) -> object:
         """Allow import chains."""
+        if item == "__slothy_tracker__":
+            raise AttributeError(item)
         if self.__args.from_list and self.__item_from_list is None:
             return SlothyObject(
                 args=self.__args,
@@ -338,7 +355,16 @@ binding: ContextVar[bool] = ContextVar("binding", default=False)
 class _SlothyKey(str):
     """Slothy key. Activates on namespace lookup."""
 
-    __slots__ = ("key", "obj", "_hash", "_import", "_should_refresh")
+    __slots__: tuple[str, ...] = ("key", "obj", "_hash", "_import", "_should_refresh")
+
+    if __debug__:
+        # By default, only allow tracking in testing mode (with assertions enabled).
+        __slots__ += ("__weakref__",)
+
+    if TYPE_CHECKING:
+        # Trackers are used for garbage collection testing.
+        # Set your tracker here.
+        __slothy_tracker__: WeakSet[_SlothyKey]
 
     def __new__(cls, key: str, obj: SlothyObject) -> Self:  # noqa: ARG003
         """Create a new slothy key."""
@@ -362,6 +388,8 @@ class _SlothyKey(str):
         self._hash = hash(key)
         self._import = obj._SlothyObject__import
         self._should_refresh = True
+        if hasattr(self, "__slothy_tracker__"):
+            self.__slothy_tracker__.add(self)
 
     def __eq__(self, key: object) -> bool:
         """
@@ -384,7 +412,7 @@ class _SlothyKey(str):
         if not isinstance(key, str):
             return NotImplemented
         # Is that check necessary?
-        elif key != self.key:  # pragma: no cover  # noqa: RET505, for microoptimization
+        elif key != self.key:  # pragma: no cover  # noqa: RET505 (elifs instead of ifs)
             return False
         elif binding.get():
             return True
