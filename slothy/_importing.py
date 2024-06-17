@@ -87,7 +87,7 @@ def slothy_importing_if(
     condition: object,
     *,
     prevent_eager: bool = True,
-    stack_offset: int = 3,
+    stack_offset: int = 1,
 ) -> AbstractContextManager[None]:
     """
     Use slothy imports only if condition evaluates to truth.
@@ -112,7 +112,7 @@ def slothy_importing_if(
 
     """
     return (
-        slothy_importing(prevent_eager=prevent_eager, stack_offset=stack_offset)
+        slothy_importing(prevent_eager=prevent_eager, stack_offset=stack_offset + 1)
         if condition
         else nullcontext()
     )

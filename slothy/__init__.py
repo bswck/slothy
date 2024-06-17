@@ -53,7 +53,7 @@ else:
     def slothy_importing(
         *,
         prevent_eager: bool = False,
-        stack_offset: int = 2,  # noqa: ARG001
+        stack_offset: int = 1,  # noqa: ARG001
     ) -> Iterator[None]:
         """Replace slothy with a no-op on unsupported Python implementation."""
         if prevent_eager:
@@ -64,7 +64,7 @@ else:
         condition: object,
         *,
         prevent_eager: bool = False,
-        stack_offset: int = 3,  # noqa: ARG001
+        stack_offset: int = 1,  # noqa: ARG001
     ) -> AbstractContextManager[None]:
         """Replace slothy with a no-op on unsupported Python implementation."""
         if condition and prevent_eager:
