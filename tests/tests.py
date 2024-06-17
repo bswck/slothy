@@ -92,7 +92,11 @@ with slothy_importing():
             # it already holds the info about targeted module
             assert package2 is package2.submodule
 
-        from package1.subpackage import subsubmodule
+        from package1.subpackage import subsubmodule  # noqa: I001
+
+        from lazyitem_package import functionality  # type: ignore[attr-defined]
+
+        random_obj = object()
 
     if supported_implementation:
         PATH_HERE = str(Path(__file__).resolve())
@@ -166,11 +170,14 @@ with slothy_importing():
         # NOT because of `from package import subpackage`.
         "package1.subpackage",
         "package2.submodule",
+        "lazyitem_package",
+    )
+    modules_in_from_imports = (
+        "package1.subpackage.subsubmodule",
+        "lazyitem_package.functionality",
     )
     if not supported_implementation:
-        expected_module_entries += (
-            "package1.subpackage.subsubmodule",  # ↑
-        )
+        expected_module_entries += modules_in_from_imports
 
     unwanted_module_entries: tuple[str, ...] = (
         # `from X import Y` can't register X.Y in sys.modules
@@ -183,9 +190,7 @@ with slothy_importing():
         "package.submodule.member",  # ↑
     )
     if supported_implementation:
-        unwanted_module_entries += (
-            "package.subpackage.subsubmodule",  # ↑
-        )
+        unwanted_module_entries += modules_in_from_imports
 
     def test_all_imported() -> None:
         assert isinstance(module, ModuleType)
@@ -205,6 +210,9 @@ with slothy_importing():
                 match=rf"\(caused by delayed execution of {REFERENCE}\)",
             ):
                 delusion
+
+        # We're just covering the `key != self.key` case in `SlothyKey.__eq__` here
+        assert type(random_obj) is object
 
     if not supported_implementation:
         test_all_imported()
@@ -255,39 +263,44 @@ with subtests.test("test-class-scope"):
         desc_delete_called = False
 
         with slothy_importing():
-            # Curio: mypy doesn't support from-imports with multiple items.
-            from class_imported_module import a, b, c  # type: ignore[misc]
+            from class_imported_module import a_int  # noqa: I001
+            from class_imported_module import b_int
+
+            # Curio: mypy doesn't support type checking descriptors bound via imports.
+            from class_imported_module import c_property  # type: ignore[misc]
 
             if supported_implementation:
-                assert isinstance(a, SlothyObject)
-                assert isinstance(b, SlothyObject)
-                assert isinstance(c, SlothyObject)
+                assert isinstance(a_int, SlothyObject)
+                assert isinstance(b_int, SlothyObject)
+                assert isinstance(c_property, SlothyObject)
             else:
-                assert isinstance(a, int)
-                assert isinstance(b, int)
-                assert isinstance(c, property)
+                assert isinstance(a_int, int)
+                assert isinstance(b_int, int)
+                assert isinstance(c_property, property)
 
     # If it's a supported implementation, the item should be imported
     # on demand via descriptor protocol.
-    assert Test.a == 1
+    assert Test.a_int == 1
 
     test = Test()
 
     with subtests.test("reenter-slothy-descriptor-no-import"), slothy_importing():
         if supported_implementation:
-            assert isinstance(test.b, SlothyObject)
-            assert isinstance(test.c, SlothyObject)
+            assert isinstance(test.b_int, SlothyObject)
+            test.c_property = 0  # Should be a no-op.
+            del test.c_property  # Should be a no-op too.
+            assert isinstance(test.c_property, SlothyObject)
         else:
-            assert isinstance(test.b, int)
+            assert isinstance(test.b_int, int)
 
-    assert test.b == 2
+    assert test.b_int == 2
     with subtests.test("descriptor-get-called"):
-        assert test.c is test  # That property returns self.
+        assert test.c_property is test  # That property returns self.
 
     with subtests.test("descriptor-set-called"):
-        test.c = None
+        test.c_property = None
         assert test.desc_set_called
 
     with subtests.test("descriptor-delete-called"):
-        del test.c
+        del test.c_property
         assert test.desc_delete_called

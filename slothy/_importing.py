@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 try:
     from sys import _getframe as get_frame
-except AttributeError as err:
+except AttributeError as err:  # pragma: no cover
     msg = (
         "This Python implementation does not support `sys._getframe()` "
         "and thus cannot use `slothy_importing`; do not import `slothy_importing` from "
@@ -168,11 +168,8 @@ def _import_item_from_list(
     #    Otherwise, a reference to that value is stored in the local namespace
     #    using the name in the as clause if it is present,
     #    otherwise using the attribute name.
-    module_name = import_args.module_name
-    spec = module.__spec__
+    module_name = getattr(module.__spec__, "name", None) or import_args.module_name
     location = getattr(module, "__file__", "unknown location")
-    if spec is not None:
-        module_name = spec.name
     try:
         obj = getattr(module, item_from_list)
     except AttributeError:
@@ -204,7 +201,10 @@ def _import_item_from_list(
 def _get_builtin_import(builtins: dict[str, Any]) -> Callable[..., Any]:
     try:
         builtin_import: Callable[..., Any] = builtins["__import__"]
-    except KeyError:
+    except KeyError:  # pragma: no cover
+        # No possibility of running into this unless you're manually setting
+        # `__builtins__` namespace that lacks the `__import__` function.
+        # This is so unlikely to happen!
         msg = "__import__ not found"
         raise ImportError(msg) from None
     return builtin_import
@@ -332,15 +332,16 @@ class SlothyObject:
         module_name = self.__args.module_name
         from_list = self.__args.from_list
 
-        if item is None:
-            return f"<import {module_name}{source}>"
-        if item in from_list:
+        if item is not None and item in from_list:
             target = item
             if from_list[0] != item:
                 target = f"..., {item}"
             if from_list[-1] != item:
                 target += ", ..."
             return f"<from {module_name} import {target}{source}>"
+        # If there is an item but it doesn't exist in the `fromlist`, we ignore that.
+        # slothy *does not* support manual `SlothyObject` creation,
+        # so we assume the states of these objects to be consistent at all times.
         return f"<import {module_name}{source}>"
 
     def __getattr__(self, item: str) -> object:
@@ -440,10 +441,10 @@ def _format_source(frame: FrameType) -> str:
     return f'"{filename}", line {frame.f_lineno}'
 
 
-def slothy_import(
+def _slothy_import(
     name: str,
-    global_ns: dict[str, object] | None = None,
-    local_ns: dict[str, object] | None = None,
+    global_ns: dict[str, object],
+    local_ns: dict[str, object],
     from_list: tuple[str, ...] | None = None,
     level: int = 0,
     stack_offset: int = 1,
@@ -459,12 +460,8 @@ def slothy_import(
     if "*" in from_list:
         msg = "Wildcard slothy imports are not supported"
         raise RuntimeError(msg)
-    frame = get_frame(stack_offset)
-    if global_ns is None:
-        global_ns = frame.f_globals
-    if local_ns is None:
-        local_ns = frame.f_locals
     args = _ImportArgs(name, global_ns, local_ns, from_list, level)
+    frame = get_frame(stack_offset)
     source = _format_source(frame)
     return SlothyObject(args=args, builtins=frame.f_builtins, source=source)
 
@@ -473,13 +470,18 @@ def _slothy_import_locally(
     _target: str,
     _builtin_import: Callable[..., object],
     name: str,
-    global_ns: dict[str, object],
+    global_ns: dict[str, object] | None = None,
     local_ns: dict[str, object] | None = None,
     from_list: tuple[str, ...] | None = None,
     level: int = 0,
     stack_offset: int = 2,
 ) -> object:
     """Slothily import an object only in slothy importing context manager."""
+    frame = get_frame(stack_offset)
+    if global_ns is None:
+        global_ns = frame.f_globals
+    if local_ns is None:
+        local_ns = frame.f_locals
     if global_ns["__name__"] == _target:
-        return slothy_import(name, global_ns, local_ns, from_list, level, stack_offset)
+        return _slothy_import(name, global_ns, local_ns, from_list, level, stack_offset)
     return _builtin_import(name, global_ns, local_ns, from_list or (), level)

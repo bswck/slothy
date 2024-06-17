@@ -4,22 +4,22 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from tests.tests import Test
 
-__all__ = ("a", "b")
+__all__ = ("a_int", "b_int")
 
-a = 1
-b = 2
+a_int = 1
+b_int = 2
 
 
 @property  # type: ignore[misc]
-def c(self: object) -> object:
+def c_property(self: object) -> object:
     return self
 
 
-@c.setter
-def c(self: Test, value: object) -> None:
+@c_property.setter
+def c_property(self: Test, value: object) -> None:
     self.desc_set_called = True
 
 
-@c.deleter
-def c(self: Test) -> None:
+@c_property.deleter
+def c_property(self: Test) -> None:
     self.desc_delete_called = True
