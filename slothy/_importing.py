@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager, nullcontext
 from contextvars import ContextVar, copy_context
-from functools import partial, reduce
+from functools import partial
 from pathlib import Path
 from sys import modules
 from typing import TYPE_CHECKING, NamedTuple
@@ -38,7 +38,7 @@ __all__ = ("slothy_importing", "slothy_importing_if")
 @contextmanager
 def slothy_importing(
     *,
-    prevent_eager: bool = False,  # noqa: ARG001
+    prevent_eager: bool = True,  # noqa: ARG001
     stack_offset: int = 2,
 ) -> Iterator[None]:
     """
@@ -50,6 +50,8 @@ def slothy_importing(
         If True, will raise a `RuntimeError` if slothy cannot guarantee
         to not fall back to eager imports on unsupported Python implementation.
         On supported Python implementations this parameter doesn't change the behavior.
+        A general recommendation is to set this to `True` in applications
+        and `False` in libraries.
     stack_offset
         The stack offset to use.
 
@@ -83,7 +85,7 @@ def _is_slothy_import(obj: object) -> object:
 def slothy_importing_if(
     condition: object,
     *,
-    prevent_eager: bool = False,
+    prevent_eager: bool = True,
     stack_offset: int = 3,
 ) -> AbstractContextManager[None]:
     """
@@ -97,6 +99,8 @@ def slothy_importing_if(
         If True, will raise a `RuntimeError` if slothy cannot guarantee
         to not fall back to eager imports on unsupported Python implementation.
         On supported Python implementations this parameter doesn't change the behavior.
+        A general recommendation is to set this to `True` in applications
+        and `False` in libraries.
     stack_offset
         The stack offset to use.
 
@@ -149,30 +153,52 @@ class _ImportArgs(NamedTuple):
     level: int
 
 
-def _module_get_attr_path(
+def _import_item_from_list(
     import_args: _ImportArgs,
+    builtin_import: Callable[..., ModuleType],
     module: ModuleType,
-    attrs: tuple[str, ...],
+    item_from_list: str,
 ) -> object:
-    root = attrs[0]
-
+    """Import an item in a `from ... import item` statement."""
+    # https://docs.python.org/3/reference/simple_stmts.html#import
+    # 1. Check if the imported module has an attribute by that name
+    # 2. If not, attempt to import a submodule with that name
+    #    and then check the imported module again for that attribute
+    #    if the attribute is not found, ImportError is raised.
+    #    Otherwise, a reference to that value is stored in the local namespace
+    #    using the name in the as clause if it is present,
+    #    otherwise using the attribute name.
+    module_name = import_args.module_name
+    spec = module.__spec__
+    location = getattr(module, "__file__", "unknown location")
+    if spec is not None:
+        module_name = spec.name
     try:
-        obj = getattr(module, root)
-    except AttributeError as err:
-        spec = module.__spec__
-        location = "unknown location"
-        module_name = import_args.module_name
-        if spec is not None:
-            module_name = spec.name
-            location = getattr(module, "__file__", None) or location
-        suffix = " " + location.join("()")
-
-        if root in import_args.from_list:
-            msg = f"cannot import name {root!r} from {module_name!r}" + suffix
-            raise ImportError(msg) from err
-        raise
-
-    return reduce(getattr, attrs[1:], obj)
+        obj = getattr(module, item_from_list)
+    except AttributeError:
+        try:
+            builtin_import(
+                f"{module_name}.{item_from_list}",
+                import_args.global_ns,
+                import_args.local_ns,
+                import_args.from_list or (),
+                import_args.level,
+            )
+        except ImportError as triage_exc:
+            raise triage_exc from None
+        else:
+            try:
+                obj = getattr(module, item_from_list)
+            except AttributeError:
+                pass
+            else:
+                return obj
+        msg = (
+            f"cannot import name {item_from_list!r} from {module_name!r} "
+            f"({location})"
+        )
+        raise ImportError(msg) from None
+    return obj
 
 
 def _get_builtin_import(builtins: dict[str, Any]) -> Callable[..., Any]:
@@ -190,7 +216,7 @@ class SlothyObject:
     if TYPE_CHECKING:
         _SlothyObject__args: _ImportArgs
         _SlothyObject__builtins: dict[str, Any]
-        _SlothyObject__attr_path: tuple[str, ...]
+        _SlothyObject__item_from_list: str
         _SlothyObject__source: str | None
         _SlothyObject__refs: set[str]
         _SlothyObject__import: Callable[[Callable[..., ModuleType] | None], None]
@@ -199,7 +225,7 @@ class SlothyObject:
         self,
         args: _ImportArgs,
         builtins: dict[str, Any],
-        attr_path: tuple[str, ...] = (),
+        item_from_list: str | None = None,
         source: str | None = None,
     ) -> None:
         """
@@ -211,8 +237,8 @@ class SlothyObject:
             The arguments to pass to [`builtins.__import__`].
         builtins
             The builtins namespace.
-        attr_path
-            The attributes to pull from the imported object.
+        item_from_list
+            One item in a `from ... import [item1, item2, ...]` import.
         source
             The source of the import.
 
@@ -220,7 +246,7 @@ class SlothyObject:
         super().__init__()
         self.__args = args
         self.__builtins = builtins
-        self.__attr_path = attr_path
+        self.__item_from_list = item_from_list
         self.__source = source
         self.__refs: set[str] = set()
 
@@ -235,14 +261,21 @@ class SlothyObject:
         try:
             import_args = self.__args
             module = builtin_import(*import_args)
-            attrs = self.__attr_path
-            obj = _module_get_attr_path(import_args, module, attrs) if attrs else module
+            if self.__item_from_list:
+                obj = _import_item_from_list(
+                    import_args=import_args,
+                    builtin_import=builtin_import,
+                    module=module,
+                    item_from_list=self.__item_from_list,
+                )
+            else:
+                obj = module
         except BaseException as exc:  # noqa: BLE001
             args = exc.args
             if self.__source:
                 args = (
                     (args[0] if args else "")
-                    + f" (caught on slothy import from {self.__source})",
+                    + f" (caused by delayed execution of {self.__source})",
                     *args[1:],
                 )
             exc = type(exc)(*args).with_traceback(exc.__traceback__)
@@ -257,10 +290,6 @@ class SlothyObject:
                 ctx.run(local_ns.__setitem__, ref, obj)
 
         return obj
-
-    def __set_name__(self, owner: object, name: str) -> None:
-        """Set the name of the object."""
-        self.__refs.add(name)
 
     def __get__(self, inst: object, owner: type[object] | None = None) -> object:
         """Import on-demand via descriptor protocol."""
@@ -299,39 +328,34 @@ class SlothyObject:
         if source:
             source = " " + source.join("()")
 
-        attrs = self.__attr_path
-        targets = ".".join(attrs)
-        attr = next(iter(attrs), None)
+        item = self.__item_from_list
         module_name = self.__args.module_name
         from_list = self.__args.from_list
 
-        if attr is None:
+        if item is None:
             return f"<import {module_name}{source}>"
-        if attr in from_list:
-            if from_list[0] != attr:
-                targets = f"..., {targets}"
-            if from_list[-1] != attr:
-                targets += ", ..."
-            return f"<from {module_name} import {targets}{source}>"
-        return f"<import {module_name}.{targets}{source}>"
+        if item in from_list:
+            target = item
+            if from_list[0] != item:
+                target = f"..., {item}"
+            if from_list[-1] != item:
+                target += ", ..."
+            return f"<from {module_name} import {target}{source}>"
+        return f"<import {module_name}{source}>"
 
-    def __getattr__(self, attr: str) -> object:
+    def __getattr__(self, item: str) -> object:
         """Allow import chains."""
-        return SlothyObject(
-            args=self.__args,
-            builtins=self.__builtins,
-            attr_path=(*self.__attr_path, attr),
-            source=self.__source,
-        )
-
-
-class SlothyObjectWithList(SlothyObject):
-    """Slothy object used in `from ... import ...` imports."""
-
-    def __getattr__(self, attr: str) -> object:
-        if attr not in self._SlothyObject__args.from_list:
-            raise AttributeError(attr)
-        return super().__getattr__(attr)
+        if self.__args.from_list and self.__item_from_list is None:
+            return SlothyObject(
+                args=self.__args,
+                builtins=self.__builtins,
+                item_from_list=item,
+                source=self.__source,
+            )
+        *_, last_module = self.__args.module_name.rsplit(".", 1)
+        if item != last_module:
+            raise AttributeError(item)
+        return self
 
 
 binding: ContextVar[bool] = ContextVar("binding", default=False)
@@ -408,12 +432,12 @@ class SlothyKey(str):
 def _format_source(frame: FrameType) -> str:
     """Refer to an import in the `<file name>:<line number>` format."""
     frame_fn = frame.f_code.co_filename
-    # Canonical names like "<stdin>"; same logic is used in linecache
+    # Empty and special names (like "<stdin>"). Same logic is used in `linecache`.
     if not frame_fn or frame_fn.startswith("<") and frame_fn.endswith(">"):
         filename = frame_fn
     else:
         filename = str(Path(frame_fn).resolve())
-    return f'file "{filename}", line {frame.f_lineno}'
+    return f'"{filename}", line {frame.f_lineno}'
 
 
 def slothy_import(
@@ -442,8 +466,6 @@ def slothy_import(
         local_ns = frame.f_locals
     args = _ImportArgs(name, global_ns, local_ns, from_list, level)
     source = _format_source(frame)
-    if from_list:
-        return SlothyObjectWithList(args=args, builtins=frame.f_builtins, source=source)
     return SlothyObject(args=args, builtins=frame.f_builtins, source=source)
 
 
