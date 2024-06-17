@@ -252,14 +252,8 @@ class SlothyObject:
         self.__source = source
         self.__refs: set[str] = set()
 
-    def __import(
-        self,
-        builtin_import: Callable[..., ModuleType] | None = None,
-    ) -> object:
+    def __import(self, builtin_import: Callable[..., ModuleType]) -> object:
         """Actually import the object."""
-        if builtin_import is None:
-            builtin_import = _get_builtin_import(self.__builtins)
-
         try:
             import_args = self.__args
             module = builtin_import(*import_args)
