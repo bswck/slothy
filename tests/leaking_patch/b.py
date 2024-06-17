@@ -1,0 +1,1 @@
+C = "original object"
