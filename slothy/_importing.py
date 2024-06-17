@@ -161,11 +161,11 @@ def _import_item_from_list(
 ) -> object:
     """Import an item in a `from ... import item` statement."""
     # https://docs.python.org/3/reference/simple_stmts.html#import
-    # 1. Check if the imported module has an attribute by that name
+    # 1. Check if the imported module has an attribute by that name.
     # 2. If not, attempt to import a submodule with that name
-    #    and then check the imported module again for that attribute
-    #    if the attribute is not found, ImportError is raised.
-    #    Otherwise, a reference to that value is stored in the local namespace
+    #    and then check the imported module again for that attribute.
+    #    If the attribute is not found, raise ImportError.
+    #    Otherwise, store a reference to that value in the local namespace
     #    using the name in the as clause if it is present,
     #    otherwise using the attribute name.
     module_name = getattr(module.__spec__, "name", None) or import_args.module_name
