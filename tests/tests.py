@@ -184,7 +184,7 @@ with slothy_importing():
     unwanted_module_entries: tuple[str, ...] = (
         # `from X import Y` can't register X.Y in sys.modules
         # if Y isn't a module.
-        # We want to expose fromlist members as non-modules
+        # We want to expose `fromlist` members as non-modules
         # and let the final resolution handle it correctly.
         # In `supported_implementation=False` case this will also not be bound
         # because `module.attr` in fact isn't a module.
