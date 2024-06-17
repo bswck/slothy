@@ -94,7 +94,7 @@ with slothy_importing():
             # As a side effect, it is possible to get away
             # with `package2.submodule.submodule` at runtime,
             # but that's where MyPy comes in.
-            assert package2 is package2.submodule
+            assert package2.submodule is package2
 
         from package1.subpackage import subsubmodule  # noqa: I001
 
