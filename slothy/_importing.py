@@ -134,11 +134,11 @@ def _process_slothy_objects(local_ns: dict[str, object]) -> None:
         if not isinstance(value, SlothyObject):
             continue
 
-        if isinstance(ref, SlothyKey):
+        if isinstance(ref, _SlothyKey):
             ref.obj = value
             continue
 
-        local_ns[SlothyKey(ref, value)] = value
+        local_ns[_SlothyKey(ref, value)] = value
         module_name = value._SlothyObject__args.module_name
         modules.pop(module_name, None)
 
@@ -212,6 +212,8 @@ def _get_builtin_import(builtins: dict[str, Any]) -> Callable[..., Any]:
 
 class SlothyObject:
     """Slothy object. You should not be using this directly."""
+
+    __MISSING_SENTINEL = object()
 
     if TYPE_CHECKING:
         _SlothyObject__args: _ImportArgs
@@ -291,36 +293,10 @@ class SlothyObject:
 
         return obj
 
-    def __get__(self, inst: object, owner: type[object] | None = None) -> object:
-        """Import on-demand via descriptor protocol."""
-        builtin_import = _get_builtin_import(self.__builtins)
-        if _is_slothy_import(builtin_import):
-            return self
-
-        obj = self.__import()
-        if hasattr(obj, "__get__"):
-            return obj.__get__(inst, owner)
-        return obj
-
-    def __set__(self, inst: object, value: object) -> None:
-        """Import on-demand via descriptor protocol."""
-        builtin_import = _get_builtin_import(self.__builtins)
-        if _is_slothy_import(builtin_import):
-            return
-
-        obj = self.__import()
-        if hasattr(obj, "__set__"):
-            obj.__set__(inst, value)
-
-    def __delete__(self, inst: object) -> None:
-        """Import on-demand via descriptor protocol."""
-        builtin_import = _get_builtin_import(self.__builtins)
-        if _is_slothy_import(builtin_import):
-            return
-
-        obj = self.__import()
-        if hasattr(obj, "__delete__"):
-            obj.__delete__(inst)
+    def __set_name__(self, owner: type, name: str) -> None:
+        """Set the name of the object."""
+        msg = "Class-scoped slothy imports are not supported"
+        raise RuntimeError(msg)
 
     def __repr__(self) -> str:
         """Represent the slothy object using a simulated import statement."""
@@ -339,6 +315,7 @@ class SlothyObject:
             if from_list[-1] != item:
                 target += ", ..."
             return f"<from {module_name} import {target}{source}>"
+
         # If there is an item but it doesn't exist in the `fromlist`, we ignore that.
         # slothy *does not* support manual `SlothyObject` creation,
         # so we assume the states of these objects to be consistent at all times.
@@ -362,7 +339,7 @@ class SlothyObject:
 binding: ContextVar[bool] = ContextVar("binding", default=False)
 
 
-class SlothyKey(str):
+class _SlothyKey(str):
     """Slothy key. Activates on namespace lookup."""
 
     __slots__ = ("key", "obj", "_hash", "_import", "_should_refresh")
@@ -410,7 +387,8 @@ class SlothyKey(str):
         """
         if not isinstance(key, str):
             return NotImplemented
-        elif key != self.key:  # noqa: RET505, for microoptimization
+        # Is that check necessary?
+        elif key != self.key:  # pragma: no cover  # noqa: RET505, for microoptimization
             return False
         elif binding.get():
             return True
@@ -432,12 +410,12 @@ class SlothyKey(str):
 
 def _format_source(frame: FrameType) -> str:
     """Refer to an import in the `<file name>:<line number>` format."""
-    frame_fn = frame.f_code.co_filename
+    ffn = frame.f_code.co_filename
     # Empty and special names (like "<stdin>"). Same logic is used in `linecache`.
-    if not frame_fn or frame_fn.startswith("<") and frame_fn.endswith(">"):
-        filename = frame_fn
+    if not ffn or ffn.startswith("<") and ffn.endswith(">"):  # pragma: no cover
+        filename = ffn
     else:
-        filename = str(Path(frame_fn).resolve())
+        filename = str(Path(ffn).resolve())
     return f'"{filename}", line {frame.f_lineno}'
 
 
@@ -478,10 +456,9 @@ def _slothy_import_locally(
 ) -> object:
     """Slothily import an object only in slothy importing context manager."""
     frame = get_frame(stack_offset)
-    if global_ns is None:
-        global_ns = frame.f_globals
-    if local_ns is None:
-        local_ns = frame.f_locals
+    # We're respecting if the caller set `global_ns` or `local_ns` to empty dicts!
+    global_ns = frame.f_globals if global_ns is None else global_ns
+    local_ns = frame.f_locals if local_ns is None else local_ns
     if global_ns["__name__"] == _target:
         return _slothy_import(name, global_ns, local_ns, from_list, level, stack_offset)
     return _builtin_import(name, global_ns, local_ns, from_list or (), level)

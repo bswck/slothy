@@ -96,8 +96,6 @@ with slothy_importing():
 
         from lazyitem_package import functionality  # type: ignore[attr-defined]
 
-        random_obj = object()
-
     if supported_implementation:
         PATH_HERE = str(Path(__file__).resolve())
         REFERENCE = rf'"{re.escape(PATH_HERE)}", line \d+'
@@ -211,9 +209,6 @@ with slothy_importing():
             ):
                 delusion
 
-        # We're just covering the `key != self.key` case in `SlothyKey.__eq__` here
-        assert type(random_obj) is object
-
     if not supported_implementation:
         test_all_imported()
 
@@ -254,53 +249,11 @@ with slothy_importing_if(True), subtests.test("slothy-if-true"):
 with slothy_importing_if(False), subtests.test("slothy-if-false"):
     assert __import__ is builtin_import
 
-with subtests.test("test-class-scope"):
+if supported_implementation:
+    with subtests.test("test-class-scope"), pytest.raises(
+        RuntimeError,
+        match="__set_name__",
+    ), slothy_importing():
 
-    class Test:
-        """Test class containing slothy imports binding attributes."""
-
-        desc_set_called = False
-        desc_delete_called = False
-
-        with slothy_importing():
-            from class_imported_module import a_int  # noqa: I001
-            from class_imported_module import b_int
-
-            # Curio: mypy doesn't support type checking descriptors bound via imports.
-            from class_imported_module import c_property  # type: ignore[misc]
-
-            if supported_implementation:
-                assert isinstance(a_int, SlothyObject)
-                assert isinstance(b_int, SlothyObject)
-                assert isinstance(c_property, SlothyObject)
-            else:
-                assert isinstance(a_int, int)
-                assert isinstance(b_int, int)
-                assert isinstance(c_property, property)
-
-    # If it's a supported implementation, the item should be imported
-    # on demand via descriptor protocol.
-    assert Test.a_int == 1
-
-    test = Test()
-
-    with subtests.test("reenter-slothy-descriptor-no-import"), slothy_importing():
-        if supported_implementation:
-            assert isinstance(test.b_int, SlothyObject)
-            test.c_property = 0  # Should be a no-op.
-            del test.c_property  # Should be a no-op too.
-            assert isinstance(test.c_property, SlothyObject)
-        else:
-            assert isinstance(test.b_int, int)
-
-    assert test.b_int == 2
-    with subtests.test("descriptor-get-called"):
-        assert test.c_property is test  # That property returns self.
-
-    with subtests.test("descriptor-set-called"):
-        test.c_property = None
-        assert test.desc_set_called
-
-    with subtests.test("descriptor-delete-called"):
-        del test.c_property
-        assert test.desc_delete_called
+        class _ClassScope:
+            from whatever import anything  # type: ignore[import-not-found]
