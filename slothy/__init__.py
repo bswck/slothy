@@ -18,7 +18,7 @@ SLOTHY_ENABLED: bool
 
 try:
     sys._getframe  # noqa: B018, SLF001
-except AttributeError:
+except AttributeError:  # pragma: no cover
     SLOTHY_ENABLED = False
 else:
     SLOTHY_ENABLED = not getenv("SLOTHY_DISABLE")
@@ -61,13 +61,13 @@ else:
         yield
 
     def slothy_importing_if(
-        condition: object,  # noqa: ARG001
+        condition: object,
         *,
         prevent_eager: bool = False,
         stack_offset: int = 3,  # noqa: ARG001
     ) -> AbstractContextManager[None]:
         """Replace slothy with a no-op on unsupported Python implementation."""
-        if prevent_eager:
+        if condition and prevent_eager:
             raise RuntimeError(EAGER_PREVENTION_MSG)
         return nullcontext()
 

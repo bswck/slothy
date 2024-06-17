@@ -32,19 +32,28 @@ if supported_implementation:
 
 builtin_import = __import__
 
-with subtests.test("prevent-eager"), (
-    nullcontext()
-    if supported_implementation
-    else pytest.raises(
-        RuntimeError,
-        match="cannot default to eager mode",
-    )
-), slothy_importing(prevent_eager=True):
-    pass
+for cm in (
+    lambda: slothy_importing(prevent_eager=True),
+    lambda: slothy_importing_if(True, prevent_eager=True),
+):
+    with subtests.test("prevent-eager"), (
+        nullcontext()
+        if supported_implementation
+        else pytest.raises(
+            RuntimeError,
+            match="cannot default to eager mode",
+        )
+    ), cm():  # type: ignore[no-untyped-call]
+        pass
 
-with subtests.test("no-prevent-eager"), slothy_importing(prevent_eager=False):
-    # Should never fail.
-    pass
+for cm in (
+    lambda: slothy_importing(prevent_eager=False),
+    lambda: slothy_importing_if(False, prevent_eager=True),
+    lambda: slothy_importing_if(True, prevent_eager=False),
+):
+    with subtests.test("no-prevent-eager"), cm():  # type: ignore[no-untyped-call]
+        # Should never fail.
+        pass
 
 with slothy_importing():
     if supported_implementation:
