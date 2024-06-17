@@ -67,7 +67,6 @@ def slothy_importing(
         _slothy_import_locally,
         _target=frame.f_globals["__name__"],
         _builtin_import=builtin_import,
-        _stack_offset=stack_offset,
     )
     import_wrapper.__slothy__ = True  # type: ignore[attr-defined]
     frame.f_builtins["__import__"] = import_wrapper
