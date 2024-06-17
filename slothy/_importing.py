@@ -213,8 +213,6 @@ def _get_builtin_import(builtins: dict[str, Any]) -> Callable[..., Any]:
 class SlothyObject:
     """Slothy object. You should not be using this directly."""
 
-    __MISSING_SENTINEL = object()
-
     if TYPE_CHECKING:
         _SlothyObject__args: _ImportArgs
         _SlothyObject__builtins: dict[str, Any]
