@@ -66,10 +66,10 @@ with slothy_importing():
 
         if supported_implementation:
             # This should fail later.
-            from package import delusion  # type: ignore[attr-defined]
+            from package1 import delusion  # type: ignore[attr-defined]
         else:
             with pytest.raises(ImportError):
-                from package import delusion  # type: ignore[attr-defined]
+                from package1 import delusion  # type: ignore[attr-defined]
 
         from package1 import subpackage  # noqa: I001
         from package1.submodule1 import member1 as m1_1
