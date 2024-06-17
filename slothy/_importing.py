@@ -181,10 +181,12 @@ def _import_item_from_list(
                 import_args.from_list or (),
                 import_args.level,
             )
-        except ImportError as triage_exc:
-            raise triage_exc from None
+        except Exception as tentative_exc:  # noqa: BLE001
+            raise tentative_exc from None
         else:
             try:
+                # This should always be a module.
+                # https://docs.python.org/3/reference/import.html#submodules
                 obj = getattr(module, item_from_list)
             except AttributeError:
                 pass
