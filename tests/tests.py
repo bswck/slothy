@@ -256,4 +256,4 @@ if supported_implementation:
     ), slothy_importing():
 
         class _ClassScope:
-            from whatever import anything  # type: ignore[import-not-found]
+            from whatever_else import anything  # type: ignore[import-not-found]
