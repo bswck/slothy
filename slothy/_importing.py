@@ -39,7 +39,7 @@ __all__ = ("slothy_importing", "slothy_importing_if")
 def slothy_importing(
     *,
     prevent_eager: bool = True,  # noqa: ARG001
-    stack_offset: int = 2,
+    stack_offset: int = 1,
 ) -> Iterator[None]:
     """
     Use slothy imports in a `with` statement.
@@ -61,12 +61,13 @@ def slothy_importing(
         Context manager's underlying generator.
 
     """
-    frame = get_frame(stack_offset)
+    frame = get_frame(stack_offset + 1)  # +1 from @contextmanager
+    builtin_import = _get_builtin_import(frame.f_builtins)
     import_wrapper = partial(
         _slothy_import_locally,
-        frame.f_globals["__name__"],
-        builtin_import := _get_builtin_import(frame.f_builtins),
-        stack_offset=stack_offset,
+        _target=frame.f_globals["__name__"],
+        _builtin_import=builtin_import,
+        _stack_offset=stack_offset,
     )
     import_wrapper.__slothy__ = True  # type: ignore[attr-defined]
     frame.f_builtins["__import__"] = import_wrapper
@@ -181,6 +182,8 @@ def _import_item_from_list(
                 import_args.from_list or (),
                 import_args.level,
             )
+        except ImportError:
+            pass
         except Exception as tentative_exc:  # noqa: BLE001
             raise tentative_exc from None
         else:
@@ -417,7 +420,7 @@ def _slothy_import(
     name: str,
     global_ns: dict[str, object],
     local_ns: dict[str, object],
-    from_list: tuple[str, ...] | None = None,
+    from_list: tuple[str, ...],
     level: int = 0,
     stack_offset: int = 1,
 ) -> SlothyObject:
@@ -427,8 +430,6 @@ def _slothy_import(
     Equivalent to [`builtins.__import__`]. The difference is that
     the returned object will be a `SlothyObject` instead of the actual object.
     """
-    if from_list is None:
-        from_list = ()
     if "*" in from_list:
         msg = "Wildcard slothy imports are not supported"
         raise RuntimeError(msg)
@@ -439,20 +440,22 @@ def _slothy_import(
 
 
 def _slothy_import_locally(
-    _target: str,
-    _builtin_import: Callable[..., object],
     name: str,
     global_ns: dict[str, object] | None = None,
     local_ns: dict[str, object] | None = None,
     from_list: tuple[str, ...] | None = None,
     level: int = 0,
-    stack_offset: int = 2,
+    *,
+    _target: str,
+    _builtin_import: Callable[..., object],
+    _stack_offset: int = 1,
 ) -> object:
     """Slothily import an object only in slothy importing context manager."""
-    frame = get_frame(stack_offset)
+    frame = get_frame(_stack_offset)
     # We're respecting if the caller set `global_ns` or `local_ns` to empty dicts!
     global_ns = frame.f_globals if global_ns is None else global_ns
     local_ns = frame.f_locals if local_ns is None else local_ns
+    args = name, global_ns, local_ns, from_list or (), level
     if global_ns["__name__"] == _target:
-        return _slothy_import(name, global_ns, local_ns, from_list, level, stack_offset)
-    return _builtin_import(name, global_ns, local_ns, from_list or (), level)
+        return _slothy_import(*args, _stack_offset + 1)
+    return _builtin_import(*args)
