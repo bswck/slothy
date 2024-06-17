@@ -15,8 +15,9 @@ if TYPE_CHECKING:
 
     from pytest_subtests import SubTests
 
-    subtests: SubTests  # defined via runpy
-    supported_implementation: bool  # defined via runpy
+    # Global variables passed through runpy.
+    subtests: SubTests
+    supported_implementation: bool
 
 with cast(
     "AbstractContextManager[None]",
@@ -82,14 +83,17 @@ with slothy_importing():
 
         with pytest.raises(AttributeError):
             # Expected in both implementations.
-            # We can identify whether a member should be available not
+            # We can identify whether a member should be available
             # using either (1) the `fromlist` or (2) the submodule
             # (from the `__import__` 1st arg, i.e. the module name).
             subpackage.subsubmodule
 
         if supported_implementation:
             # `package2.__getattr__()` should simply return itself;
-            # it already holds the info about targeted module
+            # it already holds the info about targeted module.
+            # As a side effect, it is possible to get away
+            # with `package2.submodule.submodule` at runtime,
+            # but that's where MyPy comes in.
             assert package2 is package2.submodule
 
         from package1.subpackage import subsubmodule  # noqa: I001
@@ -164,8 +168,8 @@ with slothy_importing():
         "package1.submodule1",
         "package1.submodule2",
         "package1.submodule3",
-        # Because of `from package.subpackage import subsubmodule`,
-        # NOT because of `from package import subpackage`.
+        # ↓ Because of `from package.subpackage import subsubmodule`,
+        #   NOT because of `from package import subpackage`.
         "package1.subpackage",
         "package2.submodule",
         "lazyitem_package",
