@@ -99,15 +99,17 @@ with slothy_importing():
 
         if supported_implementation:
             # `package2.__getattr__()` should simply return itself;
-            # it already holds the info about targeted module.
+            # it already holds the info about the targeted module.
             # As a side effect, it is possible to get away
             # with `package2.submodule.submodule` at runtime,
             # but that's where MyPy comes in.
             assert package2.submodule is package2
 
-        from package1.subpackage import subsubmodule  # noqa: I001
+        from package1.subpackage import subsubmodule
 
-        from lazyitem_package import functionality  # type: ignore[attr-defined]
+        if supported_implementation:
+            # We'll make it work later.
+            from package1 import fake as package1_fake  # type: ignore[attr-defined]
 
     if supported_implementation:
         PATH_HERE = str(Path(__file__).resolve())
@@ -181,12 +183,8 @@ with slothy_importing():
         #   NOT because of `from package1 import subpackage`.
         "package1.subpackage",
         "package2.submodule",
-        "lazyitem_package",
     )
-    modules_in_from_imports = (
-        "package1.subpackage.subsubmodule",
-        "lazyitem_package.functionality",
-    )
+    modules_in_from_imports = ("package1.subpackage.subsubmodule",)
     if not supported_implementation:
         expected_module_entries += modules_in_from_imports
 
@@ -221,6 +219,12 @@ with slothy_importing():
                 match=rf"\(caused by delayed execution of {REFERENCE}\)",
             ):
                 delusion
+
+            import fake
+
+            sys.modules["package1.fake"] = fake
+            pkg.fake = fake  # type: ignore[attr-defined]
+            assert package1_fake is fake
 
     if not supported_implementation:
         test_all_imported()

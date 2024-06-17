@@ -169,7 +169,7 @@ def _import_item_from_list(
     #    using the name in the as clause if it is present,
     #    otherwise using the attribute name.
     module_name = getattr(module.__spec__, "name", None) or import_args.module_name
-    location = getattr(module, "__file__", "unknown location")
+    location = getattr(module, "__file__", None) or "unknown location"
     try:
         obj = getattr(module, item_from_list)
     except AttributeError:
