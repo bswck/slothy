@@ -60,7 +60,8 @@ with slothy_importing():
 
     with subtests.test("perform-slothy-imports"):
         import module
-        import package as pkg
+        import package1 as pkg
+        import package2.submodule
         from module import attr
 
         if supported_implementation:
@@ -70,90 +71,105 @@ with slothy_importing():
             with pytest.raises(ImportError):
                 from package import delusion  # type: ignore[attr-defined]
 
-        from package import subpackage  # noqa: I001
-        from package.submodule1 import member1 as m1_1
-        from package.submodule2 import member1 as m2_1, member2 as m2_2
-        from package.submodule3 import member1 as m3_1, member2 as m3_2, member3 as m3_3
+        from package1 import subpackage  # noqa: I001
+        from package1.submodule1 import member1 as m1_1
+        from package1.submodule2 import member1 as m2_1, member2 as m2_2
+        from package1.submodule3 import (
+            member1 as m3_1,
+            member2 as m3_2,
+            member3 as m3_3,
+        )
 
         with pytest.raises(AttributeError):
             # Expected in both implementations.
             # We can identify whether a member should be available not
-            # using either (1) the fromlist or (2) the submodule
-            # (from __import__ 1st arg, modulename).
+            # using either (1) the `fromlist` or (2) the submodule
+            # (from the `__import__` 1st arg, i.e. the module name).
             subpackage.subsubmodule
 
-        from package.subpackage import subsubmodule
+        if supported_implementation:
+            # `package2.__getattr__()` should simply return itself;
+            # it already holds the info about targeted module
+            assert package2 is package2.submodule
+
+        from package1.subpackage import subsubmodule
 
     if supported_implementation:
         PATH_HERE = str(Path(__file__).resolve())
-        REFERENCE = rf'\("{re.escape(PATH_HERE)}", line \d+\)'
+        REFERENCE = rf'"{re.escape(PATH_HERE)}", line \d+'
 
         with subtests.test("import-outputs"):
             assert isinstance(module, SlothyObject)
-            assert re.fullmatch(rf"<import module {REFERENCE}>", repr(module))
+            assert re.fullmatch(rf"<import module \({REFERENCE}\)>", repr(module))
 
             assert isinstance(pkg, SlothyObject)
-            assert re.fullmatch(rf"<import package {REFERENCE}>", repr(pkg))
+            assert re.fullmatch(rf"<import package1 \({REFERENCE}\)>", repr(pkg))
 
             assert isinstance(attr, SlothyObject)
-            assert re.fullmatch(rf"<from module import attr {REFERENCE}>", repr(attr))
+            assert re.fullmatch(
+                rf"<from module import attr \({REFERENCE}\)>", repr(attr)
+            )
 
             assert isinstance(subpackage, SlothyObject)
             assert re.fullmatch(
-                rf"<from package import subpackage {REFERENCE}>",
+                rf"<from package1 import subpackage \({REFERENCE}\)>",
                 repr(subpackage),
             )
 
             with subtests.test("representing-neighboring-fromlist-members"):
                 assert isinstance(m1_1, SlothyObject)
                 assert re.fullmatch(
-                    rf"<from package.submodule1 import member1 {REFERENCE}>",
+                    rf"<from package1.submodule1 import member1 \({REFERENCE}\)>",
                     repr(m1_1),
                 )
 
                 assert isinstance(m2_1, SlothyObject)
                 assert re.fullmatch(
-                    rf"<from package.submodule2 import member1, ... {REFERENCE}>",
+                    rf"<from package1.submodule2 import member1, ... \({REFERENCE}\)>",
                     repr(m2_1),
                 )
 
                 assert isinstance(m2_2, SlothyObject)
                 assert re.fullmatch(
-                    rf"<from package.submodule2 import ..., member2 {REFERENCE}>",
+                    rf"<from package1.submodule2 import ..., member2 \({REFERENCE}\)>",
                     repr(m2_2),
                 )
 
                 assert isinstance(m3_1, SlothyObject)
                 assert re.fullmatch(
-                    rf"<from package.submodule3 import member1, ... {REFERENCE}>",
+                    rf"<from package1.submodule3 import member1, ... \({REFERENCE}\)>",
                     repr(m3_1),
                 )
 
                 assert isinstance(m3_2, SlothyObject)
                 assert re.fullmatch(
-                    rf"<from package.submodule3 import ..., member2, ... {REFERENCE}>",
+                    (
+                        r"<from package1.submodule3 import ..., member2, "
+                        rf"... \({REFERENCE}\)>"
+                    ),
                     repr(m3_2),
                 )
 
                 assert isinstance(m3_3, SlothyObject)
                 assert re.fullmatch(
-                    rf"<from package.submodule3 import ..., member3 {REFERENCE}>",
+                    rf"<from package1.submodule3 import ..., member3 \({REFERENCE}\)>",
                     repr(m3_3),
                 )
 
     expected_module_entries: tuple[str, ...] = (
         "module",
-        "package",
-        "package.submodule1",
-        "package.submodule2",
-        "package.submodule3",
+        "package1",
+        "package1.submodule1",
+        "package1.submodule2",
+        "package1.submodule3",
         # Because of `from package.subpackage import subsubmodule`,
-        # NOT because of `from package import subpackage`
-        "package.subpackage",
+        # NOT because of `from package import subpackage`.
+        "package1.subpackage",
+        "package2.submodule",
     )
     if not supported_implementation:
         expected_module_entries += (
-            "package.subpackage.subsubmodule",  # ↑
+            "package1.subpackage.subsubmodule",  # ↑
         )
 
     unwanted_module_entries: tuple[str, ...] = (
@@ -173,7 +189,22 @@ with slothy_importing():
 
     def test_all_imported() -> None:
         assert isinstance(module, ModuleType)
+        assert isinstance(pkg, ModuleType)
         assert isinstance(attr, int)
+        assert isinstance(subpackage, ModuleType)
+        assert isinstance(m1_1, int)
+        assert isinstance(m2_1, int)
+        assert isinstance(m2_2, int)
+        assert isinstance(m3_1, int)
+        assert isinstance(m3_2, int)
+        assert isinstance(m3_3, int)
+
+        if supported_implementation:
+            with pytest.raises(
+                ImportError,
+                match=rf"\(caused by delayed execution of {REFERENCE}\)",
+            ):
+                delusion
 
     if not supported_implementation:
         test_all_imported()
