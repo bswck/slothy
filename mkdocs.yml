@@ -32,6 +32,7 @@ theme:
   - "content.action.view"
   - "content.code.annotate"
   - "content.code.copy"
+  - "content.tabs.link"
   - "content.tooltips"
   - "navigation.footer"
   - "navigation.indexes"
@@ -45,20 +46,16 @@ theme:
   - media: "(prefers-color-scheme: light)"
     scheme: "default"
     primary: "teal"
-    accent: "purple"
+    accent: "amber"
     toggle:
-      icon: "material/weather-night"
+      icon: "material/lightbulb"
       name: "Switch to dark mode"
   - media: "(prefers-color-scheme: dark)"
     scheme: "slate"
-    primary: "black"
-    accent: "lime"
+    primary: "teal"
+    accent: "amber"
     toggle:
-      icon: "material/brightness-auto"
-      name: "Switch to system preference"
-  - media: "(prefers-color-scheme)"
-    toggle:
-      icon: "material/weather-sunny"
+      icon: "material/lightbulb-outline"
       name: "Switch to light mode"
 
 extra_css:
@@ -68,10 +65,16 @@ markdown_extensions:
 - "admonition"
 - "footnotes"
 - "pymdownx.emoji"
-- pymdownx.highlight:
-    use_pygments: true
+- "codehilite"
 - "pymdownx.magiclink"
 - "pymdownx.superfences"
+- "md_in_html"
+- mdx_include:
+    base_path: "docs/"
+- pymdownx.tabbed:
+    alternate_style: true
+- pymdownx.highlight:
+    use_pygments: true
 - toc:
     permalink: true
 
