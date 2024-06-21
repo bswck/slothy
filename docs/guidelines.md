@@ -11,7 +11,7 @@ They gather **opinions** from the author(s) of _slothy_.
 
 !!! warning
     The rest of this document can be very technical sometimes.
-    Check out the [tutorial](/guidelines) for a more beginner-friendly description
+    Check out the [tutorial](../tutorial) for a more beginner-friendly description
     of the intended uses of _slothy_.
 
 ## 1. Don't use _slothy_ without a reason
