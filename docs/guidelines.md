@@ -44,7 +44,6 @@ a function is called:
 with lazy_importing():
     import pandas as pd
 
-
 def make_df() -> pd.DataFrame:
     return pd.DataFrame()
 
@@ -54,7 +53,7 @@ def make_df() -> pd.DataFrame:
 # `if __name__ == "__main__"` section.
 ```
 
-### 1.2. Importing eagerly to lazily import later.
+### 1.2. Mixing lazy and eager imports unconditionally
 
 ```py
 import pandas as pd
@@ -76,7 +75,7 @@ from pandas import DataFrame
 
 instead.
 
-### 1.3. Importing lazily to import eagerly right after.
+Similarly, in
 
 ```py
 with lazy_importing():
@@ -84,6 +83,12 @@ with lazy_importing():
     import pandas as pd  
 
 # Immediately destroys the entire point of declaring a lazy import.
+import pandas as pd
+```
+
+you can just
+
+```py
 import pandas as pd
 ```
 
@@ -131,7 +136,7 @@ when it cannot import the actual type-checking item.
 For instance:
 ```pycon
 >>> with type_importing():
->>>     from _typeshed import StrPath
+...     from _typeshed import StrPath
 ...
 >>> print(StrPath)
 typing.Any
