@@ -22,10 +22,13 @@ Intended to be used as a guard for expensive or type-checking imports.
 <from asyncio import get_event_loop, ... ("<stdin>", line 2)>
 <from asyncio import ..., run, ... ("<stdin>", line 2)>
 <from asyncio import ..., erroneous_import ("<stdin>", line 2)>
+>>>
 >>> get_event_loop
 <built-in function get_event_loop>
+>>>
 >>> globals()["run"]
 <function run at 0x7f49978a1160>
+>>>
 >>> erroneous_import
 Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
@@ -37,7 +40,8 @@ Traceback (most recent call last):
     obj = _import_item_from_list(
   File "./slothy/_importing.py", line 203, in _import_item_from_list
     raise ImportError(msg) from None
-ImportError: cannot import name 'erroneous_import' from 'asyncio' (caused by delayed execution of "<stdin>", line 2)
+ImportError: cannot import name 'erroneous_import' from 'asyncio'
+(caused by delayed execution of "<stdin>", line 2)
 ```
 
 By default, `with lazy_importing()` statements fail immediately on unsupported Python

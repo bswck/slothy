@@ -349,7 +349,7 @@ class SlothyObject:
             if self.__source:
                 args = (
                     (args[0] if args else "")
-                    + f" (caused by delayed execution of {self.__source})",
+                    + f"\n(caused by delayed execution of {self.__source})",
                     *args[1:],
                 )
             exc = type(exc)(*args).with_traceback(exc.__traceback__)
