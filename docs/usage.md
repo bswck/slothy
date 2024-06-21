@@ -11,7 +11,7 @@ This document aims to present general recommendations when using _slothy_.
 ## 1. Don't rely on delayed imports programmatically
 
 While _slothy_ changes the underlying import system behavior to delay imports,
-you should never rely on side effects it brings.
+you should never rely on the side effects it brings.
 
 For example, if from `spam.py` you import a module `eggs.py` that is located in the same directory:
 
@@ -32,7 +32,8 @@ and give your separate modules autonomy; do not rely on mutations to the global 
 !!! note
     You can ignore this rule if you need [`type_importing()`][slothy._importing.type_importing] in your library.
 
-**General recommendation**:
+**As a general recommendation**:
+
 - in apps, use `with lazy_importing()` (or less intuitive, but equivalent `with slothy_importing()`).
 - in libraries, use `with lazy_importing(prevent_eager=False)`.
 
