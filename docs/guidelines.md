@@ -1,4 +1,4 @@
-# (Informal yet Informative) Guidelines
+# Opinionated Guidelines
 
 _slothy_ offers advanced use cases for highly aware Python developers.
 
@@ -7,12 +7,86 @@ _slothy_ offers advanced use cases for highly aware Python developers.
     your codebase significantly easier to maintain, then maybe it's a bad idea to use it.
 
 This document aims to present general DOs and DON'Ts to follow if using _slothy_.
+They gather **opinions** from the author(s) of _slothy_.
 
 !!! warning
-    The rest of this document is very technical, but at least in some places maybe even funny.
-    The author is not responsible for segmentation faults between synapses as a result of reading the whole thing.
+    The rest of this document can be very technical sometimes.
+    Check out the [tutorial](/guidelines) for a more beginner-friendly description
+    of the intended uses of _slothy_.
 
-## 1. Don't rely on delayed imports programmatically
+## 1. Don't use _slothy_ without a reason
+
+Here are some obviously unnecessary uses of _slothy_:
+
+1. Importing lazily to always trigger the actual import in the same frame.
+
+```py
+with lazy_importing():
+    import pandas as pd
+
+# In the line below, right under the lazy import, you import pandas eagerly.
+df = pd.DataFrame()
+```
+
+You can just do
+
+```py
+import pandas as pd
+df = pd.DataFrame()
+```
+
+and that will be faster.
+
+This could make sense if you make a module that creates `df` lazily, e.g. when
+a function is called:
+
+```py
+with lazy_importing():
+    import pandas as pd
+
+
+def make_df() -> pd.DataFrame:
+    return pd.DataFrame()
+
+# make_df() not called at the module level at all!
+# Someone else could import us and THEN call make_df(), perhaps beginning due to the code
+# in its `if __name__ == "__main__"` section.
+```
+
+2. Importing eagerly to lazily import later.
+
+```py
+import pandas as pd
+from slothy import lazy_importing
+
+with lazy_importing():
+    from pandas import DataFrame
+```
+
+You don't need _slothy_ in this case.
+`pandas.DataFrame` was already imported by the first line.
+
+Just use
+
+```py
+import pandas as pd
+from pandas import DataFrame
+```
+
+instead.
+
+3. Importing lazily to import eagerly right after.
+
+```py
+with lazy_importing():
+    # Declares a lazy import.
+    import pandas as pd  
+
+# Immediately destroys the entire point of declaring a lazy import.
+import pandas as pd
+```
+
+## 2. Don't rely on delayed imports programmatically
 
 While _slothy_ changes the underlying import system behavior to delay imports,
 you should never rely on the side effects it brings.
@@ -32,7 +106,7 @@ if it wasn't lazy.
 In other words, stick to [decoupling](https://en.wikipedia.org/wiki/Coupling_(computer_programming))
 and give your separate modules autonomy; do not rely on mutations to the global state of your program.
 
-## 2. Don't prevent eager imports in libraries
+## 3. Don't prevent eager imports in libraries
 !!! note
     You can ignore this rule if you need [`type_importing()`][slothy._importing.type_importing] in your library.
 
@@ -123,10 +197,8 @@ class EvenBetterFoo:
         return anything
 ```
 
-or, yet better, don't do such a thing at all.
+or, even better than that, don't do such a thing at all.
 
 !!! note
-    The following is an opinion.
-
-Property getters should ideally not have any side effects.
-A kind reminder: [`inspect.getmembers_static`][] was only added in 3.11!
+    **Opinion:** Property getters should ideally not have any side effects.
+    A kind reminder: [`inspect.getmembers_static`][] was only added in 3.11!
