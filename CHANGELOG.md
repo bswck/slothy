@@ -32,7 +32,7 @@ No significant changes.
 
 ### Changed
 
-- Settled on stable interface: `slothy_importing`/`lazy_importing`, `slothy_importing_if`/`lazy_importing_if`.
+- Settled on stable interface: `lazy_importing`/`lazy_importing`, `lazy_importing_if`/`lazy_importing_if`.
 
 ### Fixed
 

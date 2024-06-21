@@ -28,20 +28,20 @@ try:
 except AttributeError as err:  # pragma: no cover
     msg = (
         "This Python implementation does not support `sys._getframe()` "
-        "and thus cannot use `slothy_importing`; do not import `slothy_importing` from "
+        "and thus cannot use `lazy_importing`; do not import `lazy_importing` from "
         f"`{__name__}`, import from the public interface instead"
     )
     raise RuntimeError(msg) from err
 
 
-__all__ = ("slothy_importing", "slothy_importing_if", "type_importing")
+__all__ = ("lazy_importing", "lazy_importing_if", "type_importing")
 
 
 FALLBACK_MISSING: Final = object()
 
 
 @contextmanager
-def slothy_importing(
+def lazy_importing(
     *,
     prevent_eager: bool = True,  # noqa: ARG001
     stack_offset: int = 1,
@@ -109,14 +109,14 @@ def type_importing(
         The context manager.
 
     """
-    return slothy_importing(
+    return lazy_importing(
         prevent_eager=True,
         stack_offset=stack_offset,
         _fallback=default_type,
     )
 
 
-def slothy_importing_if(
+def lazy_importing_if(
     condition: object,
     *,
     prevent_eager: bool = True,
@@ -145,7 +145,7 @@ def slothy_importing_if(
 
     """
     return (
-        slothy_importing(prevent_eager=prevent_eager, stack_offset=stack_offset)
+        lazy_importing(prevent_eager=prevent_eager, stack_offset=stack_offset)
         if condition
         else nullcontext()
     )

@@ -4,12 +4,11 @@ from __future__ import annotations
 
 import sys
 from os import getenv
-from typing import Any
+from typing import TYPE_CHECKING, Any
+from warnings import warn
 
 __all__ = (
     "SLOTHY_ENABLED",
-    "slothy_importing",
-    "slothy_importing_if",
     "lazy_importing",
     "lazy_importing_if",
     "type_importing",
@@ -26,11 +25,9 @@ else:
     SLOTHY_ENABLED = not getenv("SLOTHY_DISABLE")
 
 if SLOTHY_ENABLED:
-    from slothy._importing import slothy_importing, slothy_importing_if, type_importing
+    from slothy._importing import lazy_importing, lazy_importing_if, type_importing
 else:
     from contextlib import contextmanager, nullcontext
-    from typing import TYPE_CHECKING
-    from warnings import warn
 
     if TYPE_CHECKING:
         from collections.abc import Iterator
@@ -41,7 +38,7 @@ else:
             category=RuntimeWarning,
             message=(
                 "This Python implementation does not support "
-                "`sys._getframe()` and thus cannot use `slothy_importing`. "
+                "`sys._getframe()` and thus cannot use `lazy_importing`. "
             ),
             stacklevel=1,
         )
@@ -52,7 +49,7 @@ else:
     )
 
     @contextmanager
-    def slothy_importing(
+    def lazy_importing(
         *,
         prevent_eager: bool = True,
         stack_offset: int = 1,  # noqa: ARG001
@@ -72,7 +69,7 @@ else:
         raise RuntimeError(EAGER_PREVENTION_MSG)
         yield
 
-    def slothy_importing_if(
+    def lazy_importing_if(
         condition: object,
         *,
         prevent_eager: bool = True,
@@ -84,5 +81,34 @@ else:
         return nullcontext()
 
 
-lazy_importing = slothy_importing
-lazy_importing_if = slothy_importing_if
+_SI_MSG = "Use `lazy_importing` instead"
+_SII_MSG = "Use `lazy_importing_if` instead"
+
+
+def __getattr__(attr: str) -> object:
+    if attr == "slothy_importing":
+        warn(_SI_MSG, category=DeprecationWarning, stacklevel=2)
+        return lazy_importing
+
+    if attr == "slothy_importing_if":
+        warn(_SII_MSG, category=DeprecationWarning, stacklevel=2)
+        return lazy_importing_if
+
+    raise AttributeError(attr)
+
+
+if TYPE_CHECKING:
+    from functools import wraps
+
+    from typing_extensions import deprecated
+
+    @deprecated(_SI_MSG)
+    def slothy_importing(*args: Any, **kwargs: Any) -> Any:
+        return lazy_importing(*args, **kwargs)
+
+    @deprecated(_SII_MSG)
+    def slothy_importing_if(*args: Any, **kwargs: Any) -> Any:
+        return lazy_importing_if(*args, **kwargs)
+
+    slothy_importing = wraps(lazy_importing)(lazy_importing)  # noqa: F811
+    slothy_importing_if = wraps(lazy_importing_if)(lazy_importing_if)  # noqa: F811

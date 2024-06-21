@@ -57,7 +57,6 @@ def make_df() -> pd.DataFrame:
 
 ```py
 import pandas as pd
-from slothy import lazy_importing
 
 with lazy_importing():
     from pandas import DataFrame
@@ -118,12 +117,12 @@ and give your separate modules autonomy; do not rely on mutations to the global 
 
 **As a general recommendation**:
 
-- in apps, use `with lazy_importing()` (or less intuitive, but equivalent `with slothy_importing()`).
-- in libraries, use `with lazy_importing(prevent_eager=False)`.
+- Use `with lazy_importing()` in **apps**.
+- Use `with lazy_importing(prevent_eager=False)` in **libraries**.
 
-Try to make libraries as much compatible with non-CPython or non-PyPy implementations
+Try to make libraries as much compatible with non-CPython implementations
 as possible. _slothy_, tailored for applications, raises a [`RuntimeError`][]
-if it can't ensure imports aren't lazy inside a `with slothy_importing()` block.
+if it can't ensure imports aren't lazy inside a `with lazy_importing()` block.
 
 ## 3. Use [`type_importing()`][slothy._importing.type_importing] for type-checking imports that may eventually be needed at runtime
 
@@ -168,7 +167,7 @@ You can imagine that `maybe_descriptor` can be
 
 @property
 def maybe_descriptor(self) -> None:
-    print("I'm here against all lint rules!")
+    print("I'm here against all the linting rules!")
     return None
 
 @maybe_descriptor.setter

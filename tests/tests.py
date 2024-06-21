@@ -30,11 +30,11 @@ with cast(
     if supported_implementation
     else pytest.warns(RuntimeWarning, match=r"does not support `sys._getframe\(\)`"),
 ):
-    from slothy import slothy_importing, slothy_importing_if, type_importing
+    from slothy import lazy_importing, lazy_importing_if, type_importing
 
 for cm in (
-    lambda: slothy_importing(prevent_eager=True),
-    lambda: slothy_importing_if(True, prevent_eager=True),
+    lambda: lazy_importing(prevent_eager=True),
+    lambda: lazy_importing_if(True, prevent_eager=True),
     lambda: type_importing(),
 ):
     with subtests.test("prevents-eager"), (
@@ -48,9 +48,9 @@ for cm in (
         pass
 
 for cm in (
-    lambda: slothy_importing(prevent_eager=False),
-    lambda: slothy_importing_if(False, prevent_eager=True),
-    lambda: slothy_importing_if(True, prevent_eager=False),
+    lambda: lazy_importing(prevent_eager=False),
+    lambda: lazy_importing_if(False, prevent_eager=True),
+    lambda: lazy_importing_if(True, prevent_eager=False),
 ):
     with subtests.test("no-prevent-eager"), cm():  # type: ignore[no-untyped-call]
         # Should never fail.
@@ -87,7 +87,7 @@ if supported_implementation:
 
 builtin_import = __import__
 
-with slothy_importing(prevent_eager=False):
+with lazy_importing(prevent_eager=False):
     if supported_implementation:
         with subtests.test("wildcard-imports-disallowed"), pytest.raises(
             RuntimeError, match="Wildcard slothy imports are not supported"
@@ -288,7 +288,7 @@ with subtests.test("module-registry-purged"):
     for module_entry in unwanted_module_entries:
         assert module_entry not in sys.modules
 
-with slothy_importing(prevent_eager=False), subtests.test("reenter-works"):
+with lazy_importing(prevent_eager=False), subtests.test("reenter-works"):
     # Should not be a problem if we re-enter.
     if supported_implementation:
         assert __import__ is not builtin_import
@@ -301,20 +301,20 @@ with subtests.test("builtin-import-unchanged-after-reenter"):
 with subtests.test("imported-on-reference"):
     test_all_imported()
 
-with slothy_importing_if(True, prevent_eager=False), subtests.test("slothy-if-true"):
+with lazy_importing_if(True, prevent_eager=False), subtests.test("slothy-if-true"):
     if supported_implementation:
         assert __import__ is not builtin_import
     else:
         assert __import__ is builtin_import
 
-with slothy_importing_if(False, prevent_eager=False), subtests.test("slothy-if-false"):
+with lazy_importing_if(False, prevent_eager=False), subtests.test("slothy-if-false"):
     assert __import__ is builtin_import
 
 if supported_implementation:
     with subtests.test("test-class-scope"), pytest.raises(
         RuntimeError,
         match="__set_name__",
-    ), slothy_importing(prevent_eager=False):
+    ), lazy_importing(prevent_eager=False):
 
         class _ClassScope:
             from whatever_else import anything  # type: ignore[import-not-found]
