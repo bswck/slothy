@@ -18,7 +18,7 @@ They gather **opinions** from the author(s) of _slothy_.
 
 Here are some obviously unnecessary uses of _slothy_:
 
-1. Importing lazily to always trigger the actual import in the same frame.
+### 1.1. Importing lazily to always trigger the actual import in the same frame.
 
 ```py
 with lazy_importing():
@@ -53,7 +53,7 @@ def make_df() -> pd.DataFrame:
 # in its `if __name__ == "__main__"` section.
 ```
 
-2. Importing eagerly to lazily import later.
+### 1.2. Importing eagerly to lazily import later.
 
 ```py
 import pandas as pd
@@ -75,7 +75,7 @@ from pandas import DataFrame
 
 instead.
 
-3. Importing lazily to import eagerly right after.
+### 1.3. Importing lazily to import eagerly right after.
 
 ```py
 with lazy_importing():
