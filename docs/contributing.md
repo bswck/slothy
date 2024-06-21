@@ -19,7 +19,7 @@ Anything tagged with "enhancement" is open to whoever wants to implement it.
 
 ## Write documentation 📖
 The project could always use more documentation, whether as part of the official project
-docs. If you're interested in helping out, check the [docs/](https://github.com/bswck/slothy/tree/HEAD/docs)
+docs,. If you're interested in helping out, check the [docs/](https://github.com/bswck/slothy/tree/HEAD/docs)
 folder in the repository.
 
 ## Share your feedback 🌍
@@ -31,15 +31,6 @@ If you are proposing a feature:
 -   Keep the scope as narrow as possible, to make it easier to implement.
 -   Remember that this is a volunteer-driven project, and that contributions are
     welcome! ✨
-
-## Pull Request guidelines 📝
-1. Initially mark the PR as a draft, so that the maintainers know that you are making final touches.
-
-1. Ensure that the [test coverage](https://coverage-badge.samuelcolvin.workers.dev/redirect/bswck/slothy) is not decreased. If you add a new feature, please add tests for it. [Read more about coverage](https://coverage.readthedocs.io/en/latest/index.html).
-
-1. Ensure that all GitHub checks pass. If they are disabled in your PR, ping the maintainers to request enabling them.
-
-1. Don't forget to link the relevant issue(s) in the PR description and describe the changes you made.
 
 # Get started! 🕹️
 

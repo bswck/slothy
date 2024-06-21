@@ -31,15 +31,6 @@ If you are proposing a feature:
 -   Remember that this is a volunteer-driven project, and that contributions are
     welcome! ✨
 
-## Pull Request guidelines 📝
-1. Initially mark the PR as a draft, so that the maintainers know that you are making final touches.
-
-1. Ensure that the [test coverage](https://coverage-badge.samuelcolvin.workers.dev/redirect/bswck/slothy) is not decreased. If you add a new feature, please add tests for it. [Read more about coverage](https://coverage.readthedocs.io/en/latest/index.html).
-
-1. Ensure that all GitHub checks pass. If they are disabled in your PR, ping the maintainers to request enabling them.
-
-1. Don't forget to link the relevant issue(s) in the PR description and describe the changes you made.
-
 # Get started! 🕹️
 
 Ready to contribute? Here's a quick guide on how to set up slothy and make a change.
