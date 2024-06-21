@@ -102,7 +102,7 @@ https://github.com/scaffops/python/tree/0.0.2rc-238-g68b0ab8/fragments/readme.md
     Be sure to have Python 3.8 installed—if you use [Rye](https://rye.astral.sh/guide/basics/), simply run:
 
     ```bash
-    rye sync
+    rye toolchain fetch 3.8
     ```
 
 1.  Clone your fork locally and install dependencies.
