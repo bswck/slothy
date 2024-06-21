@@ -29,7 +29,7 @@ Intended to be used as a guard for expensive or type-checking imports.
 <built-in function get_event_loop>
 >>>
 >>> globals()["run"]
-<function run at 0x7f49978a1160>
+<function run at 0xdead1337beef>
 >>>
 >>> erroneous_import
 Traceback (most recent call last):
