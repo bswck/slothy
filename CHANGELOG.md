@@ -7,6 +7,14 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 <!-- insertion marker -->
 
+## [v1.0.0b2](https://github.com/bswck/slothy/tree/v1.0.0b2) (2024-06-21)
+
+
+### Added
+
+- New context manager for typing-only imports, i.e. [`type_importing()`][slothy._importing.type_importing].
+
+
 ## [v1.0.0b1](https://github.com/bswck/slothy/tree/v1.0.0b1) (2024-06-21)
 
 

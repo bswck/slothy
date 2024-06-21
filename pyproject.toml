@@ -12,7 +12,7 @@ dynamic = ["version"]
 
 [tool.poetry]
 name = "slothy"
-version = "1.0.0b1"
+version = "1.0.0b2"
 description = "Super-easy lazy importing in Python."
 authors = ["bswck <bartoszpiotrslawecki@gmail.com>"]
 license = "MIT"
