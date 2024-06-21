@@ -27,6 +27,7 @@ theme:
   name: "material"
   features:
   - "announce.dismiss"
+  - "header.autohide"
   - "content.action.edit"
   - "content.action.view"
   - "content.code.annotate"
@@ -67,18 +68,20 @@ markdown_extensions:
 - "admonition"
 - "footnotes"
 - "pymdownx.emoji"
-- "pymdownx.highlight":
+- pymdownx.highlight:
     use_pygments: true
 - "pymdownx.magiclink"
 - "pymdownx.superfences"
-- "toc":
+- toc:
     permalink: true
 
 plugins:
-- "autorefs"
+- "mike"
 - "search"
+- "autorefs"
+- "git-authors"
 - "markdown-exec"
-- "mkdocstrings":
+- mkdocstrings:
     handlers:
       python:
         options:
