@@ -4,7 +4,7 @@ _slothy_ offers advanced use cases for highly aware Python developers.
 
 !!! tip
     Pick your weapons carefully. If lazy importing with _slothy_ doesn't make
-    your codebase signicantly easier to maintain, then maybe it's a bad idea to use it.
+    your codebase significantly easier to maintain, then maybe it's a bad idea to use it.
 
 This document aims to present general recommendations when using _slothy_.
 
