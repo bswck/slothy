@@ -134,7 +134,7 @@ with slothy_importing(prevent_eager=False):
             # it already holds the info about the targeted module.
             # As a side effect, it is possible to get away
             # with `package2.submodule.submodule` at runtime,
-            # but that's where MyPy comes in.
+            # but that's where mypy comes in.
             assert package2.submodule is package2
 
         from package1.subpackage import subsubmodule

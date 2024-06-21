@@ -91,7 +91,7 @@ def maybe_descriptor(self, _value: object) -> None:
     print("What's up?")
 ```
 
-Even though this _is_ legal in Python, _slothy_, similarly to [MyPy](https://mypy.readthedocs.io/en/stable/),
+Even though this _is_ legal in Python, _slothy_, similarly to [mypy](https://mypy.readthedocs.io/en/stable/),
 doesn't support descriptors bound via imports.
 
 If you need to lazy-import inside classes, use a class-local property (or a custom descriptor):
