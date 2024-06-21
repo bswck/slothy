@@ -72,7 +72,7 @@ on the other side in split view
     {!> ./snippets/func_scoped.py!}
     ```
 
-    and...
+    and... [>>>](#__tabbed_2_3)
 
 === "Resolve `x`"
 
