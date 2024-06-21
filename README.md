@@ -8,7 +8,7 @@ Super-easy lazy importing in Python.
 Intended to be used as a guard for expensive or type-checking imports.
 
 > [!tip]
-> In case you're lurking around, feel free to install the latest **beta**
+> In case you're just looking around, feel free to install the latest **beta**
 > version of _slothy_ from PyPI and have some fun experimenting.<br>
 > Don't forget to share your feedback in [the issue tracker](/issues)!
 
