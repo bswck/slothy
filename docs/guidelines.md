@@ -49,8 +49,9 @@ def make_df() -> pd.DataFrame:
     return pd.DataFrame()
 
 # make_df() not called at the module level at all!
-# Someone else could import us and THEN call make_df(), perhaps beginning due to the code
-# in its `if __name__ == "__main__"` section.
+# Someone else could import us and THEN call make_df(), perhaps
+# due to the instruction chain starting in their
+# `if __name__ == "__main__"` section.
 ```
 
 ### 1.2. Importing eagerly to lazily import later.
