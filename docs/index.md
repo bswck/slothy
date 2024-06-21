@@ -3,66 +3,70 @@
 
 [![Tests](https://github.com/bswck/slothy/actions/workflows/test.yml/badge.svg)](https://github.com/bswck/slothy/actions/workflows/test.yml)
 [![Coverage](https://coverage-badge.samuelcolvin.workers.dev/bswck/slothy.svg)](https://coverage-badge.samuelcolvin.workers.dev/redirect/bswck/slothy)
-[![Documentation Status](https://readthedocs.org/projects/slothy/badge/?version=latest)](https://slothy.readthedocs.io/en/latest/?badge=latest)
 
 Super-easy lazy importing in Python.
 
-Intended to be used as a guard for type-checking and expensive imports.
+Intended to be used as a guard for expensive or type-checking imports.
 
 # Usage
 
-```py
+```pycon
 >>> from slothy import lazy_importing
->>>
->>> with lazy_importing(prevent_eager=False):
-...     from functools import partial, reduce
-...     print(partial)  # <from functools import partial, ...>
-...     print(reduce)  # <from functools import ..., reduce>
->>>
->>> # First time imported items are referenced, they're imported.
-... # If a declared item is never referenced, the module containing it is never
-... # imported too, provided it was not imported by some external instruction.
-... partial, reduce
-(<class 'functools.partial'>, <built-in function reduce>)
+>>> 
+>>> with lazy_importing():
+...     from asyncio import get_event_loop, run, erroneous_import
+...     print(get_event_loop)
+...     print(run)
+...     print(erroneous_import)
+... 
+<from asyncio import get_event_loop, ... ("<stdin>", line 2)>
+<from asyncio import ..., run, ... ("<stdin>", line 2)>
+<from asyncio import ..., erroneous_import ("<stdin>", line 2)>
+>>> get_event_loop
+<built-in function get_event_loop>
+>>> globals()["run"]
+<function run at 0x7f49978a1160>
+>>> erroneous_import
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "./slothy/_importing.py", line 423, in __eq__
+    self._import(their_import)
+  File "./slothy/_importing.py", line 304, in __import
+    raise exc from None
+  File "./slothy/_importing.py", line 286, in __import
+    obj = _import_item_from_list(
+  File "./slothy/_importing.py", line 203, in _import_item_from_list
+    raise ImportError(msg) from None
+ImportError: cannot import name 'erroneous_import' from 'asyncio' (caused by delayed execution of "<stdin>", line 2)
 ```
 
-`lazy_importing()` will default to eager imports on unsupported Python implementations,
-i.e. those that don't define `sys._getframe`. While this library is 3.8+
-and that eliminates the risk of running slothy in most of these implementations now,
-future versions of them can finally support 3.8.
-
-To prevent eager imports in `with lazy_importing()` statements and instead fail immediately
-on unsupported Python implementations, use `with lazy_importing(prevent_eager=True)`.
-Preventing eager imports might be useful in type-checking sections, where eager imports
-could cause cycles resulting in less readable tracebacks.
+By default, `with lazy_importing()` statements fail immediately on unsupported Python
+implementations, i.e. those that don't define [`sys._getframe`][]. To disable this behavior,
+which might be particularly useful in libraries, use `with lazy_importing(prevent_eager=False)`.
 
 # Credits
 Many thanks to Jelle Zijlstra [@JelleZijlstra](https://github.com/JelleZijlstra) who wrote a [basic
 dict key lookup-based lazy importing implementation](https://gist.github.com/JelleZijlstra/23c01ceb35d1bc8f335128f59a32db4c)
-that is now the core solution of slothy.
+that is now the core solution of _slothy_.
 
-Special thanks to Carl Meyer [@carljm](https://github.com/carljm) who willingly sacrificed his time
+Kudos to Carl Meyer [@carljm](https://github.com/carljm) who willingly sacrificed his time
 to consult the project with me and share his deep knowledge of the problem at the bigger picture.
 His experience with [PEP 690](https://peps.python.org/pep-0690) as a Meta software engineer
-helped me grasp the topic in the context of real production. I find it delightful!
+significantly helped me.
 
-Kudos to Alex Waygood [@AlexWaygood](https://github.com/AlexWaygood) who made this project possible
+I'm very grateful to Jim Fulton for [making the library possible in the first place](https://github.com/python/cpython/commit/d47a0a86b4ae4afeb17d8e64e1c447e4d4025f10) almost 30 years ago.
+
+Special thanks to Alex Waygood [@AlexWaygood](https://github.com/AlexWaygood) who made this project possible
 by sharing his knowledge of CPython implementation details regarding name lookup behavior.
 
-Shoutout to Will McGugan [@willmcgugan](https://github.com/willmcgugan) who supported the idea of slothy
+Shoutout to Will McGugan [@willmcgugan](https://github.com/willmcgugan) who supported the idea of _slothy_
 from the very beginning and [promoted the project on Twitter](https://twitter.com/willmcgugan/status/1781327396773208427).
 
 # Installation
-You might simply install it with pip:
+You might simply install _slothy_ it with pip (or any other PyPI package installer of choice):
 
 ```shell
 pip install slothy
-```
-
-If you use [Poetry](https://python-poetry.org/), then you might want to run:
-
-```shell
-poetry add slothy
 ```
 
 ## For Contributors
