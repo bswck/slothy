@@ -158,7 +158,7 @@ class Foo:
 ```
 
 The reason for this is that `Foo.maybe_descriptor` might potentially be a [descriptor](https://docs.python.org/3/howto/descriptor.html),
-which implies _slothy_ would need to broke between its `__get__`, `__set__`, `__delete__` and even `__set_name__` which is already
+which implies _slothy_ would need to broker between its `__get__`, `__set__`, `__delete__` and even `__set_name__` which is already
 a reason to import it eagerly.
 
 You can imagine that `maybe_descriptor` can be
