@@ -1,4 +1,4 @@
-# <div align="center">slothy<br>[![skeleton](https://img.shields.io/badge/0.0.2rc–238–g68b0ab8-skeleton?label=%F0%9F%92%80%20scaffops/python&labelColor=black&color=grey&link=https%3A//github.com/scaffops/python)](https://github.com/scaffops/python/tree/0.0.2rc-238-g68b0ab8) [![Supported Python versions](https://img.shields.io/pypi/pyversions/slothy.svg?logo=python&label=Python)](https://pypi.org/project/slothy/) [![Package version](https://img.shields.io/pypi/v/slothy?label=PyPI)](https://pypi.org/project/slothy/)</div>
+# <div align="center">slothy<br>[![Supported Python versions](https://img.shields.io/pypi/pyversions/slothy.svg?logo=python&label=Python)](https://pypi.org/project/slothy/) [![Package version](https://img.shields.io/pypi/v/slothy?label=PyPI)](https://pypi.org/project/slothy/)</div>
 
 [![Tests](https://github.com/bswck/slothy/actions/workflows/test.yml/badge.svg)](https://github.com/bswck/slothy/actions/workflows/test.yml)
 [![Coverage](https://coverage-badge.samuelcolvin.workers.dev/bswck/slothy.svg)](https://coverage-badge.samuelcolvin.workers.dev/redirect/bswck/slothy)
