@@ -99,10 +99,10 @@ https://github.com/scaffops/python/tree/0.0.2rc-238-g68b0ab8/fragments/readme.md
 
     <sub>If you encounter any problems, refer to [the official documentation](https://python-poetry.org/docs/#installation) for the most up-to-date installation instructions.</sub>
 
-    Be sure to have Python 3.8 installed—if you use [pyenv](https://github.com/pyenv/pyenv#readme), simply run:
+    Be sure to have Python 3.8 installed—if you use [Rye](https://rye.astral.sh/guide/basics/), simply run:
 
-    ```shell
-    pyenv install 3.8
+    ```bash
+    rye sync
     ```
 
 1.  Clone your fork locally and install dependencies.
