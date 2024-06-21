@@ -1,4 +1,4 @@
-# Opinionated Guidelines
+# Guidelines
 
 _slothy_ offers advanced use cases for highly aware Python developers.
 

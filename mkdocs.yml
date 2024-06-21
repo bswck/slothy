@@ -15,7 +15,7 @@ nav:
 - "Why Slothy?": "why_slothy.md"
 - "Installation": "installation.md"
 - "Tutorial": "tutorial.md"
-- "Opinionated Guidelines": "guidelines.md"
+- "Guidelines": "guidelines.md"
 - "How It Works": "how_it_works.md"
 - "API Reference": "api.md"
 - "Contributing": "contributing.md"
