@@ -76,10 +76,10 @@ markdown_extensions:
     permalink: true
 
 plugins:
-- "mike"
+# - "mike"
+# - "git-authors"
 - "search"
 - "autorefs"
-- "git-authors"
 - "markdown-exec"
 - mkdocstrings:
     handlers:
