@@ -12,13 +12,13 @@ from contextvars import ContextVar, copy_context
 from functools import partial
 from pathlib import Path
 from sys import modules
-from typing import TYPE_CHECKING, NamedTuple
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
     from contextlib import AbstractContextManager
     from types import FrameType, ModuleType
-    from typing import Any
+    from typing import Final
     from weakref import WeakSet
 
     from typing_extensions import Self
@@ -33,7 +33,11 @@ except AttributeError as err:  # pragma: no cover
     )
     raise RuntimeError(msg) from err
 
-__all__ = ("slothy_importing", "slothy_importing_if")
+
+__all__ = ("slothy_importing", "slothy_importing_if", "type_importing")
+
+
+FALLBACK_MISSING: Final = object()
 
 
 @contextmanager
@@ -41,6 +45,7 @@ def slothy_importing(
     *,
     prevent_eager: bool = True,  # noqa: ARG001
     stack_offset: int = 1,
+    _fallback: object = FALLBACK_MISSING,
 ) -> Iterator[None]:
     """
     Use slothy imports in a `with` statement.
@@ -76,12 +81,39 @@ def slothy_importing(
     try:
         yield
     finally:
-        _process_slothy_objects(frame.f_locals)
+        _process_slothy_objects(frame.f_locals, fallback=_fallback)
         frame.f_builtins["__import__"] = builtin_import
 
 
-def _is_slothy_import(obj: object) -> object:
-    return getattr(obj, "__slothy__", None)
+def type_importing(
+    *,
+    default_type: object = Any,
+    stack_offset: int = 1,
+) -> AbstractContextManager[None]:
+    """
+    Use this to import symbols recognized by type checkers that do not exist at runtime.
+
+    This function should generally be considered a runtime-friendly alternative to
+    using `if typing.TYPE_CHECKING`.
+
+    Parameters
+    ----------
+    default_type
+        The item to import in case of a failure. Defaults to [`typing.Any`][]
+    stack_offset
+        The stack offset to use.
+
+    Returns
+    -------
+    AbstractContextManager[None]
+        The context manager.
+
+    """
+    return slothy_importing(
+        prevent_eager=True,
+        stack_offset=stack_offset,
+        _fallback=default_type,
+    )
 
 
 def slothy_importing_if(
@@ -113,13 +145,21 @@ def slothy_importing_if(
 
     """
     return (
-        slothy_importing(prevent_eager=prevent_eager, stack_offset=stack_offset + 1)
+        slothy_importing(prevent_eager=prevent_eager, stack_offset=stack_offset)
         if condition
         else nullcontext()
     )
 
 
-def _process_slothy_objects(local_ns: dict[str, object]) -> None:
+def _is_slothy_import(obj: object) -> object:
+    """Determine if an `__import__` function is slothy-managed."""
+    return getattr(obj, "__slothy__", None)
+
+
+def _process_slothy_objects(
+    local_ns: dict[str, object],
+    fallback: object = FALLBACK_MISSING,
+) -> None:
     """
     Bind slothy objects and their aliases to special keys triggering on lookup.
 
@@ -131,10 +171,15 @@ def _process_slothy_objects(local_ns: dict[str, object]) -> None:
     local_ns
         The local namespace where the slothy objects are stored.
 
+    fallback
+        The fallback object to bind to all objects in case their delayed imports fail.
+
     """
     for ref, value in local_ns.copy().items():
         if not isinstance(value, SlothyObject):
             continue
+
+        value._SlothyObject__fallback = fallback
 
         if isinstance(ref, _SlothyKey):
             ref.obj = value
@@ -146,7 +191,7 @@ def _process_slothy_objects(local_ns: dict[str, object]) -> None:
 
 
 class _ImportArgs(NamedTuple):
-    """Arguments eventually passed to [`builtins.__import__`]."""
+    """Arguments eventually passed to [`builtins.__import__`][]."""
 
     module_name: str
     global_ns: dict[str, object]
@@ -225,6 +270,7 @@ class SlothyObject:
         _SlothyObject__builtins: dict[str, Any]
         _SlothyObject__item_from_list: str
         _SlothyObject__source: str | None
+        _SlothyObject__fallback: object
         _SlothyObject__refs: set[str]
         _SlothyObject__import: Callable[[Callable[..., ModuleType] | None], None]
 
@@ -245,7 +291,7 @@ class SlothyObject:
         Parameters
         ----------
         args
-            The arguments to pass to [`builtins.__import__`].
+            The arguments to pass to [`builtins.__import__`][].
         builtins
             The builtins namespace.
         item_from_list
@@ -259,6 +305,7 @@ class SlothyObject:
         self.__builtins = builtins
         self.__item_from_list = item_from_list
         self.__source = source
+        self.__fallback = FALLBACK_MISSING
         self.__refs: set[str] = set()
 
         if hasattr(self, "__slothy_tracker__"):
@@ -292,6 +339,11 @@ class SlothyObject:
             else:
                 obj = module
         except BaseException as exc:  # noqa: BLE001
+            fallback = self.__fallback
+            if fallback is not FALLBACK_MISSING:
+                obj = fallback
+                manage_scope(remove=False)
+                return fallback
             manage_scope(remove=True)
             args = exc.args
             if self.__source:
@@ -456,7 +508,7 @@ def _slothy_import(
     """
     Slothy import.
 
-    Equivalent to [`builtins.__import__`]. The difference is that
+    Equivalent to [`builtins.__import__`][]. The difference is that
     the returned object will be a `SlothyObject` instead of the actual object.
     """
     if "*" in from_list:

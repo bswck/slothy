@@ -30,29 +30,14 @@ with cast(
     if supported_implementation
     else pytest.warns(RuntimeWarning, match=r"does not support `sys._getframe\(\)`"),
 ):
-    from slothy import slothy_importing, slothy_importing_if
-
-if supported_implementation:
-    # We're using slothy's internal system for tracking whether
-    # slothy objects are properly garbage collected. :-)
-    from slothy._importing import SlothyObject, _SlothyKey
-
-    SlothyKey_objects: WeakSet[_SlothyKey] = WeakSet()
-    SlothyObject_objects: WeakSet[SlothyObject] = WeakSet()
-
-    SlothyObject.__slothy_tracker__ = SlothyObject_objects
-    _SlothyKey.__slothy_tracker__ = SlothyKey_objects
-
-    assert not SlothyObject_objects
-    assert not SlothyKey_objects
-
-builtin_import = __import__
+    from slothy import slothy_importing, slothy_importing_if, type_importing
 
 for cm in (
     lambda: slothy_importing(prevent_eager=True),
     lambda: slothy_importing_if(True, prevent_eager=True),
+    lambda: type_importing(),
 ):
-    with subtests.test("prevent-eager"), (
+    with subtests.test("prevents-eager"), (
         nullcontext()
         if supported_implementation
         else pytest.raises(
@@ -70,6 +55,37 @@ for cm in (
     with subtests.test("no-prevent-eager"), cm():  # type: ignore[no-untyped-call]
         # Should never fail.
         pass
+
+if supported_implementation:
+    with subtests.test("type-importing"):
+        from typing import Any
+
+        with type_importing():
+            from _typeshed import StrPath
+
+        assert StrPath is Any
+        del StrPath
+
+        with type_importing(default_type=object):
+            from _typeshed import StrPath
+
+        assert StrPath is object  # type: ignore[comparison-overlap]
+
+if supported_implementation:
+    # We're using slothy's internal system for tracking whether
+    # slothy objects are properly garbage collected. :-)
+    from slothy._importing import SlothyObject, _SlothyKey
+
+    SlothyKey_objects: WeakSet[_SlothyKey] = WeakSet()
+    SlothyObject_objects: WeakSet[SlothyObject] = WeakSet()
+
+    SlothyObject.__slothy_tracker__ = SlothyObject_objects
+    _SlothyKey.__slothy_tracker__ = SlothyKey_objects
+
+    assert not SlothyObject_objects
+    assert not SlothyKey_objects
+
+builtin_import = __import__
 
 with slothy_importing(prevent_eager=False):
     if supported_implementation:

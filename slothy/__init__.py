@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sys
 from os import getenv
+from typing import Any
 
 __all__ = (
     "SLOTHY_ENABLED",
@@ -11,6 +12,7 @@ __all__ = (
     "slothy_importing_if",
     "lazy_importing",
     "lazy_importing_if",
+    "type_importing",
 )
 
 SLOTHY_ENABLED: bool
@@ -24,7 +26,7 @@ else:
     SLOTHY_ENABLED = not getenv("SLOTHY_DISABLE")
 
 if SLOTHY_ENABLED:
-    from slothy._importing import slothy_importing, slothy_importing_if
+    from slothy._importing import slothy_importing, slothy_importing_if, type_importing
 else:
     from contextlib import contextmanager, nullcontext
     from typing import TYPE_CHECKING
@@ -58,6 +60,16 @@ else:
         """Replace slothy with a no-op on unsupported Python implementation."""
         if prevent_eager:
             raise RuntimeError(EAGER_PREVENTION_MSG)
+        yield
+
+    @contextmanager
+    def type_importing(
+        *,
+        default_type: object = Any,  # noqa: ARG001
+        stack_offset: int = 1,  # noqa: ARG001
+    ) -> Iterator[None]:
+        """Fail immediately on unsupported Python implementation."""
+        raise RuntimeError(EAGER_PREVENTION_MSG)
         yield
 
     def slothy_importing_if(
