@@ -64,14 +64,15 @@ def slothy_importing(
     """
     frame = get_frame(stack_offset + 1)  # +1 from @contextmanager
     builtin_import = _get_builtin_import(frame.f_builtins)
+
     import_wrapper = partial(
         _slothy_import_locally,
         _target=frame.f_globals["__name__"],
         _builtin_import=builtin_import,
     )
     import_wrapper.__slothy__ = True  # type: ignore[attr-defined]
-    frame.f_builtins["__import__"] = import_wrapper
 
+    frame.f_builtins["__import__"] = import_wrapper
     try:
         yield
     finally:
@@ -207,8 +208,9 @@ def _get_builtin_import(builtins: dict[str, Any]) -> Callable[..., Any]:
     try:
         builtin_import: Callable[..., Any] = builtins["__import__"]
     except KeyError:  # pragma: no cover
-        # No possibility of running into this unless you're manually setting
-        # `__builtins__` namespace that lacks the `__import__` function.
+        # No possibility of running into this unless (1) you're manually setting
+        # `__builtins__` namespace that lacks the `__import__` function or (2) you
+        # removed the `__import__` key from parent or target frame's `f_builtins`.
         # This is so unlikely to happen!
         msg = "__import__ not found"
         raise ImportError(msg) from None
