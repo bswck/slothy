@@ -60,7 +60,7 @@ to consult the project with me and share his deep knowledge of the problem at th
 His experience with [PEP 690](https://peps.python.org/pep-0690) as a Meta software engineer
 significantly helped me.
 
-I'm very grateful to Jim Fulton for [making the library possible in the first place](https://github.com/python/cpython/commit/d47a0a86b4ae4afeb17d8e64e1c447e4d4025f10) almost 30 years ago.
+I'm very grateful to Jim Fulton [@jimfulton](https://github.com/jimfulton) for [making the library possible in the first place](https://github.com/python/cpython/commit/d47a0a86b4ae4afeb17d8e64e1c447e4d4025f10) almost 30 years ago.
 
 Special thanks to Alex Waygood [@AlexWaygood](https://github.com/AlexWaygood) who made this project possible
 by sharing his knowledge of CPython implementation details regarding name lookup behavior.

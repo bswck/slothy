@@ -98,8 +98,6 @@ def __getattr__(attr: str) -> object:
 
 
 if TYPE_CHECKING:
-    from functools import wraps
-
     from typing_extensions import deprecated
 
     @deprecated(_SI_MSG)
@@ -109,6 +107,3 @@ if TYPE_CHECKING:
     @deprecated(_SII_MSG)
     def slothy_importing_if(*args: Any, **kwargs: Any) -> Any:
         return lazy_importing_if(*args, **kwargs)
-
-    slothy_importing = wraps(lazy_importing)(lazy_importing)  # noqa: F811
-    slothy_importing_if = wraps(lazy_importing_if)(lazy_importing_if)  # noqa: F811
