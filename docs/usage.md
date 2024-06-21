@@ -76,7 +76,9 @@ The reason for this is that `Foo.maybe_descriptor` might potentially be a [descr
 which implies _slothy_ would need to broke between its `__get__`, `__set__`, `__delete__` and even `__set_name__` which is already
 a reason to import it eagerly.
 
-You can imagine that `maybe_descriptor` can be ```py
+You can imagine that `maybe_descriptor` can be
+
+```py
 # whatever.py
 
 @property
