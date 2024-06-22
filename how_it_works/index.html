@@ -1,0 +1,1027 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Super-easy lazy importing in Python.">
+      
+      
+      
+        <link rel="canonical" href="https://bswck.github.io/en/latest/how_it_works/">
+      
+      
+        <link rel="prev" href="../guidelines/">
+      
+      
+        <link rel="next" href="../api/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.27">
+    
+    
+      
+        <title>How It Works - slothy</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.6543a935.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_markdown_exec_pyodide.css">
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../css/mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#it-all-started-with-a-dictionary" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="slothy" class="md-header__button md-logo" aria-label="slothy" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            slothy
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              How It Works
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7M9 21a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-1H9v1Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7M9 21v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1m3-17a5 5 0 0 0-5 5c0 2.05 1.23 3.81 3 4.58V16h4v-2.42c1.77-.77 3-2.53 3-4.58a5 5 0 0 0-5-5Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/bswck/slothy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    bswck/slothy
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="slothy" class="md-nav__button md-logo" aria-label="slothy" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    slothy
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/bswck/slothy" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    bswck/slothy
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../why_slothy/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Why <i>slothy</i>?
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tutorial
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guidelines/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Guidelines
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    How It Works
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    How It Works
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#it-all-started-with-a-dictionary" class="md-nav__link">
+    <span class="md-ellipsis">
+      It all started with a dictionary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#intercepting-dictionary-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      Intercepting dictionary access
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contributing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../code_of_conduct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Code of Conduct
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#it-all-started-with-a-dictionary" class="md-nav__link">
+    <span class="md-ellipsis">
+      It all started with a dictionary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#intercepting-dictionary-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      Intercepting dictionary access
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+    <a href="https://github.com/bswck/slothy/edit/main/docs/how_it_works.md" title="Edit this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/bswck/slothy/raw/main/docs/how_it_works.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.15 8.15 0 0 1-1.23-2Z"/></svg>
+    </a>
+  
+
+
+  <h1>How It Works</h1>
+
+<p><em>slothy</em> can feel like it's magic, but <strong>the trick is super simple.</strong></p>
+<h2 id="it-all-started-with-a-dictionary">It all started with a dictionary<a class="headerlink" href="#it-all-started-with-a-dictionary" title="Permanent link">&para;</a></h2>
+<p>Python <a href="https://docs.python.org/3/reference/executionmodel.html#resolution-of-names">scopes</a> are essentially dictionaries.<br>
+Most of the times they can be accessed via <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#locals"><code>locals()</code></a> and <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#globals"><code>globals()</code></a>.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Define a variable <code>foo</code></label><label for="__tabbed_1_2">See <code>foo</code> in <code>locals()</code></label><label for="__tabbed_1_3">See <code>foo</code> in <code>globals()</code></label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="hll"><span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span> <span class="o">=</span> <span class="mi">1</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="hll"><span class="gp">&gt;&gt;&gt; </span><span class="nb">locals</span><span class="p">()</span>
+</span><span class="go">{&#39;__annotations__&#39;: {},</span>
+<span class="go">&#39;__builtins__&#39;: &lt;module &#39;builtins&#39; (built-in)&gt;,</span>
+<span class="go">&#39;__doc__&#39;: None,</span>
+<span class="go">&#39;__loader__&#39;: &lt;class &#39;_frozen_importlib.BuiltinImporter&#39;&gt;,</span>
+<span class="go">&#39;__name__&#39;: &#39;__main__&#39;,</span>
+<span class="go">&#39;__package__&#39;: None,</span>
+<span class="go">&#39;__spec__&#39;: None,</span>
+<span class="hll"><span class="go">&#39;foo&#39;: 1}</span>
+</span></code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This includes a bunch of things Python automatically assigns to the module-level
+variables to work correctly. Unsurprisingly, they are
+<a href="https://peps.python.org/pep-0008/#module-level-dunder-names">dunders</a>
+and we typically don't need to know they are there.</p>
+</div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">locals</span><span class="p">()</span>
+<span class="go">{&#39;__annotations__&#39;: {},</span>
+<span class="go">&#39;__builtins__&#39;: &lt;module &#39;builtins&#39; (built-in)&gt;,</span>
+<span class="go">&#39;__doc__&#39;: None,</span>
+<span class="go">&#39;__loader__&#39;: &lt;class &#39;_frozen_importlib.BuiltinImporter&#39;&gt;,</span>
+<span class="go">&#39;__name__&#39;: &#39;__main__&#39;,</span>
+<span class="go">&#39;__package__&#39;: None,</span>
+<span class="go">&#39;__spec__&#39;: None,</span>
+<span class="go">&#39;foo&#39;: 1}</span>
+<span class="hll"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># In this case it&#39;s the same as locals(),</span>
+</span><span class="hll"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># because we&#39;re at the module level.</span>
+</span><span class="hll"><span class="gp">&gt;&gt;&gt; </span><span class="nb">globals</span><span class="p">()</span>
+</span><span class="go">{&#39;__annotations__&#39;: {},</span>
+<span class="go">&#39;__builtins__&#39;: &lt;module &#39;builtins&#39; (built-in)&gt;,</span>
+<span class="go">&#39;__doc__&#39;: None,</span>
+<span class="go">&#39;__loader__&#39;: &lt;class &#39;_frozen_importlib.BuiltinImporter&#39;&gt;,</span>
+<span class="go">&#39;__name__&#39;: &#39;__main__&#39;,</span>
+<span class="go">&#39;__package__&#39;: None,</span>
+<span class="go">&#39;__spec__&#39;: None,</span>
+<span class="hll"><span class="go">&#39;foo&#39;: 1}</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<hr />
+<p>At the module level (outside any functions/classes), <code>locals()</code> and <code>globals()</code> are
+the same dictionary.</p>
+<p>We can reference a global variable from inside a module-level function,
+and that will first look up the <code>locals()</code> dictionary from there and then <code>globals()</code>
+without us having to do it manually:</p>
+<!--
+For the best editing experience open the snippet files
+on the other side in split view
+-->
+
+<div class="tabbed-set tabbed-alternate" data-tabs="2:4"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><input id="__tabbed_2_3" name="__tabbed_2" type="radio" /><input id="__tabbed_2_4" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Call a function</label><label for="__tabbed_2_2">Look up <code>x</code></label><label for="__tabbed_2_3">Resolve <code>x</code></label><label for="__tabbed_2_4">Return <code>x</code></label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>Given the code below, we call our <code>func</code> first.</p>
+<div class="highlight"><pre><span></span><code><span class="n">x</span> <span class="o">=</span> <span class="s2">&quot;whatever&quot;</span>
+
+<span class="k">def</span> <span class="nf">func</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">x</span>
+
+<span class="hll"><span class="nb">print</span><span class="p">(</span><span class="n">func</span><span class="p">())</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>Once <code>func</code> is called, <code>x</code> is requested:</p>
+<div class="highlight"><pre><span></span><code><span class="n">x</span> <span class="o">=</span> <span class="s2">&quot;whatever&quot;</span>
+
+<span class="k">def</span> <span class="nf">func</span><span class="p">():</span>
+<span class="hll">    <span class="k">return</span> <span class="n">x</span>
+</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">func</span><span class="p">())</span>
+</code></pre></div>
+<p>Python looks here (<code>locals()</code>):</p>
+<div class="highlight"><pre><span></span><code><span class="n">x</span> <span class="o">=</span> <span class="s2">&quot;whatever&quot;</span>
+
+<span class="hll"><span class="k">def</span> <span class="nf">func</span><span class="p">():</span>
+</span><span class="hll">    <span class="k">return</span> <span class="n">x</span>
+</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">func</span><span class="p">())</span>
+</code></pre></div>
+<p>Then here (<code>globals()</code>):</p>
+<div class="highlight"><pre><span></span><code><span class="hll"><span class="n">x</span> <span class="o">=</span> <span class="s2">&quot;whatever&quot;</span>
+</span><span class="hll">
+</span><span class="k">def</span> <span class="nf">func</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">x</span>
+<span class="hll">
+</span><span class="nb">print</span><span class="p">(</span><span class="n">func</span><span class="p">())</span>
+</code></pre></div>
+<p>and... <a href="#__tabbed_2_3">&gt;&gt;&gt;</a></p>
+</div>
+<div class="tabbed-block">
+<p>...finally sees it here, in <code>globals()</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="hll"><span class="n">x</span> <span class="o">=</span> <span class="s2">&quot;whatever&quot;</span>
+</span>
+<span class="k">def</span> <span class="nf">func</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">x</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">func</span><span class="p">())</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>Now <code>x</code> can be returned.</p>
+<div class="highlight"><pre><span></span><code><span class="n">x</span> <span class="o">=</span> <span class="s2">&quot;whatever&quot;</span>
+
+<span class="k">def</span> <span class="nf">func</span><span class="p">():</span>
+<span class="hll">    <span class="k">return</span> <span class="n">x</span>  <span class="c1"># found it!</span>
+</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">func</span><span class="p">())</span>  <span class="c1"># outputs &#39;whatever&#39;</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<hr />
+<p>But <code>globals()</code> isn't where the lookup ends: as you might have already noticed,
+we often use names that aren't inside <code>globals()</code> nor any subsequent <code>locals()</code>.
+That is, why does <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#globals"><code>globals</code></a> work in the first place?!</p>
+<div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="nb">globals</span>
+<span class="go">&lt;built-in function globals&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s2">&quot;globals&quot;</span> <span class="ow">in</span> <span class="nb">globals</span><span class="p">()</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># How on earth is that possible?</span>
+</code></pre></div>
+<p>Well, there's another scope that they probably don't want you to know about.<br>
+It's called the <strong>built-in scope</strong> and it correlates with the <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/builtins.html#module-builtins"><code>builtins</code></a> module.</p>
+<p>What is interesting, those built-ins are typically mounted through the <code>__builtins__</code>
+variable that you could have noticed before:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">foo</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">locals</span><span class="p">()</span>
+<span class="go">{&#39;__annotations__&#39;: {},</span>
+<span class="hll"><span class="go">&#39;__builtins__&#39;: &lt;module &#39;builtins&#39; (built-in)&gt;,</span>
+</span><span class="go">&#39;__doc__&#39;: None,</span>
+<span class="go">&#39;__loader__&#39;: &lt;class &#39;_frozen_importlib.BuiltinImporter&#39;&gt;,</span>
+<span class="go">&#39;__name__&#39;: &#39;__main__&#39;,</span>
+<span class="go">&#39;__package__&#39;: None,</span>
+<span class="go">&#39;__spec__&#39;: None,</span>
+<span class="go">&#39;foo&#39;: 1}</span>
+</code></pre></div>
+<p>In CPython, changing the value of <code>__builtins__</code> can change the actual built-in scope
+entirely for all subsequent frames, i.e. the entire call stack starting from the moment
+you override the <code>__builtins__</code> variable.</p>
+<p>This is what <em>slothy</em> initially relied on: it captured undefined names (since built-ins is the last scope checked) from a program and then looked it up in "lazy import declarations" to import them on demand.</p>
+<p>However, that didn't work outside CPython, because it's not in the standard.</p>
+<p>So, what <em>slothy</em> does instead is...</p>
+<h2 id="intercepting-dictionary-access">Intercepting dictionary access<a class="headerlink" href="#intercepting-dictionary-access" title="Permanent link">&para;</a></h2>
+<p>From <a href="https://docs.python.org/3/library/stdtypes.html#mapping-types-dict">the documentation on mappings</a>:</p>
+<blockquote>
+<p>A mapping object maps hashable values to arbitrary objects. Mappings are mutable objects. There is currently only one standard mapping type, the dictionary. (...)
+A dictionary’s keys are almost arbitrary values. Values that are not hashable (...) may not be used as keys. Values that compare equal (such as <code>1</code>, <code>1.0</code>, and <code>True</code>) can be used interchangeably to index the same dictionary entry.</p>
+</blockquote>
+<p>From <a href="https://docs.python.org/3/glossary.html#term-hashable">the documentation on hashable objects</a>:</p>
+<blockquote>
+<p>An object is hashable if it has a hash value which never changes during its lifetime (it needs a <code>__hash__()</code> method), and can be compared to other objects (it needs an <code>__eq__()</code> method). Hashable objects which compare equal must have the same hash value.</p>
+</blockquote>
+<p>Which makes sense with regard to the previous quote:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="nb">hash</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">1</span> <span class="o">==</span> <span class="mf">1.0</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">hash</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">1</span> <span class="o">==</span> <span class="kc">True</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">hash</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">1</span>
+</code></pre></div>
+<blockquote>
+<p>Hashability makes an object usable as a dictionary key and a set member, because these data structures use the hash value internally.</p>
+</blockquote>
+<p>Knowing that, let's see what happens if we try to insert a custom key to a dictionary.<br>The new, "special" key will:</p>
+<ul>
+<li>log every <code>__hash__</code> and <code>__eq__</code> call,</li>
+<li>be equal to every string of value <code>"special"</code>.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">SpecialKey</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;__eq__ called&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="s2">&quot;special&quot;</span> <span class="o">==</span> <span class="n">other</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;__hash__ called&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="s2">&quot;special&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>And we are good to go!</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:5"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><input id="__tabbed_3_3" name="__tabbed_3" type="radio" /><input id="__tabbed_3_4" name="__tabbed_3" type="radio" /><input id="__tabbed_3_5" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Create a dictionary</label><label for="__tabbed_3_2">Insert the special key</label><label for="__tabbed_3_3">Check against invalid key</label><label for="__tabbed_3_4">Check against <code>"special"</code></label><label for="__tabbed_3_5">Check against a colliding key</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>Let's create the dictionary we will experiment on.</p>
+<div class="highlight"><pre><span></span><code><span class="hll"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create a dictionary.</span>
+</span><span class="hll"><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>Let's insert the key.</p>
+<div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create a dictionary.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="hll"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Insert out special key that equals &quot;special&quot;.</span>
+</span><span class="hll"><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="n">SpecialKey</span><span class="p">()]</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span class="hll"><span class="go">__hash__ called</span>
+</span></code></pre></div>
+<p>Notice that <code>__hash__</code> was called.</p>
+</div>
+<div class="tabbed-block">
+<p>Just to make sure, we will try to get a key that can't exist in that dictionary.</p>
+<div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create a dictionary.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Insert out special key that equals &quot;special&quot;.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="n">SpecialKey</span><span class="p">()]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="go">__hash__ called</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="hll"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Try to get an inexisting key.</span>
+</span><span class="hll"><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="nb">object</span><span class="p">()]</span>
+</span><span class="hll"><span class="gt">Traceback (most recent call last):</span>
+</span><span class="hll">  File <span class="nb">&quot;&lt;stdin&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">&lt;module&gt;</span>
+</span><span class="hll"><span class="gr">KeyError</span>: <span class="n">&lt;object object at 0xc0ffee04bee4&gt;</span>
+</span></code></pre></div>
+<p>The reason for the dictionary to know this is an invalid key is that
+there is no value under a key with the same hash as that of the requested <code>object()</code>.</p>
+<p>Hash-based lookup is what makes dictionaries
+(and <a href="https://en.wikipedia.org/wiki/Hash_table">hash tables</a> in general) so fast.</p>
+</div>
+<div class="tabbed-block">
+<p>We intended the special key to be interoperable with a string <code>"special"</code>.
+Let's try it then.</p>
+<div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create a dictionary.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Insert out special key that equals &quot;special&quot;.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="n">SpecialKey</span><span class="p">()]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="go">__hash__ called</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Try to get an inexisting key.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="nb">object</span><span class="p">()]</span>
+<span class="gt">Traceback (most recent call last):</span>
+  File <span class="nb">&quot;&lt;stdin&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">&lt;module&gt;</span>
+<span class="gr">KeyError</span>: <span class="n">&lt;object object at 0xc0ffee04bee4&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="hll"><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;special&quot;</span><span class="p">]</span>
+</span><span class="hll"><span class="go">__eq__ called</span>
+</span><span class="hll"><span class="go">1</span>
+</span></code></pre></div>
+<p>That works! Notice that <code>__eq__</code> was called.</p>
+<p>You might ask: <strong>why</strong>? If <em>hashable objects which compare equal must have
+the same hash value</em>, why would we have to additionally check their equality?
+<a href="#__tabbed_3_5">&gt;&gt;&gt;</a></p>
+</div>
+<div class="tabbed-block">
+<p>Well, imagine an object that very randomly has the same hash as the string
+<code>"special"</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create a dictionary.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Insert out special key that equals &quot;special&quot;.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="n">SpecialKey</span><span class="p">()]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="go">__hash__ called</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Try to get an inexisting key.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="nb">object</span><span class="p">()]</span>
+<span class="gt">Traceback (most recent call last):</span>
+  File <span class="nb">&quot;&lt;stdin&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">&lt;module&gt;</span>
+<span class="gr">KeyError</span>: <span class="n">&lt;object object at 0xc0ffee04bee4&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;special&quot;</span><span class="p">]</span>
+<span class="go">__eq__ called</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="hll"><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">RandomlyCollidingKey</span><span class="p">:</span>
+</span><span class="hll"><span class="gp">... </span>    <span class="n">colliding</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span class="hll"><span class="gp">... </span>    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span class="hll"><span class="gp">... </span>        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="s2">&quot;special&quot;</span><span class="p">)</span>
+</span><span class="hll"><span class="gp">... </span>    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+</span><span class="hll"><span class="gp">... </span>        <span class="c1"># All RandomlyCollidingKey objects have this attribute</span>
+</span><span class="hll"><span class="gp">... </span>        <span class="c1"># set to True.</span>
+</span><span class="hll"><span class="gp">... </span>        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s2">&quot;colliding&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+</span><span class="hll"><span class="gp">...</span>
+</span><span class="hll"><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="n">RandomlyCollidingKey</span><span class="p">()]</span>
+</span><span class="hll"><span class="go">__eq__ called</span>
+</span><span class="hll"><span class="gt">Traceback (most recent call last):</span>
+</span><span class="hll">  File <span class="nb">&quot;&lt;stdin&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">&lt;module&gt;</span>
+</span><span class="hll"><span class="gr">KeyError</span>: <span class="n">&lt;__main__.RandomlyCollidingKey object at 0xfeeddeadbeef&gt;</span>
+</span><span class="hll"><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="n">RandomlyCollidingKey</span><span class="p">()]</span> <span class="o">=</span> <span class="mi">2</span>
+</span><span class="hll"><span class="go">__eq__ called</span>
+</span><span class="hll"><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;special&quot;</span><span class="p">]</span>
+</span><span class="hll"><span class="go">__eq__ called</span>
+</span><span class="hll"><span class="go">1</span>
+</span><span class="hll"><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="n">RandomlyCollidingKey</span><span class="p">()]</span>
+</span><span class="hll"><span class="go">__eq__ called</span>
+</span><span class="hll"><span class="go">2</span>
+</span></code></pre></div>
+<p>What <code>__eq__</code> ultimately gives us is the possibility of maintaining distinct keys
+with colliding hashes in the same dictionary.</p>
+</div>
+</div>
+</div>
+<hr />
+<p>In conclusion, Python dictionaries let us map objects with possibly colliding hashes to values and
+retrieve them quickly, making sure we get (and set) what we intend.</p>
+<p>Since arbitrary objects participate in the process of dictionary key resolution,
+<em>slothy</em> does its magic by modifying the first step to operate on a slightly different dictionary:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">Our experiment</label><label for="__tabbed_4_2"><em>slothy</em></label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="hll"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create a dictionary.</span>
+</span><span class="hll"><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="hll"><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create a dictionary.</span>
+</span><span class="hll"><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="nb">locals</span><span class="p">()</span>
+</span></code></pre></div>
+<p>You get the point?</p>
+<p><em>slothy</em> essentially uses the "special key" idea and implements behavior that
+dynamically imports items on their first actual lookup inside your <code>locals()</code>.</p>
+<p>These keys are created on every import inside <em>slothy</em> context managers that
+temporarily patch <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#import__"><code>__import__</code></a> in your built-in scope: the function without
+which the <code>import</code> statement wouldn't work.</p>
+<p>This was <em>How It Works</em>. Congrats for making it this far! 🎉</p>
+</div>
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var tab,labels=set.querySelector(".tabbed-labels");for(tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../guidelines/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Guidelines">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Guidelines
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../api/" class="md-footer__link md-footer__link--next" aria-label="Next: API Reference">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                API Reference
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["announce.dismiss", "header.autohide", "content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "content.tabs.link", "content.tooltips", "navigation.footer", "navigation.indexes", "navigation.sections", "navigation.top", "navigation.tracking", "search.highlight", "search.suggest", "toc.follow"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.ad660dcc.min.js"></script>
+      
+        <script src="../assets/_markdown_exec_pyodide.js"></script>
+      
+    
+  </body>
+</html>
