@@ -13,7 +13,7 @@ watch:
 
 nav:
 - "Overview": "index.md"
-- "Why Slothy?": "why_slothy.md"
+- "Why _slothy_?": "why_slothy.md"
 - "Installation": "installation.md"
 - "Tutorial": "tutorial.md"
 - "Guidelines": "guidelines.md"
