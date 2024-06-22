@@ -1,6 +1,6 @@
-# How Does _slothy_ Work?!
+# How It Works
 
-_slothy_ can feel like it's magic, but **the trick is awfully simple.**
+_slothy_ can feel like it's magic, but **the trick is super simple.**
 
 ## It all starts with a dictionary
 
@@ -259,5 +259,5 @@ _slothy_ does its magic by modifying the first step to operate on a slightly dif
     temporarily patch [`__import__`][] in your built-in scope: the function without
     which the `import` statement wouldn't work.
 
-    This was how _slothy_ works. Congrats for making it this far! 🎉
+    This was _How It Works_. Congrats for making it this far! 🎉
 
