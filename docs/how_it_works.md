@@ -253,7 +253,7 @@ _slothy_ does its magic by modifying the first step to operate on a slightly dif
     You get the point?
 
     _slothy_ essentially uses the "special key" idea and implements behavior that
-    dynamically imports items on their first actual lookup.
+    dynamically imports items on their first actual lookup inside your `locals()`.
 
     These keys are created on every import inside _slothy_ context managers that
     temporarily patch [`__import__`][] in the built-in scope: the function without
