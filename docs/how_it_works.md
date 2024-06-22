@@ -232,7 +232,7 @@ And we are good to go!
 ----
 
 In conclusion, Python dictionaries let us map objects with possibly colliding hashes to values and
-retrieve them quickly, making sure we get (and set) what we intended.
+retrieve them quickly, making sure we get (and set) what we intend.
 
 Since arbitrary objects participate in the process of dictionary key resolution,
 _slothy_ does its magic by modifying the first step to operate on a slightly different dictionary:
