@@ -111,8 +111,9 @@ with lazy_importing():
     from .eggs import Ham
 ```
 
-you should never rely on `from .eggs import Ham` _not_ executing some code as a side effect it otherwise would execute
-if it wasn't lazy: in this case, don't base off on the fact that `Ham` is not present in `Ham.__base__.__subclasses__()`.
+you should never rely on `from .eggs import Ham` _not_ executing some code it otherwise would
+if it wasn't lazy. For example, don't base off on the fact that `Ham` is not present in `Ham.__base__.__subclasses__()`
+after that lazy import.
 
 In other words, stick to [decoupling](https://en.wikipedia.org/wiki/Coupling_(computer_programming))
 and give your separate modules autonomy. Never make decisions based on side effect mutations to the global state of your program.
