@@ -231,11 +231,11 @@ And we are good to go!
 
 ----
 
-On balance, Python dictionaries let us map objects with possibly colliding hashes to values and
+In conclusion, Python dictionaries let us map objects with possibly colliding hashes to values and
 retrieve them quickly, making sure we get what we intended.
 
 Since arbitrary objects participate in the process of dictionary key resolution,
-_slothy_ does its magic by replacing the first step with a slightly different dictionary:
+_slothy_ does its magic by modifying the first step to operate on a slightly different dictionary:
 
 === "Our experiment"
 
