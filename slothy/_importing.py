@@ -465,7 +465,6 @@ class _SlothyKey(str):
         """
         if not isinstance(key, str):
             return NotImplemented
-        # Is that check necessary?
         elif key != self.key:  # pragma: no cover  # noqa: RET505 (elifs instead of ifs)
             return False
         elif binding.get():
