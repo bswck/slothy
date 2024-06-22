@@ -2,7 +2,7 @@
 
 _slothy_ can feel like it's magic, but **the trick is super simple.**
 
-## It all starts with a dictionary
+## It all started with a dictionary
 
 Python [scopes](https://docs.python.org/3/reference/executionmodel.html#resolution-of-names) are essentially dictionaries.<br>
 Most of the times they can be accessed via [`locals()`][locals] and [`globals()`][globals].
