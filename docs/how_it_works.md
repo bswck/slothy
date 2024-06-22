@@ -109,7 +109,7 @@ False
 Well, there's another scope that they probably don't want you to know about.<br>
 It's called the **built-in scope** and it correlates with the [`builtins`][] module.
 
-What is interesting, those builtins are typically mounted through the `__builtins__`
+What is interesting, those built-ins are typically mounted through the `__builtins__`
 variable that you could have noticed before:
 
 ```pycon hl_lines="4"
@@ -256,8 +256,8 @@ _slothy_ does its magic by modifying the first step to operate on a slightly dif
     dynamically imports items on their first actual lookup inside your `locals()`.
 
     These keys are created on every import inside _slothy_ context managers that
-    temporarily patch [`__import__`][] in the built-in scope: the function without
+    temporarily patch [`__import__`][] in your built-in scope: the function without
     which the `import` statement wouldn't work.
 
-    This was how _slothy_ works. Congrats for making it this far!
+    This was how _slothy_ works. Congrats for making it this far! 🎉
 
