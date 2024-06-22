@@ -1,5 +1,5 @@
 >>> foo = 1
->>> print(locals())
+>>> locals()
 {'__annotations__': {},
 '__builtins__': <module 'builtins' (built-in)>,
 '__doc__': None,
@@ -8,9 +8,9 @@
 '__package__': None,
 '__spec__': None,
 'foo': 1}
->>> # Essentially the same as locals(),
+>>> # In this case it's the same as locals(),
 >>> # because we're at the module level.
->>> print(globals())
+>>> globals()
 {'__annotations__': {},
 '__builtins__': <module 'builtins' (built-in)>,
 '__doc__': None,

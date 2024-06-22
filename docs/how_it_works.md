@@ -1,5 +1,3 @@
-# How It Works
-
 _slothy_ can feel like it's magic, but **the trick is super simple.**
 
 ## It all started with a dictionary
@@ -28,7 +26,7 @@ Most of the times they can be accessed via [`locals()`][locals] and [`globals()`
 
 === "See `foo` in `globals()`"
 
-    ```pycon hl_lines="11 21-23"
+    ```pycon hl_lines="11-13 21"
     {!> ./snippets/print_locals_3.pycon!}
     ```
 
@@ -96,12 +94,12 @@ on the other side in split view
 
 But `globals()` isn't where the lookup ends: as you might have already noticed,
 we often use names that aren't inside `globals()` nor any subsequent `locals()`.
-That is, why does [`print`][] work in the first place?!
+That is, why does [`globals`][] work in the first place?!
 
 ```pycon
->>> print
-<built-in function print>
->>> "print" in globals()
+>>> globals
+<built-in function globals>
+>>> "globals" in globals()
 False
 >>> # How on earth is that possible?
 ```
@@ -117,7 +115,8 @@ variable that you could have noticed before:
 ```
 
 In CPython, changing the value of `__builtins__` can change the actual built-in scope
-entirely for child frames, i.e. any function call stack starting from that place further on.
+entirely for all subsequent frames, i.e. the entire call stack starting from the moment
+you override the `__builtins__` variable.
 
 This is what _slothy_ initially relied on: it captured undefined names (since built-ins is the last scope checked) from a program and then looked it up in "lazy import declarations" to import them on demand.
 
@@ -155,7 +154,7 @@ True
 
 Knowing that, let's see what happens if we try to insert a custom key to a dictionary.<br>The new, "special" key will:
 
-- log every `__hash__` and `__eq__` call
+- log every `__hash__` and `__eq__` call,
 - be equal to every string of value `"special"`.
 
 ```pycon
@@ -197,21 +196,22 @@ And we are good to go!
     ```
 
     The reason for the dictionary to know this is an invalid key is that
-    there is no value under a key with the same hash.
+    there is no value under a key with the same hash as that of the requested `object()`.
 
-    Hash-based lookup is what makes dictionaries (and [hash tables](https://en.wikipedia.org/wiki/Hash_table) in general) fast.
+    Hash-based lookup is what makes dictionaries
+    (and [hash tables](https://en.wikipedia.org/wiki/Hash_table) in general) so fast.
 
 
 === "Check against `"special"`"
 
     We intended the special key to be interoperable with a string `"special"`.
-    Let's try to get it.
+    Let's try it then.
 
     ```pycon hl_lines="14-16"
     {!> ./snippets/dict_intercept_4.pycon!}
     ```
 
-    Now that works! Notice that `__eq__` was called.
+    That works! Notice that `__eq__` was called.
 
     You might ask: **why**? If _hashable objects which compare equal must have
     the same hash value_, why would we have to additionally check their equality?
@@ -260,4 +260,3 @@ _slothy_ does its magic by modifying the first step to operate on a slightly dif
     which the `import` statement wouldn't work.
 
     This was _How It Works_. Congrats for making it this far! 🎉
-

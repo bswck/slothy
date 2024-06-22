@@ -1,5 +1,5 @@
 >>> foo = 1
->>> print(locals())
+>>> locals()
 {'__annotations__': {},
 '__builtins__': <module 'builtins' (built-in)>,
 '__doc__': None,

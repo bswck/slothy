@@ -18,78 +18,84 @@ They gather **opinions** from the author(s) of _slothy_.
 
 Here are some obviously unnecessary uses of _slothy_:
 
-### 1.1. Importing lazily to always trigger the actual import in the same frame.
+=== "Importing lazily to eagerly import right after"
 
-```py
-with lazy_importing():
+    Instead of
+
+    ```py
+    with lazy_importing():
+        import pandas as pd
+
+    # In the line below, right under the lazy import, you import pandas eagerly.
+    df = pd.DataFrame()
+    ```
+
+    You can just do
+
+    ```py
+    import pandas as pd
+    df = pd.DataFrame()
+    ```
+
+    and that will be faster.
+
+    This could make sense if you make a module that creates `df` lazily, e.g. when
+    a function is called:
+
+    ```py
+    with lazy_importing():
+        import pandas as pd
+
+    def make_df() -> pd.DataFrame:
+        return pd.DataFrame()
+
+    # make_df() not called at the module level at all!
+    # Someone else could import us and THEN call make_df(), perhaps
+    # due to the instruction stack initiated in their
+    # `if __name__ == "__main__"` section.
+    ```
+
+=== "Mixing lazy and eager imports unconditionally"
+
+    ```py
     import pandas as pd
 
-# In the line below, right under the lazy import, you import pandas eagerly.
-df = pd.DataFrame()
-```
+    with lazy_importing():
+        from pandas import DataFrame
+    ```
 
-You can just do
+    You don't need _slothy_ in this case.
+    `pandas.DataFrame` was already imported by the first line.
 
-```py
-import pandas as pd
-df = pd.DataFrame()
-```
+    Just use
 
-and that will be faster.
-
-This could make sense if you make a module that creates `df` lazily, e.g. when
-a function is called:
-
-```py
-with lazy_importing():
+    ```py
     import pandas as pd
-
-def make_df() -> pd.DataFrame:
-    return pd.DataFrame()
-
-# make_df() not called at the module level at all!
-# Someone else could import us and THEN call make_df(), perhaps
-# due to the instruction stack initiated in their
-# `if __name__ == "__main__"` section.
-```
-
-### 1.2. Mixing lazy and eager imports unconditionally
-
-```py
-import pandas as pd
-
-with lazy_importing():
     from pandas import DataFrame
-```
+    ```
 
-You don't need _slothy_ in this case.
-`pandas.DataFrame` was already imported by the first line.
+    instead.
 
-Just use
+    Similarly, in
 
-```py
-import pandas as pd
-from pandas import DataFrame
-```
+    ```py
+    with lazy_importing():
+        # Declares a lazy import.
+        import pandas as pd  
 
-instead.
+    # Immediately destroys the entire point of declaring a lazy import.
+    import pandas as pd
+    ```
 
-Similarly, in
+    you can just
 
-```py
-with lazy_importing():
-    # Declares a lazy import.
-    import pandas as pd  
+    ```py
+    import pandas as pd
+    ```
+    instead.
 
-# Immediately destroys the entire point of declaring a lazy import.
-import pandas as pd
-```
-
-you can just
-
-```py
-import pandas as pd
-```
+    Mixing eager and lazy imports might make sense if there's a logical branch
+    of your code where the lazy import is not eventually performed.
 
 ## 2. Don't rely on delayed imports programmatically
 
@@ -102,14 +108,14 @@ For example, if from `spam.py` you import a module `eggs.py` that is located in 
 # ./spam.py
 
 with lazy_importing():
-    from .eggs import ham
+    from .eggs import Ham
 ```
 
-you should never rely on `from .eggs import ham` _not_ executing some code as a side effect it otherwise would execute
-if it wasn't lazy.
+you should never rely on `from .eggs import Ham` _not_ executing some code as a side effect it otherwise would execute
+if it wasn't lazy: in this case, don't base off on the fact that `Ham` is not present in `Ham.__base__.__subclasses__()`.
 
 In other words, stick to [decoupling](https://en.wikipedia.org/wiki/Coupling_(computer_programming))
-and give your separate modules autonomy; do not rely on mutations to the global state of your program.
+and give your separate modules autonomy. Never make decisions based on side effect mutations to the global state of your program.
 
 ## 3. Don't prevent eager imports in libraries
 !!! note
@@ -124,7 +130,7 @@ Try to make libraries as much compatible with non-CPython implementations
 as possible. _slothy_, tailored for applications, raises a [`RuntimeError`][]
 if it can't ensure imports aren't lazy inside a `with lazy_importing()` block.
 
-## 3. Use [`type_importing()`][slothy._importing.type_importing] for type-checking imports that may eventually be needed at runtime
+## 4. Use [`type_importing()`][slothy._importing.type_importing] for type-checking imports that may eventually be needed at runtime
 
 If you need _slothy_ for delaying imports of typing-only items that might eventually
 be requested at runtime (for example [by Pydantic](https://docs.pydantic.dev/2.7/concepts/postponed_annotations/)),
@@ -147,7 +153,7 @@ typing.Any
     use [`type_importing()`][slothy._importing.type_importing] consistently in the entire codebase
     to minimize the "I'm confused" factor (amongst [other factors](https://en.wikipedia.org/wiki/Bus_factor)).
 
-## 4. Don't lazy-import in class scopes
+## 5. Don't lazy-import in class scopes
 
 This won't work:
 ```py
