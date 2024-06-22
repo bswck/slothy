@@ -226,8 +226,8 @@ And we are good to go!
     {!> ./snippets/dict_intercept_5.pycon!}
     ```
 
-    What `__eq__` ultimately gives us is the possibility of maintaining keys
-    with the same hashes in the same dictionary.
+    What `__eq__` ultimately gives us is the possibility of maintaining distinct keys
+    with colliding hashes in the same dictionary.
 
 ----
 
