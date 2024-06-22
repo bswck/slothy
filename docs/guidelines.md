@@ -49,7 +49,7 @@ def make_df() -> pd.DataFrame:
 
 # make_df() not called at the module level at all!
 # Someone else could import us and THEN call make_df(), perhaps
-# due to the instruction chain starting in their
+# due to the instruction stack initiated in their
 # `if __name__ == "__main__"` section.
 ```
 

@@ -115,7 +115,7 @@ variable that you could have noticed before:
 ```
 
 In CPython, changing the value of `__builtins__` can change the actual built-in scope
-entirely for child frames, i.e. any function call chains made from that place further on.
+entirely for child frames, i.e. any function call stack starting from that place further on.
 
 This is what _slothy_ initially relied on: it captured undefined names (since built-ins is the last scope checked) from a program and then looked it up in "lazy import declarations" to import them on demand.
 
