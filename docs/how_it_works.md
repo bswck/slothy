@@ -28,7 +28,7 @@ Most of the times they can be accessed via [`locals()`][locals] and [`globals()`
 
 === "See `foo` in `globals()`"
 
-    ```pycon hl_lines="11 21"
+    ```pycon hl_lines="11 21-23"
     {!> ./snippets/print_locals_3.pycon!}
     ```
 
