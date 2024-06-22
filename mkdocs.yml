@@ -4,7 +4,7 @@
 
 site_name: "slothy"
 site_description: "Super-easy lazy importing in Python."
-site_url: "https://slothy.readthedocs.io/en/latest/"
+site_url: "https://bswck.github.io/en/latest/"
 repo_name: "bswck/slothy"
 repo_url: "https://github.com/bswck/slothy"
 edit_uri: "edit/main/docs/"
