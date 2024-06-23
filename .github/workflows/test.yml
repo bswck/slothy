@@ -58,7 +58,7 @@ jobs:
       run: >
         poetry run coverage run
         --context=${{env.context}}
-        -m pytest --doctest-only -v .
+        -m pytest --doctest-only -v
     - name: "Show coverage report"
       run: "poetry run coverage report --show-missing --fail-under=0"
     - run: "mv .coverage .coverage.${{env.context}}"
