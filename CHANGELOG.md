@@ -7,6 +7,18 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 <!-- insertion marker -->
 
+## [v1.0.0b3](https://github.com/bswck/slothy/tree/v1.0.0b3) (2024-06-23)
+
+
+### Changed
+
+- Restructured and enriched the test suite
+
+### Fixed
+
+- Fixed erroneous cache module returning behavior
+
+
 ## [v1.0.0b2](https://github.com/bswck/slothy/tree/v1.0.0b2) (2024-06-21)
 
 
