@@ -34,11 +34,6 @@ def purge_modules() -> None:
     sys.modules.update(initial_modules)
 
 
-@pytest.fixture()
-def case(request: pytest.FixtureRequest) -> object:
-    return request.param
-
-
 @contextmanager
 def reference_tracking(
     *,
