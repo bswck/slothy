@@ -11,7 +11,7 @@ from contextlib import contextmanager, nullcontext
 from contextvars import ContextVar, copy_context
 from functools import partial
 from pathlib import Path
-from sys import modules
+from sys import modules, version_info
 from typing import TYPE_CHECKING, Any, NamedTuple
 from warnings import warn
 
@@ -313,7 +313,7 @@ class SlothyObject:
         if (tracker := tracker_var.get()) is not None:
             tracker[type(self)].add(self)
 
-    def __log_off_in_ctx(self, obj: object = MISSING) -> None:
+    def __unmount_in_context(self, obj: object = MISSING) -> None:
         local_ns = self.__args.local_ns
         for ref in self.__refs:
             existing_value = local_ns.get(ref)
@@ -322,10 +322,10 @@ class SlothyObject:
                 if obj is not MISSING:
                     local_ns[ref] = obj
 
-    def __log_off(self, obj: object = MISSING) -> None:
+    def __unmount(self, obj: object = MISSING) -> None:
         ctx = copy_context()
         ctx.run(logging_off.set, True)
-        ctx.run(self.__log_off_in_ctx, obj)
+        ctx.run(self.__unmount_in_context, obj)
 
     def __import(self, builtin_import: Callable[..., ModuleType]) -> object:
         """Actually import the object."""
@@ -344,9 +344,9 @@ class SlothyObject:
         except BaseException as exc:  # noqa: BLE001
             fallback = self.__fallback
             if fallback is not MISSING:
-                self.__log_off(fallback)
+                self.__unmount(fallback)
                 return fallback
-            self.__log_off()
+            self.__unmount()
             args = exc.args
             if self.__source:
                 args = (
@@ -357,16 +357,18 @@ class SlothyObject:
             exc = type(exc)(*args).with_traceback(exc.__traceback__)
             raise exc from None
         else:
-            self.__log_off(obj)
+            self.__unmount(obj)
             return obj
 
     def __set_name__(self, owner: type, name: str) -> None:
         """Set the name of the object."""
         self.__refs.add(name)
-        self.__log_off()
+        self.__unmount()
         delattr(owner, name)
-        msg = "Class-scoped slothy imports are not supported"
-        warn(msg, category=RuntimeWarning, stacklevel=2)
+        if version_info < (3, 12):
+            # https://github.com/python/cpython/issues/77757
+            msg = "Class-scoped lazy imports are not supported"
+            warn(msg, category=RuntimeWarning, stacklevel=2)
         raise RuntimeError(msg)
 
     def __repr__(self) -> str:
