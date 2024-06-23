@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import runpy
 import sys
 from typing import TYPE_CHECKING
@@ -8,35 +9,35 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pytest_subtests import SubTests
 
+# If that fails, something's wrong in test collection stage.
+# Ensure that pytest collection doesn't trigger importing slothy.
+assert not any(map(re.compile("slothy").search, sys.modules))
 
-def _force_reload(
-    module_names: tuple[str, ...] = ("slothy", "slothy._importing"),
-) -> None:
-    for module_name in module_names:
-        sys.modules.pop(module_name, None)
+initial_modules = sys.modules.copy()
+
+
+def purge_modules() -> None:
+    sys.modules.clear()
+    sys.modules.update(initial_modules)
 
 
 def test_unsupported_implementation(subtests: SubTests) -> None:
-    _force_reload()
     os.environ["SLOTHY_DISABLE"] = "1"  # Do disable.
-    ns = runpy.run_path(
+    runpy.run_path(
         "tests/tests.py",
         run_name="tests",
         init_globals={"subtests": subtests, "supported_implementation": False},
     )
-    module_entries = ns["expected_module_entries"]
-    _force_reload(module_entries)
+    purge_modules()
 
 
 if hasattr(sys, "_getframe"):
 
     def test_supported_implementation(subtests: SubTests) -> None:
-        _force_reload()
         os.environ["SLOTHY_DISABLE"] = ""  # Don't disable.
-        ns = runpy.run_path(
+        runpy.run_path(
             "tests/tests.py",
             run_name="tests",
             init_globals={"subtests": subtests, "supported_implementation": True},
         )
-        module_entries = ns["expected_module_entries"]
-        _force_reload(module_entries)
+        purge_modules()
