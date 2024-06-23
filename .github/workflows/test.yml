@@ -26,8 +26,7 @@ jobs:
         platform:
         - "ubuntu"
         - "windows"
-        # https://github.com/actions/setup-python/issues/696
-        # - "macos"
+        - "macos"
         include:
         - python: "3.9"
           platform: "ubuntu"
