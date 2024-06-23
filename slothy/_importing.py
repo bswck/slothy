@@ -324,7 +324,7 @@ class SlothyObject:
 
     def __unmount(self, obj: object = MISSING) -> None:
         ctx = copy_context()
-        ctx.run(logging_off.set, True)
+        ctx.run(unmounting.set, True)
         ctx.run(self.__unmount_in_context, obj)
 
     def __import(self, builtin_import: Callable[..., ModuleType]) -> object:
@@ -403,13 +403,13 @@ class SlothyObject:
                 item_from_list=item,
                 source=self.__source,
             )
-        *_, last_module = self.__args.module_name.rsplit(".", 1)
-        if item != last_module:
+        _, _, submodule = self.__args.module_name.rpartition(".")
+        if item != submodule:
             raise AttributeError(item)
         return self
 
 
-logging_off: ContextVar[bool] = ContextVar("binding", default=False)
+unmounting: ContextVar[bool] = ContextVar("unmounting", default=False)
 
 
 class _SlothyKey(str):
@@ -472,7 +472,7 @@ class _SlothyKey(str):
             return NotImplemented
         elif key != self.key:  # pragma: no cover  # noqa: RET505 (elifs instead of ifs)
             return False
-        elif logging_off.get():
+        elif unmounting.get():
             return True
         their_import = self.obj._SlothyObject__builtins.get("__import__")
         if not _is_slothy_import(their_import):
