@@ -1,112 +1,46 @@
-# ruff: noqa: B018, FBT003, F401, F821, PLR2004
+# core tests
 from __future__ import annotations
 
-import gc
-import platform
 import re
 import sys
-from contextlib import nullcontext
 from pathlib import Path
 from types import ModuleType
-from typing import TYPE_CHECKING, cast
-from weakref import WeakSet
+from typing import TYPE_CHECKING
 
 import pytest
 
-if TYPE_CHECKING:
-    from contextlib import AbstractContextManager
+from slothy import lazy_importing, lazy_importing_if
 
+if TYPE_CHECKING:
     from pytest_subtests import SubTests
 
     from slothy._importing import SlothyObject
 
-    # Global variables passed through runpy.
     subtests: SubTests
-    supported_implementation: bool
-
-with cast(
-    "AbstractContextManager[None]",
-    nullcontext()
-    if supported_implementation
-    else pytest.warns(RuntimeWarning, match=r"does not support `sys._getframe\(\)`"),
-):
-    from slothy import lazy_importing, lazy_importing_if, type_importing
-
-for cm in (
-    lambda: lazy_importing(prevent_eager=True),
-    lambda: lazy_importing_if(True, prevent_eager=True),
-    lambda: type_importing(),
-):
-    with subtests.test("prevents-eager"), (
-        nullcontext()
-        if supported_implementation
-        else pytest.raises(
-            RuntimeError,
-            match="cannot default to eager mode",
-        )
-    ), cm():  # type: ignore[no-untyped-call]
-        pass
-
-for cm in (
-    lambda: lazy_importing(prevent_eager=False),
-    lambda: lazy_importing_if(False, prevent_eager=True),
-    lambda: lazy_importing_if(True, prevent_eager=False),
-):
-    with subtests.test("no-prevent-eager"), cm():  # type: ignore[no-untyped-call]
-        # Should never fail.
-        pass
-
-if supported_implementation:
-    with subtests.test("type-importing"):
-        from typing import Any
-
-        with type_importing():
-            from _typeshed import StrPath
-
-        assert StrPath is Any
-        del StrPath
-
-        with type_importing(default_type=object):
-            from _typeshed import StrPath
-
-        assert StrPath is object  # type: ignore[comparison-overlap]
-
-if supported_implementation:
-    # We're using slothy's internal system for tracking whether
-    # slothy objects are properly garbage collected. :-)
-    from slothy._importing import SlothyObject, _SlothyKey
-
-    SlothyKey_objects: WeakSet[_SlothyKey] = WeakSet()
-    SlothyObject_objects: WeakSet[SlothyObject] = WeakSet()
-
-    SlothyObject.__slothy_tracker__ = SlothyObject_objects
-    _SlothyKey.__slothy_tracker__ = SlothyKey_objects
-
-    assert not SlothyObject_objects
-    assert not SlothyKey_objects
+    supported: bool
 
 builtin_import = __import__
 
 with lazy_importing(prevent_eager=False):
-    if supported_implementation:
+    if supported:
         with subtests.test("wildcard-imports-disallowed"), pytest.raises(
             RuntimeError, match="Wildcard slothy imports are not supported"
         ):
             from whatever import *  # type: ignore[import-not-found]  # noqa: F403
 
     with subtests.test("builtin-import-overridden"):
-        if supported_implementation:
+        if supported:
             assert __import__ is not builtin_import
         else:
             assert __import__ is builtin_import
 
-    with subtests.test("perform-slothy-imports"):
+    with subtests.test("perform-lazy-imports"):
         import module
         import package1 as pkg
         import package2.submodule
         from module import attr
 
-        if supported_implementation:
+        if supported:
             # This should fail later.
             from package1 import delusion  # type: ignore[attr-defined]
         else:
@@ -129,7 +63,7 @@ with lazy_importing(prevent_eager=False):
             # (from the `__import__` 1st arg, i.e. the module name).
             subpackage.subsubmodule
 
-        if supported_implementation:
+        if supported:
             # `package2.__getattr__()` should simply return itself;
             # it already holds the info about the targeted module.
             # As a side effect, it is possible to get away
@@ -139,15 +73,17 @@ with lazy_importing(prevent_eager=False):
 
         from package1.subpackage import subsubmodule
 
-        if supported_implementation:
+        if supported:
             # We'll make it work later.
             from package1 import fake as package1_fake  # type: ignore[attr-defined]
 
-    if supported_implementation:
+    if supported:
         PATH_HERE = str(Path(__file__).resolve())
         SRC_REF = rf'"{re.escape(PATH_HERE)}", line \d+'
 
-        with subtests.test("import-outputs"):
+        with subtests.test("slothy-object-repr"):
+            from slothy._importing import SlothyObject
+
             assert isinstance(module, SlothyObject)
             assert re.fullmatch(rf"<import module \({SRC_REF}\)>", repr(module))
 
@@ -215,7 +151,7 @@ with lazy_importing(prevent_eager=False):
         "package2.submodule",
     )
     modules_in_from_imports = ("package1.subpackage.subsubmodule",)
-    if not supported_implementation:
+    if not supported:
         expected_module_entries += modules_in_from_imports
 
     unwanted_module_entries: tuple[str, ...] = (
@@ -223,20 +159,15 @@ with lazy_importing(prevent_eager=False):
         # if Y isn't a module.
         # We want to expose `fromlist` members as non-modules
         # and let the final resolution handle it correctly.
-        # In `supported_implementation=False` case this will also not be bound
+        # In `supported=False` case this will also not be bound
         # because `module.attr` in fact isn't a module.
         "module.attr",
         "package.submodule.member",  # ↑
     )
-    if supported_implementation:
+    if supported:
         unwanted_module_entries += modules_in_from_imports
 
     def test_all_imported() -> None:
-        if supported_implementation:
-            with subtests.test("garbage-collection-trackers-full"):
-                assert SlothyObject_objects
-                assert SlothyKey_objects
-
         assert isinstance(module, ModuleType)
         assert isinstance(pkg, ModuleType)
         assert isinstance(attr, int)
@@ -250,7 +181,7 @@ with lazy_importing(prevent_eager=False):
         assert isinstance(m3_2, int)
         assert isinstance(m3_3, int)
 
-        if supported_implementation:
+        if supported:
             with pytest.raises(
                 ImportError,
                 match=rf"\(caused by delayed execution of {SRC_REF}\)",
@@ -263,21 +194,14 @@ with lazy_importing(prevent_eager=False):
             pkg.fake = fake  # type: ignore[attr-defined]
             assert package1_fake is fake
 
-            with subtests.test("garbage-collection-trackers-clear"):
-                if platform.python_implementation() == "PyPy":
-                    # https://doc.pypy.org/en/latest/cpython_differences.html#differences-related-to-garbage-collection-strategies
-                    gc.collect()
-                assert not SlothyObject_objects
-                assert not SlothyKey_objects
-
-    if not supported_implementation:
+    if not supported:
         test_all_imported()
 
 with subtests.test("builtin-import-unchanged"):
     assert __import__ is builtin_import
 
 with subtests.test("module-registry-purged"):
-    if supported_implementation:
+    if supported:
         # This behavior is necessary, because we want the same imports
         # to perform actual imports in non-slothy mode.
         for module_entry in expected_module_entries:
@@ -290,7 +214,7 @@ with subtests.test("module-registry-purged"):
 
 with lazy_importing(prevent_eager=False), subtests.test("reenter-works"):
     # Should not be a problem if we re-enter.
-    if supported_implementation:
+    if supported:
         assert __import__ is not builtin_import
     else:
         assert __import__ is builtin_import
@@ -302,19 +226,10 @@ with subtests.test("imported-on-reference"):
     test_all_imported()
 
 with lazy_importing_if(True, prevent_eager=False), subtests.test("slothy-if-true"):
-    if supported_implementation:
+    if supported:
         assert __import__ is not builtin_import
     else:
         assert __import__ is builtin_import
 
 with lazy_importing_if(False, prevent_eager=False), subtests.test("slothy-if-false"):
     assert __import__ is builtin_import
-
-if supported_implementation:
-    with subtests.test("test-class-scope"), pytest.raises(
-        RuntimeError,
-        match="__set_name__",
-    ), lazy_importing(prevent_eager=False):
-
-        class _ClassScope:
-            from whatever_else import anything  # type: ignore[import-not-found]

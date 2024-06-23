@@ -38,9 +38,9 @@ else:
             category=RuntimeWarning,
             message=(
                 "This Python implementation does not support "
-                "`sys._getframe()` and thus cannot use `lazy_importing`. "
+                "`sys._getframe()` and thus cannot use true lazy importing. "
             ),
-            stacklevel=1,
+            stacklevel=2,
         )
 
     EAGER_PREVENTION_MSG = (

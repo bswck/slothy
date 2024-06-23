@@ -67,35 +67,32 @@ mike = ">=2.1.1"
 [tool.poe.tasks]
 test = "pytest -v"
 lint = "ruff check ."
-check = [
-    { ref="test" },
-    { ref="lint" },
-]
+check = [{ ref = "test" }, { ref = "lint" }]
 release.script = "scripts.release:main"
 
 [tool.poe.tasks.added]
 shell = "towncrier create $TICKET.added.md --edit"
-args = [{name = "TICKET", default = "+", positional = true}]
+args = [{ name = "TICKET", default = "+", positional = true }]
 
 [tool.poe.tasks.changed]
 shell = "towncrier create $TICKET.changed.md --edit"
-args = [{name = "TICKET", default = "+", positional = true}]
+args = [{ name = "TICKET", default = "+", positional = true }]
 
 [tool.poe.tasks.fixed]
 shell = "towncrier create $TICKET.fixed.md --edit"
-args = [{name = "TICKET", default = "+", positional = true}]
+args = [{ name = "TICKET", default = "+", positional = true }]
 
 [tool.poe.tasks.deprecated]
 shell = "towncrier create $TICKET.deprecated.md --edit"
-args = [{name = "TICKET", default = "+", positional = true}]
+args = [{ name = "TICKET", default = "+", positional = true }]
 
 [tool.poe.tasks.removed]
 shell = "towncrier create $TICKET.removed.md --edit"
-args = [{name = "TICKET", default = "+", positional = true}]
+args = [{ name = "TICKET", default = "+", positional = true }]
 
 [tool.poe.tasks.security]
 shell = "towncrier create $TICKET.security.md --edit"
-args = [{name = "TICKET", default = "+", positional = true}]
+args = [{ name = "TICKET", default = "+", positional = true }]
 
 [tool.ruff]
 exclude = ["docs/", "scripts/", "tests/leaking_patch/"]
@@ -143,7 +140,18 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/tested_layouts/*" = ["ALL"]
-"tests/*" = ["D", "S101", "SLF001"]
+"tests/*" = [
+    "D",
+    "S101",
+    "SLF001",
+    "B018",
+    "FBT001",
+    "FBT003",
+    "F401",
+    "F821",
+    "PLR2004",
+    "INP001",
+]
 
 [tool.ruff.lint.isort]
 required-imports = ["from __future__ import annotations"]
@@ -162,7 +170,7 @@ directory = "news"
 package = "slothy"
 filename = "CHANGELOG.md"
 start_string = "<!-- insertion marker -->\n"
-underlines = ["", "", ""]  # We use Markdown
+underlines = ["", "", ""]                                                                        # We use Markdown
 title_format = "## [{version}](https://github.com/bswck/slothy/tree/{version}) ({project_date})"
 issue_format = "[#{issue}](https://github.com/bswck/slothy/issues/{issue})"
 

@@ -13,8 +13,10 @@ from functools import partial
 from pathlib import Path
 from sys import modules
 from typing import TYPE_CHECKING, Any, NamedTuple
+from warnings import warn
 
 if TYPE_CHECKING:
+    from collections import defaultdict
     from collections.abc import Callable, Iterator
     from contextlib import AbstractContextManager
     from types import FrameType, ModuleType
@@ -37,7 +39,11 @@ except AttributeError as err:  # pragma: no cover
 __all__ = ("lazy_importing", "lazy_importing_if", "type_importing")
 
 
-FALLBACK_MISSING: Final = object()
+MISSING: Final = object()
+
+tracker_var: ContextVar[defaultdict[type, WeakSet[Any]] | None] = ContextVar(
+    "tracker_var", default=None
+)
 
 
 @contextmanager
@@ -45,7 +51,7 @@ def lazy_importing(
     *,
     prevent_eager: bool = True,  # noqa: ARG001
     stack_offset: int = 1,
-    _fallback: object = FALLBACK_MISSING,
+    _fallback: object = MISSING,
 ) -> Iterator[None]:
     """
     Use slothy imports in a `with` statement.
@@ -158,7 +164,7 @@ def _is_slothy_import(obj: object) -> object:
 
 def _process_slothy_objects(
     local_ns: dict[str, object],
-    fallback: object = FALLBACK_MISSING,
+    fallback: object = MISSING,
 ) -> None:
     """
     Bind slothy objects and their aliases to special keys triggering on lookup.
@@ -274,10 +280,6 @@ class SlothyObject:
         _SlothyObject__refs: set[str]
         _SlothyObject__import: Callable[[Callable[..., ModuleType] | None], None]
 
-        # Trackers are used for garbage collection testing.
-        # Set your tracker here.
-        __slothy_tracker__: WeakSet[SlothyObject]
-
     def __init__(
         self,
         args: _ImportArgs,
@@ -305,27 +307,28 @@ class SlothyObject:
         self.__builtins = builtins
         self.__item_from_list = item_from_list
         self.__source = source
-        self.__fallback = FALLBACK_MISSING
+        self.__fallback = MISSING
         self.__refs: set[str] = set()
 
-        if hasattr(self, "__slothy_tracker__"):
-            self.__slothy_tracker__.add(self)
+        if (tracker := tracker_var.get()) is not None:
+            tracker[type(self)].add(self)
+
+    def __log_off_in_ctx(self, obj: object = MISSING) -> None:
+        local_ns = self.__args.local_ns
+        for ref in self.__refs:
+            existing_value = local_ns.get(ref)
+            if existing_value is self:
+                del local_ns[ref]
+                if obj is not MISSING:
+                    local_ns[ref] = obj
+
+    def __log_off(self, obj: object = MISSING) -> None:
+        ctx = copy_context()
+        ctx.run(logging_off.set, True)
+        ctx.run(self.__log_off_in_ctx, obj)
 
     def __import(self, builtin_import: Callable[..., ModuleType]) -> object:
         """Actually import the object."""
-        ctx = copy_context()
-        ctx.run(binding.set, True)
-
-        @partial(partial, ctx.run)
-        def manage_scope(*, remove: bool) -> None:
-            local_ns = self.__args.local_ns
-            for ref in self.__refs:
-                existing_value = local_ns.get(ref)
-                if existing_value is self:
-                    del local_ns[ref]
-                    if not remove:
-                        local_ns[ref] = obj
-
         try:
             import_args = self.__args
             module = builtin_import(*import_args)
@@ -340,11 +343,10 @@ class SlothyObject:
                 obj = module
         except BaseException as exc:  # noqa: BLE001
             fallback = self.__fallback
-            if fallback is not FALLBACK_MISSING:
-                obj = fallback
-                manage_scope(remove=False)
+            if fallback is not MISSING:
+                self.__log_off(fallback)
                 return fallback
-            manage_scope(remove=True)
+            self.__log_off()
             args = exc.args
             if self.__source:
                 args = (
@@ -355,12 +357,16 @@ class SlothyObject:
             exc = type(exc)(*args).with_traceback(exc.__traceback__)
             raise exc from None
         else:
-            manage_scope(remove=False)
+            self.__log_off(obj)
             return obj
 
     def __set_name__(self, owner: type, name: str) -> None:
         """Set the name of the object."""
+        self.__refs.add(name)
+        self.__log_off()
+        delattr(owner, name)
         msg = "Class-scoped slothy imports are not supported"
+        warn(msg, category=RuntimeWarning, stacklevel=2)
         raise RuntimeError(msg)
 
     def __repr__(self) -> str:
@@ -388,8 +394,6 @@ class SlothyObject:
 
     def __getattr__(self, item: str) -> object:
         """Allow import chains."""
-        if item == "__slothy_tracker__":
-            raise AttributeError(item)
         if self.__args.from_list and self.__item_from_list is None:
             return SlothyObject(
                 args=self.__args,
@@ -403,22 +407,20 @@ class SlothyObject:
         return self
 
 
-binding: ContextVar[bool] = ContextVar("binding", default=False)
+logging_off: ContextVar[bool] = ContextVar("binding", default=False)
 
 
 class _SlothyKey(str):
     """Slothy key. Activates on namespace lookup."""
 
-    __slots__: tuple[str, ...] = ("key", "obj", "_hash", "_import", "_should_refresh")
-
-    if __debug__:
-        # By default, only allow tracking in testing mode (with assertions enabled).
-        __slots__ += ("__weakref__",)
-
-    if TYPE_CHECKING:
-        # Trackers are used for garbage collection testing.
-        # Set your tracker here.
-        __slothy_tracker__: WeakSet[_SlothyKey]
+    __slots__: tuple[str, ...] = (
+        "key",
+        "obj",
+        "_hash",
+        "_import",
+        "_should_refresh",
+        "__weakref__",
+    )
 
     def __new__(cls, key: str, obj: SlothyObject) -> Self:  # noqa: ARG003
         """Create a new slothy key."""
@@ -442,8 +444,9 @@ class _SlothyKey(str):
         self._hash = hash(key)
         self._import = obj._SlothyObject__import
         self._should_refresh = True
-        if hasattr(self, "__slothy_tracker__"):
-            self.__slothy_tracker__.add(self)
+
+        if (tracker := tracker_var.get()) is not None:
+            tracker[type(self)].add(self)
 
     def __eq__(self, key: object) -> bool:
         """
@@ -467,7 +470,7 @@ class _SlothyKey(str):
             return NotImplemented
         elif key != self.key:  # pragma: no cover  # noqa: RET505 (elifs instead of ifs)
             return False
-        elif binding.get():
+        elif logging_off.get():
             return True
         their_import = self.obj._SlothyObject__builtins.get("__import__")
         if not _is_slothy_import(their_import):
@@ -531,12 +534,12 @@ def _slothy_import_locally(
     _stack_offset: int = 1,
 ) -> object:
     """Slothily import an object only in slothy importing context manager."""
-    if name in modules and (parent := name.split(".", 1)[0]) in modules:
-        return modules[parent]
     frame = get_frame(_stack_offset)
     global_ns = frame.f_globals if global_ns is None else global_ns
     local_ns = frame.f_locals if local_ns is None else local_ns
     args = name, global_ns, local_ns, from_list or (), level
-    if global_ns["__name__"] == _target:
-        return _slothy_import(*args, _stack_offset + 1)
-    return _builtin_import(*args)
+    return modules.get(name) or (
+        _builtin_import(*args)
+        if global_ns["__name__"] != _target
+        else _slothy_import(*args, _stack_offset + 1)
+    )
