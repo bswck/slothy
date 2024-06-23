@@ -365,9 +365,10 @@ class SlothyObject:
         self.__refs.add(name)
         self.__unmount()
         delattr(owner, name)
+        msg = "Class-scoped lazy imports are not supported"
         if version_info < (3, 12):
-            # https://github.com/python/cpython/issues/77757
-            msg = "Class-scoped lazy imports are not supported"
+            # We issue the warning to make the recovery easier.
+            # See also https://github.com/python/cpython/issues/77757
             warn(msg, category=RuntimeWarning, stacklevel=2)
         raise RuntimeError(msg)
 
