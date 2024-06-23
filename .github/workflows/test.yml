@@ -48,7 +48,6 @@ jobs:
       with:
         python-version: "${{matrix.python}}"
         cache: "poetry"
-        architecture: "x64"
     - name: "Install the project"
       run: "poetry install --all-extras"
     - name: "Run tests"
