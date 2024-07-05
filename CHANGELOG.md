@@ -7,6 +7,12 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 <!-- insertion marker -->
 
+## [v1.0.0](https://github.com/bswck/slothy/tree/v1.0.0) (2024-07-05)
+
+
+No significant changes.
+
+
 ## [v1.0.0b3](https://github.com/bswck/slothy/tree/v1.0.0b3) (2024-06-23)
 
 
