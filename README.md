@@ -3,6 +3,9 @@
 [![Tests](https://github.com/bswck/slothy/actions/workflows/test.yml/badge.svg)](https://github.com/bswck/slothy/actions/workflows/test.yml)
 [![Coverage](https://coverage-badge.samuelcolvin.workers.dev/bswck/slothy.svg)](https://coverage-badge.samuelcolvin.workers.dev/redirect/bswck/slothy)
 
+> [!Note]
+> This package is largely experimental and might not be suitable for production.
+
 Super-easy lazy importing in Python.
 
 Intended to be used as a guard for expensive or type-checking imports.
