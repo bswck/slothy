@@ -4,7 +4,7 @@
 [![Coverage](https://coverage-badge.samuelcolvin.workers.dev/bswck/slothy.svg)](https://coverage-badge.samuelcolvin.workers.dev/redirect/bswck/slothy)
 
 > [!Note]
-> This package is largely experimental and might not be suitable for production.
+> This package is largely experimental and might be unsuitable for production.
 
 Super-easy lazy importing in Python.
 
